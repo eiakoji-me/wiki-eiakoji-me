@@ -5,7 +5,7 @@ import ContentCard from '../../components/ContentCard.astro';
 import EmptyState from '../../components/EmptyState.astro';
 import RichText from '../../components/RichText.astro';
 import WikiLayout from '../../layouts/WikiLayout.astro';
-import { fetchContent } from '../../lib/content';
+import { CORE_DOMAIN_TOPICS, fetchContent } from '../../lib/content';
 import { articlesQuery, topicBySlugQuery, topicSlugsQuery, topicsListQuery } from '../../lib/sanity/queries';
 import type { Topic, ContentSummary } from '../../lib/sanity/types';
 import { buildTopicTree, getTopicBreadcrumbs } from '../../lib/topics';
@@ -16,16 +16,38 @@ interface TopicDetail extends Topic {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const slugs = await fetchContent<string[]>(topicSlugsQuery);
-  return slugs.map((slug) => ({ params: { slug } }));
+  const slugs = await fetchContent<string[]>(topicSlugsQuery).catch(() => []);
+  const coreSlugs = Object.keys(CORE_DOMAIN_TOPICS);
+  const allSlugs = Array.from(new Set([...coreSlugs, ...(slugs ?? [])]));
+  return allSlugs.map((slug) => ({ params: { slug } }));
 };
 
 const { slug } = Astro.params;
-const [topic, allTopics, allArticles] = await Promise.all([
-  fetchContent<TopicDetail>(topicBySlugQuery, { slug: slug! }),
-  fetchContent<Topic[]>(topicsListQuery),
-  fetchContent<ContentSummary[]>(articlesQuery),
+const [fetchedTopic, rawTopics, rawArticles] = await Promise.all([
+  fetchContent<TopicDetail>(topicBySlugQuery, { slug: slug! }).catch(() => null),
+  fetchContent<Topic[]>(topicsListQuery).catch(() => []),
+  fetchContent<ContentSummary[]>(articlesQuery).catch(() => []),
 ]);
+
+const fallback = slug && CORE_DOMAIN_TOPICS[slug] ? CORE_DOMAIN_TOPICS[slug] : undefined;
+const topic: TopicDetail = fetchedTopic ?? fallback ?? {
+  _id: `fallback-${slug}`,
+  _type: 'topic' as const,
+  title: (slug ?? 'Topic')
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' '),
+  slug: slug ?? 'unknown',
+  summary: `Curated notes, architecture patterns, and technical entries on ${slug}.`,
+};
+
+// Ensure core domain topics exist in tree even if Sanity has not seeded them yet
+const existingSlugs = new Set((rawTopics ?? []).map((t) => t.slug));
+const domainFallbacksAsTopics: Topic[] = Object.values(CORE_DOMAIN_TOPICS).filter(
+  (d) => !existingSlugs.has(d.slug)
+);
+const allTopics: Topic[] = [...(rawTopics ?? []), ...domainFallbacksAsTopics];
+const allArticles: ContentSummary[] = rawArticles ?? [];
 
 const tree = buildTopicTree(allTopics, allArticles);
 const breadcrumbs = getTopicBreadcrumbs(slug!, tree);

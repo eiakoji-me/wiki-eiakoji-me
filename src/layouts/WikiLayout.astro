@@ -2,7 +2,7 @@
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import LeftNav from '../components/LeftNav.astro';
-import { fetchContent } from '../lib/content';
+import { fetchContent, formatPageTitle } from '../lib/content';
 import { wikiNavQuery } from '../lib/sanity/queries';
 import type { Topic, Series, ContentSummary } from '../lib/sanity/types';
 import '../styles/global.css';
@@ -16,12 +16,12 @@ interface Props {
 
 const {
   title,
-  description = 'Technical knowledge base, architecture patterns, and engineering notes by Eiakoji.',
+  description = 'Technical knowledge base, architecture patterns, and engineering notes on wiki.eiakoji.me.',
   image,
   currentSlug,
 } = Astro.props;
 
-const pageTitle = title ? `${title} · Eiakoji wiki` : 'Eiakoji wiki';
+const pageTitle = formatPageTitle(title);
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://wiki.eiakoji.me');
 
 const navData = await fetchContent<{ topics: Topic[]; articles?: ContentSummary[]; series: Series[] }>(wikiNavQuery);
