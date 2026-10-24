@@ -1,20 +1,41 @@
 ---
+import { SITE_TITLE } from '../lib/content';
+
 const pathname = Astro.url.pathname;
 const links = [
-  { href: '/topics/', label: 'Topics' },
-  { href: '/articles/', label: 'Articles' },
+  { href: '/topics/system-design/', label: 'System Design' },
+  { href: '/topics/platform-engineering/', label: 'Platform Engineering' },
+  { href: '/topics/ai-engineering/', label: 'AI Engineering' },
+  { href: '/workshops/', label: 'Workshops' },
   { href: '/projects/', label: 'Projects' },
-  { href: '/series/', label: 'Series' },
 ];
 ---
 
 <header class="site-header">
   <div class="shell header-inner">
-    <a class="brand" href="/" aria-label="Eiakoji wiki home">
-      <span class="brand-mark" aria-hidden="true">e/</span>
-      <span>Eiakoji wiki</span>
+    <a class="brand" href="/" aria-label={`${SITE_TITLE} home`}>
+      <img class="brand-avatar" src="/images/avatar.jpeg" alt="" width="34" height="34" />
+      <span>{SITE_TITLE}</span>
     </a>
-    <nav aria-label="Primary navigation">
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-expanded="false"
+      aria-controls="primary-nav-menu"
+      aria-label="Toggle navigation menu"
+    >
+      <span class="sr-only">Toggle navigation menu</span>
+      <svg class="icon-menu" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <nav id="primary-nav-menu" class="primary-nav" aria-label="Primary navigation">
       <ul>
         {links.map(({ href, label }) => (
           <li><a href={href} aria-current={pathname.startsWith(href) ? 'page' : undefined}>{label}</a></li>
@@ -23,3 +44,56 @@ const links = [
     </nav>
   </div>
 </header>
+
+<script>
+  function setupNavToggle() {
+    const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+    const nav = document.querySelector<HTMLElement>('#primary-nav-menu');
+    if (!toggle || !nav) return;
+
+    function openMenu() {
+      toggle?.setAttribute('aria-expanded', 'true');
+      nav?.classList.add('is-open');
+    }
+
+    function closeMenu() {
+      toggle?.setAttribute('aria-expanded', 'false');
+      nav?.classList.remove('is-open');
+    }
+
+    toggle.addEventListener('click', () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      if (isExpanded) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (
+        toggle.getAttribute('aria-expanded') === 'true' &&
+        !toggle.contains(e.target as Node) &&
+        !nav.contains(e.target as Node)
+      ) {
+        closeMenu();
+      }
+    });
+  }
+
+  setupNavToggle();
+  document.addEventListener('astro:after-swap', setupNavToggle);
+</script>
