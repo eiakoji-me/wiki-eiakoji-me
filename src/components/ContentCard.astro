@@ -1,5 +1,5 @@
 ---
-import { contentHref, formatDate } from '../lib/content';
+import { contentHref, formatDate, formatContentLabel } from '../lib/content';
 import { imageUrl } from '../lib/sanity/image';
 import type { ContentSummary } from '../lib/sanity/types';
 
@@ -9,26 +9,7 @@ interface Props {
 }
 
 const { item, articleCount } = Astro.props;
-
-const formatLabels: Record<string, string> = {
-  article: 'Article',
-  'deep-dive': 'Deep Dive',
-  tutorial: 'Tutorial',
-  workshop: 'Workshop',
-  'case-study': 'Case Study',
-  showcase: 'Showcase',
-  'reading-note': 'Reading Note',
-  'reading-notes': 'Reading Note',
-  reference: 'Reference',
-};
-
-const activeFormat = item.format || item.kind;
-const label = item._type === 'series'
-  ? 'Series'
-  : item._type === 'project'
-    ? 'Case Study'
-    : (activeFormat && formatLabels[activeFormat]) || 'Article';
-
+const label = formatContentLabel(item.format || item.kind, item._type);
 const href = contentHref(item._type, item.slug);
 ---
 

@@ -2,7 +2,7 @@
 import ContentCard from '../components/ContentCard.astro';
 import EmptyState from '../components/EmptyState.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { contentHref, formatDate } from '../lib/content';
+import { contentHref, formatDate, formatContentLabel } from '../lib/content';
 import { fetchContent } from '../lib/content';
 import { homepageQuery } from '../lib/sanity/queries';
 import type { ContentSummary } from '../lib/sanity/types';
@@ -49,6 +49,16 @@ const latest = data.latest ?? [];
 const workshops = data.workshops ?? [];
 const archetypesArticles = data.archetypesArticles ?? [];
 const systemDesignArticles = data.systemDesignArticles ?? [];
+
+// Deduplicate articles so an article present in both archetypes and system design is never repeated
+const seenSystemDesignIds = new Set<string>();
+const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
+  .filter((item) => {
+    if (!item?._id || seenSystemDesignIds.has(item._id)) return false;
+    seenSystemDesignIds.add(item._id);
+    return true;
+  })
+  .slice(0, 4);
 ---
 
 <BaseLayout>
@@ -66,7 +76,7 @@ const systemDesignArticles = data.systemDesignArticles ?? [];
           <a class="lead-link" href={contentHref(leadFeature._type, leadFeature.slug)} aria-label={`Read ${leadFeature.title}`}>
             <div class="card-meta">
               {leadFeature.primaryTopic && <span class="card-domain">{leadFeature.primaryTopic.title}</span>}
-              <span class="card-format">{leadFeature.format || leadFeature.kind || 'Article'}</span>
+              <span class="card-format">{formatContentLabel(leadFeature.format || leadFeature.kind, leadFeature._type)}</span>
               {leadFeature.publishedAt && <time datetime={leadFeature.publishedAt}>{formatDate(leadFeature.publishedAt)}</time>}
             </div>
             <h2 class="lead-title">{leadFeature.title}</h2>
@@ -90,7 +100,7 @@ const systemDesignArticles = data.systemDesignArticles ?? [];
                 <a class="secondary-link" href={contentHref(item._type, item.slug)} aria-label={`Read ${item.title}`}>
                   <div class="card-meta">
                     {item.primaryTopic && <span class="card-domain">{item.primaryTopic.title}</span>}
-                    <span class="card-format">{item.format || item.kind || 'Article'}</span>
+                    <span class="card-format">{formatContentLabel(item.format || item.kind, item._type)}</span>
                   </div>
                   <h3 class="secondary-title">{item.title}</h3>
                   <p class="secondary-summary">{item.summary}</p>
@@ -139,9 +149,9 @@ const systemDesignArticles = data.systemDesignArticles ?? [];
       </div>
     </div>
 
-    {archetypesArticles.length > 0 || systemDesignArticles.length > 0 ? (
+    {systemDesignCombined.length > 0 ? (
       <div class="card-grid system-design-grid">
-        {[...archetypesArticles, ...systemDesignArticles].slice(0, 4).map((item) => (
+        {systemDesignCombined.map((item) => (
           <ContentCard item={item} />
         ))}
       </div>

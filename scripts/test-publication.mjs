@@ -21,6 +21,7 @@ import {
   wikiNavQuery,
   workshopsQuery,
 } from '../src/lib/sanity/queries.ts';
+import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
 import { buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
@@ -30,6 +31,9 @@ const expectedPages = [
   { path: '/', file: 'dist/index.html', emptyText: 'Publication ready' },
   { path: '/workshops/', file: 'dist/workshops/index.html', emptyText: 'No published workshops yet' },
   { path: '/topics/', file: 'dist/topics/index.html', emptyText: 'No published topics yet' },
+  { path: '/topics/system-design/', file: 'dist/topics/system-design/index.html', requiredText: 'System Design' },
+  { path: '/topics/platform-engineering/', file: 'dist/topics/platform-engineering/index.html', requiredText: 'Platform Engineering' },
+  { path: '/topics/ai-engineering/', file: 'dist/topics/ai-engineering/index.html', requiredText: 'AI Engineering' },
   { path: '/articles/', file: 'dist/articles/index.html', emptyText: 'No published articles yet' },
   { path: '/projects/', file: 'dist/projects/index.html', emptyText: 'No published projects yet' },
   { path: '/series/', file: 'dist/series/index.html', emptyText: 'No published series yet' },
@@ -45,7 +49,10 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   assert.match(html, /<meta property="og:title"/, `${path} must have social title metadata`);
   assert.match(html, /class="skip-link" href="#main-content"/, `${path} must have skip navigation`);
   assert.match(html, /<main id="main-content">/, `${path} must expose the main landmark`);
-  assert.match(html, /<nav aria-label="Primary navigation">/, `${path} must label primary navigation`);
+  assert.match(html, /<nav[^>]*aria-label="Primary navigation"[^>]*>/, `${path} must label primary navigation`);
+  assert.match(html, /<button[^>]*class="nav-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="primary-nav-menu"/, `${path} must have an accessible mobile nav toggle`);
+  assert.ok(!html.includes('Eiakoji wiki'), `${path} must not retain old Eiakoji wiki title`);
+  assert.match(html, /<title>.*wiki\.eiakoji\.me<\/title>/, `${path} title must end with wiki.eiakoji.me`);
 
   for (const label of ['System Design', 'Platform Engineering', 'AI Engineering', 'Workshops', 'Projects']) {
     assert.ok(html.includes(label), `${path} must include the ${label} navigation item`);
@@ -325,6 +332,44 @@ async function testUnitBehaviors() {
   };
   const successResult = await validateTopicParent({ _ref: 't-root' }, validContext);
   assert.equal(successResult, true, 'valid hierarchy must pass validation');
+
+  // 7. Test formatContentLabel formatting
+  assert.equal(formatContentLabel('case-study'), 'Case Study');
+  assert.equal(formatContentLabel('reading-note'), 'Reading Note');
+  assert.equal(formatContentLabel('reading-notes'), 'Reading Note');
+  assert.equal(formatContentLabel('deep-dive'), 'Deep Dive');
+  assert.equal(formatContentLabel('tutorial'), 'Tutorial');
+  assert.equal(formatContentLabel('workshop'), 'Workshop');
+  assert.equal(formatContentLabel('showcase'), 'Showcase');
+  assert.equal(formatContentLabel('reference'), 'Reference');
+  assert.equal(formatContentLabel(undefined, 'series'), 'Series');
+  assert.equal(formatContentLabel(undefined, 'project'), 'Case Study');
+  assert.equal(formatContentLabel(undefined, 'article'), 'Article');
+  assert.equal(formatContentLabel('custom-type'), 'Custom Type');
+
+  // 8. Test formatPageTitle and SITE_TITLE
+  assert.equal(SITE_TITLE, 'wiki.eiakoji.me');
+  assert.equal(formatPageTitle('Workshops'), 'Workshops · wiki.eiakoji.me');
+  assert.equal(formatPageTitle('System Design'), 'System Design · wiki.eiakoji.me');
+  assert.equal(formatPageTitle(), 'wiki.eiakoji.me');
+
+  // 9. Test deduplication for System Design / Archetypes
+  const mockArchetypes = [
+    { _id: 'art-1', title: 'Write-Ahead Log' },
+    { _id: 'art-2', title: 'Event Sourcing' },
+  ];
+  const mockSystemDesign = [
+    { _id: 'art-1', title: 'Write-Ahead Log' }, // Assigned to both archetypes and system design
+    { _id: 'art-3', title: 'Raft Consensus' },
+  ];
+  const seenIds = new Set();
+  const dedupedArticles = [...mockArchetypes, ...mockSystemDesign].filter((item) => {
+    if (!item?._id || seenIds.has(item._id)) return false;
+    seenIds.add(item._id);
+    return true;
+  });
+  assert.equal(dedupedArticles.length, 3, 'deduplication must eliminate duplicate article IDs');
+  assert.deepEqual(dedupedArticles.map((a) => a._id), ['art-1', 'art-2', 'art-3']);
 }
 
 async function testConfiguration() {
@@ -345,7 +390,9 @@ async function testConfiguration() {
     readFile('src/layouts/WikiLayout.astro', 'utf8'),
   ]);
 
+  assert.match(styles, /@media \(max-width: 820px\)/, 'styles must include the 820px mobile nav breakpoint');
   assert.match(styles, /@media \(max-width: 720px\)/, 'styles must include a small-screen layout');
+  assert.ok(styles.includes('.nav-toggle'), 'styles must include .nav-toggle rules');
   assert.ok(!/outline\s*:\s*none/.test(styles), 'styles must not suppress keyboard focus outlines');
   assert.match(netlify, /command = "npm run build"/, 'Netlify must use the production build command');
   assert.match(netlify, /publish = "dist"/, 'Netlify must publish dist');
