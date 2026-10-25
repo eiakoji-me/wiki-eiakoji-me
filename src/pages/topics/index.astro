@@ -56,7 +56,7 @@ const rootTopics = tree.rootTopics;
                 <article class="content-card domain-main-card">
                   <a href={`/topics/${rootNode.topic.slug}/`} class="card-link" aria-label={`Explore ${rootNode.topic.title}`}>
                     <div class="card-placeholder" aria-hidden="true">
-                      <span>{rootNode.topic.title.slice(0, 1)}</span>
+                      <span>{rootNode.topic.title}</span>
                     </div>
                     <div class="card-body">
                       <div class="card-meta">
@@ -74,7 +74,7 @@ const rootTopics = tree.rootTopics;
                   <article class="content-card subtopic-card">
                     <a href={`/topics/${childNode.topic.slug}/`} class="card-link" aria-label={`Explore ${childNode.topic.title}`}>
                       <div class="card-placeholder" aria-hidden="true">
-                        <span>{childNode.topic.title.slice(0, 1)}</span>
+                        <span>{childNode.topic.title}</span>
                       </div>
                       <div class="card-body">
                         <div class="card-meta">
