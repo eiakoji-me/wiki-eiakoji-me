@@ -38,7 +38,7 @@ const breadcrumbs = [
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="series-badge">Learning Path</span>
+        <span class="badge">Learning Path</span>
         <span>{series.articles.length} {series.articles.length === 1 ? 'article' : 'articles'}</span>
       </div>
       <h1>{series.title}</h1>
@@ -81,15 +81,3 @@ const breadcrumbs = [
   </div>
 </WikiLayout>
 
-<style>
-  .series-badge {
-    padding: 3px 8px;
-    background: var(--forest);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 3px;
-  }
-</style>

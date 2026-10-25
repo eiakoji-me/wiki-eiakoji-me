@@ -46,7 +46,7 @@ const rootTopics = tree.rootTopics;
                   <p class="domain-summary">{rootNode.topic.summary}</p>
                 </div>
                 <div class="domain-meta">
-                  <span class="rollup-badge">
+                  <span class="badge-neutral rollup-badge">
                     {rootNode.rollupArticleCount} {rootNode.rollupArticleCount === 1 ? 'entry' : 'entries'}
                   </span>
                 </div>
@@ -103,45 +103,38 @@ const rootTopics = tree.rootTopics;
   .domains-container {
     display: flex;
     flex-direction: column;
-    gap: 56px;
+    gap: 40px;
   }
   .domain-group {
-    border-top: 2px solid var(--forest);
-    padding-top: 24px;
+    border-top: 2px solid var(--border-strong);
+    padding-top: 20px;
   }
   .domain-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   .domain-title {
     margin: 0 0 6px;
-    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    font-size: var(--title-section);
   }
   .domain-title a {
     text-decoration: none;
-    color: var(--forest);
+    color: var(--text-strong);
   }
   .domain-title a:hover {
     text-decoration: underline;
   }
   .domain-summary {
     margin: 0;
-    color: var(--muted);
-    font-size: 1.05rem;
-    max-width: 640px;
+    color: var(--text-muted);
+    font-size: var(--text-base);
+    max-width: 70ch;
   }
   .rollup-badge {
-    font-size: 0.78rem;
-    font-weight: 750;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 4px 10px;
-    background: var(--mint);
-    color: var(--forest);
-    border-radius: 4px;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 </style>
