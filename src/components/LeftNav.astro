@@ -72,6 +72,10 @@ const rootTopics = tree.rootTopics;
     overflow-y: auto;
     padding-right: 12px;
   }
+  /* The nav scrolls, so an outset focus ring would be clipped at its left edge. */
+  .wiki-left-nav :global(a:focus-visible) {
+    outline-offset: -2px;
+  }
   .wiki-nav-disclosure {
     border: none;
     margin: 0;
