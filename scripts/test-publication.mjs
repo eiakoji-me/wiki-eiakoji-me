@@ -529,6 +529,9 @@ async function testConfiguration() {
     'WikiLayout must pass articles to buildTopicTree for deduplicated rollups',
   );
   assert.ok(wikiLayout.includes('tree={navTree}'), 'WikiLayout must pass the shared tree to LeftNav');
+  for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
+    assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
+  }
   assert.ok(leftNavComponent.includes('buildNavigation(tree, currentSlug)'), 'LeftNav must render from buildNavigation');
   assert.ok(!leftNavComponent.includes('Sections') && !leftNavComponent.includes('/projects/'), 'LeftNav must not keep the Sections block or a Projects link');
   assert.ok(
