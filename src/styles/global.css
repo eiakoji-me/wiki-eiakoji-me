@@ -99,7 +99,7 @@ code, pre, kbd { font-family: var(--font-mono); }
 .nav-toggle { display: none; }
 .primary-nav ul { display: flex; gap: 22px; padding: 0; margin: 0; list-style: none; }
 .primary-nav a { display: block; padding: 6px 0; border-bottom: 2px solid transparent; color: var(--text-muted); font-size: var(--text-nav); font-weight: 500; text-decoration: none; }
-.primary-nav a:hover { color: var(--text); text-decoration: underline; }
+.primary-nav a:hover { color: var(--link); }
 .primary-nav a[aria-current="page"] { color: var(--selected-text); border-bottom-color: var(--selected-indicator); }
 .site-footer { margin-top: 64px; padding: 32px 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: var(--text-sm); }
 .footer-inner { display: flex; justify-content: space-between; gap: 24px; }
@@ -310,7 +310,7 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
     text-decoration: none;
   }
   .primary-nav a:hover {
-    text-decoration: underline;
+    color: var(--link);
   }
   .primary-nav a[aria-current="page"] {
     background: var(--selected-bg);
