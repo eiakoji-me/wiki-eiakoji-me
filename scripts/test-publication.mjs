@@ -25,6 +25,7 @@ import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/cont
 import { extractHeadings } from '../src/lib/slugify.ts';
 import { buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
+import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
 
 const origin = 'http://127.0.0.1:4322';
 const expectedPages = [
@@ -312,7 +313,7 @@ async function testUnitBehaviors() {
 
   // Multi-hop cycle via client lookup
   const cycleContext = {
-    document: { _id: 't-a' },
+    document: { _id: 't-a', kind: 'topic' },
     getClient: () => ({
       fetch: async (_query, params) => {
         if (params?.id === 't-b') return { parent: { _ref: 't-a' } };
@@ -325,13 +326,52 @@ async function testUnitBehaviors() {
 
   // Valid acyclic hierarchy passes
   const validContext = {
-    document: { _id: 't-leaf' },
+    document: { _id: 't-leaf', kind: 'topic' },
     getClient: () => ({
-      fetch: async () => ({ parent: undefined }),
+      fetch: async () => ({ parent: undefined, kind: 'domain' }),
     }),
   };
   const successResult = await validateTopicParent({ _ref: 't-root' }, validContext);
   assert.equal(successResult, true, 'valid hierarchy must pass validation');
+
+  // Kind rules in Studio validation: ancestors are looked up draft-first with their kind
+  const chainContext = (kind, chain) => ({
+    document: { _id: 't-new', kind },
+    getClient: () => ({
+      fetch: async (query, params) => {
+        assert.ok(query.includes('{ parent, kind }'), 'ancestor lookup must project kind');
+        return chain[params.id] ?? null;
+      },
+    }),
+  });
+  const domainChain = {
+    'd-1': { kind: 'domain' },
+    't-1': { kind: 'topic', parent: { _ref: 'd-1' } },
+    't-2': { kind: 'topic', parent: { _ref: 't-1' } },
+    't-3': { kind: 'topic', parent: { _ref: 't-2' } },
+    't-4': { kind: 'topic', parent: { _ref: 't-3' } },
+    'orphan': { kind: 'topic' },
+    'legacy-root': {},
+  };
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 'd-new', kind: 'domain' } }), true, 'a domain without a parent is valid');
+  assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('domain', domainChain)), 'A domain cannot have a parent.');
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new', kind: 'topic' } }), 'A topic must have a parent topic or domain.');
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new' } }), 'Choose whether this is a Domain or a Topic.');
+  assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('topic', domainChain)), true, 'a topic directly under a domain is valid');
+  assert.equal(await validateTopicParent({ _ref: 't-3' }, chainContext('topic', domainChain)), true, 'a topic with four ancestors is valid');
+  assert.equal(
+    await validateTopicParent({ _ref: 't-4' }, chainContext('topic', domainChain)),
+    `Topic hierarchy exceeds maximum supported depth of ${MAX_TOPIC_ANCESTORS} levels.`,
+  );
+  assert.equal(await validateTopicParent({ _ref: 'orphan' }, chainContext('topic', domainChain)), 'A topic must sit under a domain.');
+  assert.equal(await validateTopicParent({ _ref: 'legacy-root' }, chainContext('topic', domainChain)), 'A topic must sit under a domain.');
+
+  // Pure placement rules
+  assert.equal(topicPlacementError({ kind: 'domain', hasParent: false, ancestorKinds: [] }), null);
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['domain'] }), null);
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'domain'], cycle: true }), 'Circular parent reference detected in topic hierarchy.');
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'topic'] }), 'A topic must sit under a domain.');
+  assert.equal(topicPlacementError({ kind: 'area', hasParent: false, ancestorKinds: [] }), 'Choose whether this is a Domain or a Topic.');
 
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
@@ -407,12 +447,12 @@ async function testConfiguration() {
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'series', 'format', 'primaryTopic', 'featured']) {
     assert.ok(articleSchema.includes(`name: '${field}'`), `article schema must define ${field}`);
   }
-  for (const field of ['slug', 'summary', 'parent', 'order']) {
+  for (const field of ['kind', 'slug', 'summary', 'parent', 'order']) {
     assert.ok(topicSchema.includes(`name: '${field}'`), `topic schema must define ${field}`);
   }
   assert.ok(
-    topicSchema.includes('Circular parent reference detected in topic hierarchy'),
-    'topic schema must implement ancestor cycle validation',
+    topicSchema.includes('cycle = true') && topicSchema.includes('topicPlacementError'),
+    'topic schema must implement ancestor cycle validation through the shared placement rules',
   );
   assert.ok(
     topicSchema.includes('coalesce(*[_id == "drafts." + $id][0], *[_id == $id][0])'),
