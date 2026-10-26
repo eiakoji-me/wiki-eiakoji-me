@@ -23,7 +23,7 @@ import {
 } from '../src/lib/sanity/queries.ts';
 import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
-import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
+import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, topicHref, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
 import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
 import { DOMAIN_SEEDS, planDomainSeed } from './domains.ts';
@@ -359,14 +359,18 @@ async function testUnitBehaviors() {
   assert.deepEqual(nav.browse.map((l) => l.href), ['/topics/', '/articles/', '/series/'], 'browse links must not include projects');
   assert.deepEqual(nav.browse.map((l) => l.active), [false, true, false], 'the current browse destination must be active');
   assert.equal(buildNavigation(buildTopicTree([])).domains.length, 0, 'an empty taxonomy must yield no domains');
+  assert.equal(topicHref(domainTree, 'write-through'), '/topics/write-through/', 'topics in the tree link to their hub');
+  for (const missing of ['legacy-root', 'orphan', 'nested-domain', undefined]) {
+    assert.equal(topicHref(domainTree, missing), undefined, `excluded topic ${missing} must not get a hub link`);
+  }
 
   // 6. Test validateTopicParent in Studio schema validation (including failure and error paths)
-  const selfRefResult = await validateTopicParent({ _ref: 't-self' }, { document: { _id: 't-self' } });
+  const selfRefResult = await validateTopicParent({ _ref: 't-self' }, { document: { _id: 't-self', kind: 'topic' } });
   assert.equal(selfRefResult, 'A topic cannot reference itself as its parent.');
 
   // Transient query error must NOT fail open
   const failingContext = {
-    document: { _id: 't-child' },
+    document: { _id: 't-child', kind: 'topic' },
     getClient: () => ({
       fetch: async () => {
         throw new Error('Sanity API connection timeout');
@@ -424,7 +428,7 @@ async function testUnitBehaviors() {
   assert.equal(await validateTopicParent(undefined, { document: { _id: 'd-new', kind: 'domain' } }), true, 'a domain without a parent is valid');
   assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('domain', domainChain)), 'A domain cannot have a parent.');
   assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new', kind: 'topic' } }), 'A topic must have a parent topic or domain.');
-  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new' } }), 'Choose whether this is a Domain or a Topic.');
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new' } }), true, 'a missing kind is reported only by the required Kind field');
   assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('topic', domainChain)), true, 'a topic directly under a domain is valid');
   assert.equal(await validateTopicParent({ _ref: 't-3' }, chainContext('topic', domainChain)), true, 'a topic with four ancestors is valid');
   assert.equal(
@@ -487,6 +491,8 @@ async function testUnitBehaviors() {
   assert.equal(legacyPlan.mutations.length, 2, 'a slug already in use must not be seeded twice');
   assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-sd') && w.includes('system-design')), 'slug conflicts must be reported');
   assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-root') && w.includes('unclassified')), 'unclassified roots must be reported');
+  assert.deepEqual(legacyPlan.blocked, ['domain-system-design'], 'a domain skipped for a slug conflict must block the seed');
+  assert.deepEqual(firstPlan.blocked, [], 'a clean seed must not be blocked');
   assert.equal(DOMAIN_SEEDS.length, 3);
 
   // 6c. The real queries, run against the full fixture, drive the same tree
@@ -499,6 +505,9 @@ async function testUnitBehaviors() {
   assert.deepEqual(fixtureTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering']);
   assert.equal(fixtureTree.slugMap.get('system-design').rollupArticleCount, 2, 'domain rollups must count nested articles once');
   assert.deepEqual(fixtureTree.excluded.map((e) => e.topic.slug), ['languages']);
+  const orphanedArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'language-notes' });
+  assert.equal(orphanedArticle.primaryTopic.slug, 'languages');
+  assert.equal(topicHref(fixtureTree, orphanedArticle.primaryTopic.slug), undefined, 'an excluded primary topic must not be linked');
   const fixtureHome = await queryFixtures('full', homepageQuery);
   assert.equal(fixtureHome.platformTopic?.slug, 'platform-engineering', 'homepage must find domains by kind');
   assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
@@ -614,6 +623,11 @@ async function testConfiguration() {
   assert.ok(wikiLayout.includes('tree={navTree}'), 'WikiLayout must pass the shared tree to LeftNav');
   for (const file of ['netlify.toml', '.env.example', '.github/workflows/ci.yml', 'package.json']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('WIKI_FIXTURES'), `${file} must not enable fixture content`);
+  }
+  for (const file of ['src/pages/articles/[slug].astro', 'src/components/RightRail.astro']) {
+    const source = await readFile(file, 'utf8');
+    assert.ok(!source.includes('/topics/${'), `${file} must build topic links with topicHref so excluded topics are not linked`);
+    assert.ok(source.includes('topicHref('), `${file} must use topicHref`);
   }
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);

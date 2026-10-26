@@ -9,7 +9,7 @@ import { imageUrl } from '../../lib/sanity/image';
 import { articleBySlugQuery, articleSlugsQuery, topicsListQuery } from '../../lib/sanity/queries';
 import type { Article, Topic } from '../../lib/sanity/types';
 import { extractHeadings } from '../../lib/slugify';
-import { buildTopicTree, getTopicBreadcrumbs } from '../../lib/topics';
+import { buildTopicTree, getTopicBreadcrumbs, topicHref } from '../../lib/topics';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const slugs = await fetchContent<string[]>(articleSlugsQuery);
@@ -80,18 +80,26 @@ if (article.primaryTopic?.slug) {
       {article.primaryTopic && (
         <div class="entry-taxonomy">
           <span class="tax-label">Topic:</span>
-          <a href={`/topics/${article.primaryTopic.slug}/`} class="primary-topic-link">
-            {article.primaryTopic.title}
-          </a>
+          {topicHref(tree, article.primaryTopic.slug) ? (
+            <a href={topicHref(tree, article.primaryTopic.slug)} class="primary-topic-link">
+              {article.primaryTopic.title}
+            </a>
+          ) : (
+            <span class="primary-topic-link">{article.primaryTopic.title}</span>
+          )}
           {article.relatedTopics && article.relatedTopics.length > 0 && (
             <>
               <span class="tax-separator">·</span>
               <span class="tax-label">Related:</span>
-              {article.relatedTopics.map((rel) => (
-                <a href={`/topics/${rel.slug}/`} class="related-topic-link">
-                  {rel.title}
-                </a>
-              ))}
+              {article.relatedTopics.map((rel) =>
+                topicHref(tree, rel.slug) ? (
+                  <a href={topicHref(tree, rel.slug)} class="related-topic-link">
+                    {rel.title}
+                  </a>
+                ) : (
+                  <span class="related-topic-link">{rel.title}</span>
+                )
+              )}
             </>
           )}
         </div>
@@ -187,7 +195,7 @@ if (article.primaryTopic?.slug) {
     )}
   </article>
 
-  <RightRail headings={headings} article={article} slot="right-rail" />
+  <RightRail headings={headings} article={article} topicTree={tree} slot="right-rail" />
 </WikiLayout>
 
 <style>

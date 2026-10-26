@@ -55,6 +55,8 @@ export interface DomainSeedPlan {
   changes: string[];
   /** Problems the seed will not resolve on its own; an editor must decide. */
   warnings: string[];
+  /** Domains the seed could not create or correct; the seed has failed while any remain. */
+  blocked: string[];
 }
 
 /**
@@ -65,7 +67,7 @@ export interface DomainSeedPlan {
 export function planDomainSeed(existing: ExistingTopic[]): DomainSeedPlan {
   const byId = new Map(existing.map((doc) => [doc._id, doc]));
   const seedIds = new Set(DOMAIN_SEEDS.map((seed) => seed._id));
-  const plan: DomainSeedPlan = { mutations: [], changes: [], warnings: [] };
+  const plan: DomainSeedPlan = { mutations: [], changes: [], warnings: [], blocked: [] };
 
   for (const seed of DOMAIN_SEEDS) {
     const current = byId.get(seed._id);
@@ -74,6 +76,7 @@ export function planDomainSeed(existing: ExistingTopic[]): DomainSeedPlan {
       plan.warnings.push(
         `"${slugOwner.title}" (${slugOwner._id}) already uses slug "${seed.slug}"; ${seed._id} was not seeded. Resolve the duplicate in Studio and rerun.`,
       );
+      plan.blocked.push(seed._id);
       continue;
     }
 

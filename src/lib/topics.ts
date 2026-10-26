@@ -256,6 +256,8 @@ export function buildTopicTree(
   return { rootTopics, nodeMap, slugMap, excluded };
 }
 
+// Lives for the whole process, so a long-running `astro dev` warns about a
+// topic once even if it is fixed and broken again; restart to see it again.
 const reportedExclusions = new Set<string>();
 
 /** Reports topics left out of the taxonomy once per build so they stay visible. */
@@ -265,6 +267,11 @@ export function logExcludedTopics(tree: TopicTree): void {
     reportedExclusions.add(topic._id);
     console.warn(`[taxonomy] Excluded "${topic.title}" (${topic._id}): ${reason}`);
   }
+}
+
+/** The hub URL for a topic in the tree, or undefined when the topic has no page. */
+export function topicHref(tree: TopicTree, slug: string | undefined): string | undefined {
+  return slug && tree.slugMap.has(slug) ? `/topics/${slug}/` : undefined;
 }
 
 export interface NavigationLink {

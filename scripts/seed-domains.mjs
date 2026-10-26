@@ -53,3 +53,8 @@ if (values.write && plan.mutations.length > 0) {
   console.log(`Applied ${plan.mutations.length} mutation(s). Remaining changes: ${remaining.mutations.length}.`);
   if (remaining.mutations.length > 0) process.exit(1);
 }
+
+if (plan.blocked.length > 0) {
+  console.error(`Not seeded: ${plan.blocked.join(', ')}. Resolve the warnings above and rerun.`);
+  process.exit(1);
+}

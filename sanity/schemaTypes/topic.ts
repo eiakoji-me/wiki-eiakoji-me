@@ -13,6 +13,8 @@ export async function validateTopicParent(
   context: TopicParentValidationContext
 ): Promise<true | string> {
   const kind = context.document?.kind;
+  // The required Kind field already reports a missing kind.
+  if (!kind) return true;
   if (!parent?._ref) {
     return topicPlacementError({ kind, hasParent: false, ancestorKinds: [] }) ?? true;
   }

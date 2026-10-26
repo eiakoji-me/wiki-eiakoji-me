@@ -63,6 +63,8 @@ const full: Doc[] = [
   article('article-lsm-trees', 'LSM Trees', '2026-09-15T00:00:00Z', 'topic-storage-engines'),
   article('article-golden-paths', 'Golden Paths', '2026-10-01T00:00:00Z', 'topic-internal-platforms'),
   article('article-future-post', 'Scheduled Post', '2099-01-01T00:00:00Z', 'topic-agentic-workflows'),
+  // Its primary topic is unclassified, so the article must not link to a topic page.
+  article('article-language-notes', 'Language Notes', '2026-08-01T00:00:00Z', 'topic-languages'),
   {
     _id: 'series-consensus',
     _type: 'series',
