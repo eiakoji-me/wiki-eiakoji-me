@@ -64,11 +64,11 @@ if (article.primaryTopic?.slug) {
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="kind-badge">{formatLabel}</span>
-        {article.difficulty && <span class="difficulty-badge">{article.difficulty}</span>}
+        <span class="badge">{formatLabel}</span>
+        {article.difficulty && <span class="badge-neutral">{article.difficulty}</span>}
         <time datetime={article.publishedAt}>{formatDate(article.publishedAt!)}</time>
         {article.series && (
-          <a href={`/series/${article.series.slug}/`} class="series-badge">
+          <a href={`/series/${article.series.slug}/`} class="badge">
             Part of {article.series.title}
           </a>
         )}
@@ -195,50 +195,33 @@ if (article.primaryTopic?.slug) {
     width: 100%;
     max-width: 820px;
   }
-  .kind-badge {
-    padding: 3px 8px;
-    background: var(--forest);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 3px;
-  }
-  .difficulty-badge {
-    padding: 3px 8px;
-    background: var(--mint);
-    color: var(--forest);
-    font-size: 0.72rem;
-    font-weight: 700;
-    border-radius: 3px;
-  }
   .entry-taxonomy {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-top: 18px;
-    font-size: 0.88rem;
+    margin-top: 16px;
+    font-size: var(--text-nav);
   }
   .tax-label {
-    color: var(--muted);
-    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
   }
   .primary-topic-link {
-    font-weight: 700;
-    color: var(--forest);
+    font-weight: 500;
+    color: var(--link);
+    text-decoration: none;
+  }
+  .related-topic-link {
+    color: var(--link);
     text-decoration: none;
   }
   .primary-topic-link:hover, .related-topic-link:hover {
+    color: var(--link-hover);
     text-decoration: underline;
   }
-  .related-topic-link {
-    color: var(--muted);
-    text-decoration: none;
-  }
   .tax-separator {
-    color: var(--line);
+    color: var(--border-strong);
   }
   .workshop-callout {
     display: flex;
@@ -248,9 +231,9 @@ if (article.primaryTopic?.slug) {
     gap: 16px;
     padding: 16px 20px;
     margin-top: 24px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--selected-indicator);
     border-radius: 4px;
   }
   .workshop-links {
@@ -266,35 +249,36 @@ if (article.primaryTopic?.slug) {
     margin: 0;
   }
   .tech-tags li {
-    font-size: 0.75rem;
-    padding: 3px 8px;
-    background: var(--paper);
-    border: 1px solid var(--line);
+    font-size: var(--text-xs);
+    padding: 2px 6px;
+    background: var(--badge-neutral-bg);
+    border: 1px solid var(--border);
     border-radius: 3px;
-    color: var(--muted);
+    color: var(--badge-neutral-text);
   }
   .book-callout {
-    padding: 12px 18px;
+    padding: 12px 16px;
     margin-top: 20px;
-    background: var(--mint);
+    background: var(--background-subtle);
+    border: 1px solid var(--border);
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: var(--text-nav);
   }
   .book-callout p {
     margin: 0;
   }
   .series-pager {
-    margin-top: 64px;
-    padding-top: 32px;
-    border-top: 1px solid var(--line);
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
   }
   .pager-title {
-    font-size: 0.78rem;
-    font-weight: 750;
+    font-size: var(--text-xs);
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 16px;
+    letter-spacing: .04em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
   }
   .pager-grid {
     display: grid;
@@ -305,27 +289,32 @@ if (article.primaryTopic?.slug) {
     display: flex;
     flex-direction: column;
     padding: 16px;
-    background: var(--surface);
-    border: 1px solid var(--line);
+    background: var(--background);
+    border: 1px solid var(--border);
     border-radius: 4px;
     text-decoration: none;
     transition: border-color 140ms ease;
   }
   .pager-item:hover {
-    border-color: var(--accent);
+    border-color: var(--border-strong);
+  }
+  .pager-item:hover .label {
+    text-decoration: underline;
   }
   .pager-item.next {
     text-align: right;
   }
   .pager-item .dir {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--accent-dark);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-muted);
     margin-bottom: 4px;
   }
   .pager-item .label {
-    font-family: Georgia, serif;
-    font-size: 1.05rem;
-    color: var(--ink);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text);
   }
 </style>

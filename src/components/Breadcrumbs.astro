@@ -35,9 +35,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 <style>
   .breadcrumbs {
-    margin-bottom: 20px;
-    font-size: 0.85rem;
-    color: var(--muted);
+    margin-bottom: 16px;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
   .breadcrumbs ol {
     display: flex;
@@ -54,20 +54,19 @@ const breadcrumbItems: BreadcrumbItem[] = [
     gap: 8px;
   }
   .breadcrumb-separator {
-    color: var(--line);
-    font-weight: 300;
+    color: var(--border-strong);
+    font-weight: 400;
   }
   .breadcrumb-link {
-    color: var(--muted);
+    color: var(--text-muted);
     text-decoration: none;
-    transition: color 140ms ease;
   }
   .breadcrumb-link:hover {
-    color: var(--accent-dark);
+    color: var(--text);
     text-decoration: underline;
   }
   .breadcrumb-current {
-    color: var(--ink);
-    font-weight: 600;
+    color: var(--text);
+    font-weight: 500;
   }
 </style>

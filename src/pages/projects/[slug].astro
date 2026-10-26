@@ -38,7 +38,7 @@ const breadcrumbs = [
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="project-badge">Case Study</span>
+        <span class="badge">Case Study</span>
         <time datetime={project.publishedAt}>{formatDate(project.publishedAt!)}</time>
       </div>
       <h1>{project.title}</h1>
@@ -82,16 +82,3 @@ const breadcrumbs = [
     </div>
   </article>
 </WikiLayout>
-
-<style>
-  .project-badge {
-    padding: 3px 8px;
-    background: var(--forest);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 3px;
-  }
-</style>

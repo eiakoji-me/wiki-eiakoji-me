@@ -65,7 +65,7 @@ const topicArticles = allArticles.filter((article) =>
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="kind-badge">{topic.parent ? 'Subtopic' : 'Domain / Root Topic'}</span>
+        <span class="badge">{topic.parent ? 'Subtopic' : 'Domain / Root Topic'}</span>
         {topic.parent && (
           <span>Part of <a href={`/topics/${topic.parent.slug}/`}>{topic.parent.title}</a></span>
         )}
@@ -120,16 +120,6 @@ const topicArticles = allArticles.filter((article) =>
 </WikiLayout>
 
 <style>
-  .kind-badge {
-    padding: 3px 8px;
-    background: var(--mint);
-    color: var(--forest);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 3px;
-  }
   .subtopics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -139,25 +129,26 @@ const topicArticles = allArticles.filter((article) =>
   .subtopic-card {
     display: block;
     padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--line);
+    background: var(--background);
+    border: 1px solid var(--border);
     border-radius: 4px;
     text-decoration: none;
-    transition: border-color 140ms ease, transform 140ms ease;
+    transition: border-color 140ms ease;
   }
   .subtopic-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    border-color: var(--border-strong);
+  }
+  .subtopic-card:hover h3 {
+    text-decoration: underline;
   }
   .subtopic-card h3 {
     margin: 0 0 6px;
-    font-size: 1.15rem;
-    color: var(--forest);
+    font-size: var(--text-base);
   }
   .subtopic-card p {
     margin: 0;
-    color: var(--muted);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
     line-height: 1.4;
   }
 </style>
