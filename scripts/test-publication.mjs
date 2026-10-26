@@ -60,8 +60,10 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   for (const label of ['System Design', 'Platform Engineering', 'AI Engineering', 'Workshops', 'Projects']) {
     assert.ok(html.includes(label), `${path} must include the ${label} navigation item`);
   }
+  const primaryNav = html.match(/<nav[^>]*aria-label="Primary navigation"[^>]*>[\s\S]*?<\/nav>/)?.[0] ?? '';
+  assert.ok(primaryNav.includes('System Design'), `${path} primary navigation must be found to check its items`);
   for (const excluded of ['>Articles<', '>Series<', '>Writing<', '>Archetypes<']) {
-    assert.ok(!html.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
+    assert.ok(!primaryNav.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
   }
   assert.ok(html.includes('https://eiakoji.me'), `${path} must include the eiakoji.me return link in footer`);
   assert.ok(html.includes('src="/images/avatar.jpeg"'), `${path} must render the avatar brand image in header`);
