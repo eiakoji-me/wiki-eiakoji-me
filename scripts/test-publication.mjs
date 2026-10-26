@@ -102,7 +102,13 @@ async function testBuiltSite() {
   try {
     await waitForServer(preview);
     for (const page of expectedPages) {
-      const builtHtml = await readFile(page.file, 'utf8');
+      const builtHtml = await readFile(page.file, 'utf8').catch(() => {
+        assert.fail(
+          page.path.startsWith('/topics/') && page.path !== '/topics/'
+            ? `${page.path} was not built: the domain is missing from the dataset. Run npm run seed:domains (see README).`
+            : `${page.path} was not built (${page.file} is missing).`,
+        );
+      });
       assertPageMarkup(builtHtml, page);
       const response = await fetch(`${origin}${page.path}`);
       assert.equal(response.status, 200, `${page.path} must return HTTP 200`);
