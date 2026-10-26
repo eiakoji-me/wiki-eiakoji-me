@@ -8,6 +8,12 @@ const sanityClient = createClient({
 });
 
 export async function fetchContent<T>(query: string, params: QueryParams = {}): Promise<T> {
+  // Local fixture builds only (see README); never set in Netlify or CI.
+  const fixtures = process.env.WIKI_FIXTURES;
+  if (fixtures) {
+    const { queryFixtures } = await import('./fixtures/index.ts');
+    return queryFixtures<T>(fixtures, query, params);
+  }
   return sanityClient.fetch<T>(query, params);
 }
 

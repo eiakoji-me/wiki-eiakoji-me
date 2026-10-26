@@ -112,3 +112,13 @@ npm run verify
 
 The production dataset may be empty. In that state, the site intentionally
 builds useful empty pages rather than shipping fixture content.
+
+To check layouts against a populated taxonomy without touching Sanity, build
+from local fixtures into a scratch directory (never `dist/`):
+
+```sh
+WIKI_FIXTURES=full npx astro build --outDir /tmp/wiki-fixtures
+```
+
+`WIKI_FIXTURES` accepts `empty`, `partial`, or `full`, and runs the real queries
+against `src/lib/fixtures/` with `groq-js`. Never set it in Netlify or CI.

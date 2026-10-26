@@ -30,6 +30,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@types/node": "^26.6.5",
+    "groq-js": "^2.0.1",
     "typescript": "^6.0.3"
   }
 }

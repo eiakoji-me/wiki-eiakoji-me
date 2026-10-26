@@ -27,6 +27,7 @@ import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, validateTopicHier
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
 import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
 import { DOMAIN_SEEDS, planDomainSeed } from './domains.ts';
+import { queryFixtures } from '../src/lib/fixtures/index.ts';
 
 const origin = 'http://127.0.0.1:4322';
 const expectedPages = [
@@ -480,6 +481,21 @@ async function testUnitBehaviors() {
   assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-root') && w.includes('unclassified')), 'unclassified roots must be reported');
   assert.equal(DOMAIN_SEEDS.length, 3);
 
+  // 6c. The real queries, run against the full fixture, drive the same tree
+  const fixtureTopics = await queryFixtures('full', topicsListQuery);
+  assert.ok(fixtureTopics.every((t) => t.kind || t.slug === 'languages'), 'topicsListQuery must project kind');
+  assert.ok(!fixtureTopics.some((t) => t.slug === 'draft-only'), 'topic queries must exclude drafts');
+  const fixtureArticles = await queryFixtures('full', articlesQuery);
+  assert.ok(!fixtureArticles.some((a) => a.slug === 'future-post'), 'article queries must exclude future content');
+  const fixtureTree = buildTopicTree(fixtureTopics, fixtureArticles);
+  assert.deepEqual(fixtureTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering']);
+  assert.equal(fixtureTree.slugMap.get('system-design').rollupArticleCount, 2, 'domain rollups must count nested articles once');
+  assert.deepEqual(fixtureTree.excluded.map((e) => e.topic.slug), ['languages']);
+  const fixtureHome = await queryFixtures('full', homepageQuery);
+  assert.equal(fixtureHome.platformTopic?.slug, 'platform-engineering', 'homepage must find domains by kind');
+  assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
+  await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
+
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
   assert.equal(formatContentLabel('reading-note'), 'Reading Note');
@@ -578,6 +594,9 @@ async function testConfiguration() {
     'WikiLayout must pass articles to buildTopicTree for deduplicated rollups',
   );
   assert.ok(wikiLayout.includes('tree={navTree}'), 'WikiLayout must pass the shared tree to LeftNav');
+  for (const file of ['netlify.toml', '.env.example', '.github/workflows/ci.yml', 'package.json']) {
+    assert.ok(!(await readFile(file, 'utf8')).includes('WIKI_FIXTURES'), `${file} must not enable fixture content`);
+  }
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
   }
