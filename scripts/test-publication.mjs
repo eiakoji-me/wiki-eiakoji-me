@@ -629,6 +629,8 @@ async function testConfiguration() {
     assert.ok(!source.includes('/topics/${'), `${file} must build topic links with topicHref so excluded topics are not linked`);
     assert.ok(source.includes('topicHref('), `${file} must use topicHref`);
   }
+  const articlePage = await readFile('src/pages/articles/[slug].astro', 'utf8');
+  assert.ok(!/<span class="(primary|related)-topic-link"/.test(articlePage), 'unlinked topics must not use link styling');
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
   }

@@ -85,7 +85,7 @@ if (article.primaryTopic?.slug) {
               {article.primaryTopic.title}
             </a>
           ) : (
-            <span class="primary-topic-link">{article.primaryTopic.title}</span>
+            <span class="primary-topic-text">{article.primaryTopic.title}</span>
           )}
           {article.relatedTopics && article.relatedTopics.length > 0 && (
             <>
@@ -97,7 +97,7 @@ if (article.primaryTopic?.slug) {
                     {rel.title}
                   </a>
                 ) : (
-                  <span class="related-topic-link">{rel.title}</span>
+                  <span class="related-topic-text">{rel.title}</span>
                 )
               )}
             </>
@@ -223,6 +223,14 @@ if (article.primaryTopic?.slug) {
   .related-topic-link {
     color: var(--link);
     text-decoration: none;
+  }
+  /* Topics without a hub page are named but not linked. */
+  .primary-topic-text {
+    font-weight: 500;
+    color: var(--text);
+  }
+  .related-topic-text {
+    color: var(--text);
   }
   .primary-topic-link:hover, .related-topic-link:hover {
     color: var(--link-hover);
