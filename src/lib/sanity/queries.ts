@@ -53,7 +53,7 @@ export const projectsQuery = `*[_type == "project" && ${publishedDocument}] | or
 
 export const seriesListQuery = `*[_type == "series" && ${publicDocument}] | order(title asc) {
   ${summaryFields},
-  "publishedArticleCount": count(articles[]->[_type == "article" && ${publishedDocument}])
+  "publishedArticleCount": count((articles[]->)[_type == "article" && ${publishedDocument}])
 }`;
 
 export const articleSlugsQuery = `*[_type == "article" && ${publishedDocument}].slug.current`;
@@ -120,7 +120,7 @@ export const articleBySlugQuery = `*[_type == "article" && slug.current == $slug
     title,
     "slug": slug.current,
     "articles": coalesce(
-      articles[]->[_type == "article" && ${publishedDocument}] {
+      (articles[]->)[_type == "article" && ${publishedDocument}] {
         _id,
         title,
         "slug": slug.current,
@@ -138,7 +138,7 @@ export const projectBySlugQuery = `*[_type == "project" && slug.current == $slug
 export const seriesBySlugQuery = `*[_type == "series" && slug.current == $slug && ${publicDocument}][0] {
   ${summaryFields}, seo,
   "articles": coalesce(
-    articles[]->[_type == "article" && ${publishedDocument}] {${summaryFields}},
+    (articles[]->)[_type == "article" && ${publishedDocument}] {${summaryFields}},
     []
   )
 }`;

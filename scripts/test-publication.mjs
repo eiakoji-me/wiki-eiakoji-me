@@ -496,6 +496,16 @@ async function testUnitBehaviors() {
   assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
   await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
 
+  // Filtering a dereferenced array must filter the array, not each element
+  const fixtureArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'raft-log-replication' });
+  assert.deepEqual(fixtureArticle.series.articles.map((a) => a?.slug), ['raft-log-replication'], 'article series must list published articles');
+  const fixtureSeries = await queryFixtures('full', seriesListQuery);
+  assert.equal(fixtureSeries[0].publishedArticleCount, 1, 'series counts must count published articles');
+  assert.deepEqual(
+    (await queryFixtures('full', seriesBySlugQuery, { slug: 'consensus-from-scratch' })).articles.map((a) => a?.slug),
+    ['raft-log-replication'],
+  );
+
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
   assert.equal(formatContentLabel('reading-note'), 'Reading Note');
