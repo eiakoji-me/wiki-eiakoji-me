@@ -94,7 +94,6 @@ code, pre, kbd { font-family: var(--font-mono); }
 .site-header { position: relative; border-bottom: 1px solid var(--border); background: var(--background); }
 .header-inner { min-height: var(--header-height); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; flex-shrink: 0; }
-.brand:hover { text-decoration: underline; }
 .brand-avatar { display: block; width: 34px; height: 34px; min-width: 34px; min-height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
 .nav-toggle { display: none; }
 .primary-nav ul { display: flex; gap: 22px; padding: 0; margin: 0; list-style: none; }
