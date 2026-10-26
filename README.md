@@ -51,10 +51,28 @@ The initial content model contains:
 
 - `article` — long-form technical writing, optionally attached to a series;
 - `project` — project case studies and implementation notes;
-- `series` — ordered collections of related articles.
+- `series` — ordered collections of related articles;
+- `topic` — the taxonomy. Each topic has a `kind`: a `domain` is a top-level
+  area with no parent, and a `topic` sits under a domain or another topic. The
+  left navigation is built from this tree, and topics outside it are left out
+  and reported during the build.
 
 Sanity's native draft/published lifecycle controls visibility. Public queries
 also require a slug and a publication date that is not in the future.
+
+### Seeding domains
+
+The header links to the System Design, Platform Engineering, and AI Engineering
+domains, so those documents must exist before the site builds them. Seed them
+with a token that has write access, kept only in your shell:
+
+```sh
+npm run seed:domains -- --dataset production --dry-run
+SANITY_WRITE_TOKEN=... npm run seed:domains -- --dataset production --write
+```
+
+The seed creates or corrects the three domains, never deletes, and never
+replaces a summary written in Studio. Running it again reports no changes.
 
 ## Commands
 

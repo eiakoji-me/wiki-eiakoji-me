@@ -26,6 +26,7 @@ import { extractHeadings } from '../src/lib/slugify.ts';
 import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
 import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
+import { DOMAIN_SEEDS, planDomainSeed } from './domains.ts';
 
 const origin = 'http://127.0.0.1:4322';
 const expectedPages = [
@@ -430,6 +431,54 @@ async function testUnitBehaviors() {
   assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'domain'], cycle: true }), 'Circular parent reference detected in topic hierarchy.');
   assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'topic'] }), 'A topic must sit under a domain.');
   assert.equal(topicPlacementError({ kind: 'area', hasParent: false, ancestorKinds: [] }), 'Choose whether this is a Domain or a Topic.');
+
+  // 6b. Domain seed planning is idempotent, preserves editor summaries, and never deletes
+  const applySeed = (docs, plan) => {
+    const store = new Map(docs.map((doc) => [doc._id, { ...doc }]));
+    for (const mutation of plan.mutations) {
+      if (mutation.createIfNotExists) {
+        const { slug, ...rest } = mutation.createIfNotExists;
+        if (!store.has(rest._id)) store.set(rest._id, { ...rest, slug: slug.current, hasParent: false });
+      } else {
+        const { id, set } = mutation.patch;
+        const next = { ...store.get(id), ...set };
+        if (set.slug) next.slug = set.slug.current;
+        store.set(id, next);
+      }
+    }
+    return [...store.values()];
+  };
+  const firstPlan = planDomainSeed([]);
+  assert.ok(firstPlan.mutations.every((m) => 'createIfNotExists' in m || 'patch' in m), 'the seed may only create or patch');
+  assert.equal(firstPlan.mutations.length, 3, 'an empty dataset must plan three domain creates');
+  assert.deepEqual(
+    firstPlan.mutations.map((m) => m.createIfNotExists._id),
+    ['domain-system-design', 'domain-platform-engineering', 'domain-ai-engineering'],
+  );
+  assert.ok(firstPlan.mutations.every((m) => m.createIfNotExists.kind === 'domain'), 'seeded documents must be domains');
+  const seeded = applySeed([], firstPlan);
+  assert.equal(planDomainSeed(seeded).mutations.length, 0, 'a second seed run must plan no changes');
+
+  const edited = seeded.map((doc) =>
+    doc._id === 'domain-system-design' ? { ...doc, title: 'Systems', summary: 'Written by an editor in Studio.' } : doc,
+  );
+  const repairPlan = planDomainSeed(edited);
+  assert.deepEqual(repairPlan.mutations, [{ patch: { id: 'domain-system-design', set: { title: 'System Design' } } }], 'only drifted canonical fields may be patched');
+  assert.equal(
+    applySeed(edited, repairPlan).find((doc) => doc._id === 'domain-system-design').summary,
+    'Written by an editor in Studio.',
+    'the seed must not replace an editor-written summary',
+  );
+
+  const legacy = [
+    { _id: 'legacy-sd', title: 'System Design (old)', slug: 'system-design' },
+    { _id: 'legacy-root', title: 'Languages', slug: 'languages' },
+  ];
+  const legacyPlan = planDomainSeed(legacy);
+  assert.equal(legacyPlan.mutations.length, 2, 'a slug already in use must not be seeded twice');
+  assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-sd') && w.includes('system-design')), 'slug conflicts must be reported');
+  assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-root') && w.includes('unclassified')), 'unclassified roots must be reported');
+  assert.equal(DOMAIN_SEEDS.length, 3);
 
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
