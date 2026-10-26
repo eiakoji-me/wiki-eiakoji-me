@@ -23,7 +23,7 @@ import {
 } from '../src/lib/sanity/queries.ts';
 import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
-import { buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
+import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
 import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
 
@@ -140,6 +140,16 @@ async function testSanityQueries() {
     assert.ok(query.includes('publishedAt <= now()'), 'published article/project queries must exclude future content');
   }
 
+  for (const query of [topicsListQuery, topicBySlugQuery, wikiNavQuery]) {
+    assert.match(query, /"slug": slug\.current,\n\s+kind,/, 'topic queries must project kind');
+  }
+  for (const domain of ['system-design', 'platform-engineering', 'ai-engineering']) {
+    assert.ok(homepageQuery.includes(`kind == "domain" && slug.current == "${domain}"`), `homepage must select the ${domain} domain by kind`);
+  }
+  for (const alias of ['systems-design', 'cloud-platform', '"cloud"', 'ai-systems', '"ai"', 'multi-agent-systems']) {
+    assert.ok(!homepageQuery.includes(alias), `homepage must not match legacy domain alias ${alias}`);
+  }
+
   assert.ok(
     articleBySlugQuery.includes('"series": *[_type == "series" && ^._id in articles[]._ref'),
     'article detail query must resolve series via reverse lookup from series.articles',
@@ -219,17 +229,17 @@ async function testUnitBehaviors() {
     'validation errors must report circular reference',
   );
 
-  // Verify runtime tree builder breaks cycles and strips invalid parent metadata
-  const cycleTree = buildTopicTree(multiHopCycleTopics);
-  for (const node of cycleTree.rootTopics) {
-    assert.equal(node.topic.parent, undefined, 'cycle members promoted to root must have invalid parent stripped');
-  }
+  // Verify the runtime tree builder excludes cycle members instead of promoting them to roots
+  const cycleTree = buildTopicTree(multiHopCycleTopics.map((t) => ({ ...t, kind: 'topic' })));
+  assert.equal(cycleTree.rootTopics.length, 0, 'cycle members must not become roots');
+  assert.deepEqual(cycleTree.excluded.map((e) => e.topic._id).sort(), ['t-a', 't-b', 't-c'], 'cycle members must be excluded');
+  assert.ok(cycleTree.excluded.every((e) => e.reason.includes('Circular')), 'cycle exclusions must explain the cycle');
 
   // 3. Test Rollup Deduplication (prevent double counting an article in primary + related topics)
   const hierarchyTopics = [
-    { _id: 't-root', _type: 'topic', title: 'Architecture', slug: 'architecture', summary: 'Root domain' },
-    { _id: 't-child', _type: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', summary: 'Subtopic', parent: { _id: 't-root', title: 'Architecture', slug: 'architecture' } },
-    { _id: 't-leaf', _type: 'topic', title: 'Consensus', slug: 'consensus', summary: 'Leaf topic', parent: { _id: 't-child', title: 'Distributed Systems', slug: 'distributed-systems' } },
+    { _id: 't-root', _type: 'topic', kind: 'domain', title: 'Architecture', slug: 'architecture', summary: 'Root domain' },
+    { _id: 't-child', _type: 'topic', kind: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', summary: 'Subtopic', parent: { _id: 't-root', title: 'Architecture', slug: 'architecture' } },
+    { _id: 't-leaf', _type: 'topic', kind: 'topic', title: 'Consensus', slug: 'consensus', summary: 'Leaf topic', parent: { _id: 't-child', title: 'Distributed Systems', slug: 'distributed-systems' } },
   ];
 
   // Article assigned to Leaf as primary AND Parent as related
@@ -278,10 +288,10 @@ async function testUnitBehaviors() {
 
   // 5. Test 4-level deep hierarchy and breadcrumbs
   const fourLevelTopics = [
-    { _id: 'l1', _type: 'topic', title: 'Engineering', slug: 'engineering' },
-    { _id: 'l2', _type: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', parent: { _id: 'l1', title: 'Engineering', slug: 'engineering' } },
-    { _id: 'l3', _type: 'topic', title: 'Storage Engines', slug: 'storage-engines', parent: { _id: 'l2', title: 'Distributed Systems', slug: 'distributed-systems' } },
-    { _id: 'l4', _type: 'topic', title: 'LSM Trees', slug: 'lsm-trees', parent: { _id: 'l3', title: 'Storage Engines', slug: 'storage-engines' } },
+    { _id: 'l1', _type: 'topic', kind: 'domain', title: 'Engineering', slug: 'engineering' },
+    { _id: 'l2', _type: 'topic', kind: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', parent: { _id: 'l1', title: 'Engineering', slug: 'engineering' } },
+    { _id: 'l3', _type: 'topic', kind: 'topic', title: 'Storage Engines', slug: 'storage-engines', parent: { _id: 'l2', title: 'Distributed Systems', slug: 'distributed-systems' } },
+    { _id: 'l4', _type: 'topic', kind: 'topic', title: 'LSM Trees', slug: 'lsm-trees', parent: { _id: 'l3', title: 'Storage Engines', slug: 'storage-engines' } },
   ];
   const fourLevelTree = buildTopicTree(fourLevelTopics);
   const crumbs = getTopicBreadcrumbs('lsm-trees', fourLevelTree);
@@ -291,6 +301,54 @@ async function testUnitBehaviors() {
   assert.equal(crumbs[2].label, 'Distributed Systems');
   assert.equal(crumbs[3].label, 'Storage Engines');
   assert.equal(crumbs[4].label, 'LSM Trees');
+
+  // 5b. Domain-rooted tree: only domains are roots, ordering, exclusions, and navigation groups
+  const ref = (id) => ({ _id: id, title: id, slug: id });
+  const taxonomy = [
+    { _id: 'd-ai', _type: 'topic', kind: 'domain', title: 'AI Engineering', slug: 'ai-engineering', order: 3 },
+    { _id: 'd-sd', _type: 'topic', kind: 'domain', title: 'System Design', slug: 'system-design', order: 1 },
+    { _id: 'd-pe', _type: 'topic', kind: 'domain', title: 'Platform Engineering', slug: 'platform-engineering', order: 2 },
+    { _id: 't-z', _type: 'topic', kind: 'topic', title: 'Zookeeper', slug: 'zookeeper', parent: ref('d-sd') },
+    { _id: 't-c', _type: 'topic', kind: 'topic', title: 'Caching', slug: 'caching', parent: ref('d-sd'), order: 1 },
+    { _id: 't-b', _type: 'topic', kind: 'topic', title: 'Batching', slug: 'batching', parent: ref('d-sd'), order: 1 },
+    { _id: 't-deep', _type: 'topic', kind: 'topic', title: 'Write-through', slug: 'write-through', parent: ref('t-c') },
+    { _id: 'legacy', _type: 'topic', title: 'Legacy Root', slug: 'legacy-root' },
+    { _id: 't-orphan', _type: 'topic', kind: 'topic', title: 'Orphan', slug: 'orphan', parent: ref('missing') },
+    { _id: 't-under-legacy', _type: 'topic', kind: 'topic', title: 'Under Legacy', slug: 'under-legacy', parent: ref('legacy') },
+    { _id: 'd-bad', _type: 'topic', kind: 'domain', title: 'Nested Domain', slug: 'nested-domain', parent: ref('d-sd') },
+    { _id: 't-under-bad', _type: 'topic', kind: 'topic', title: 'Under Nested Domain', slug: 'under-nested-domain', parent: ref('d-bad') },
+  ];
+  const domainTree = buildTopicTree(taxonomy, [
+    { _id: 'a-1', _type: 'article', title: 'A', slug: 'a', summary: 's', primaryTopic: ref('t-deep') },
+  ]);
+  assert.deepEqual(domainTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering'], 'roots must be domains ordered by order');
+  assert.deepEqual(
+    domainTree.nodeMap.get('d-sd').children.map((n) => n.topic.slug),
+    ['batching', 'caching', 'zookeeper'],
+    'children must be ordered by order, then title',
+  );
+  assert.deepEqual(
+    domainTree.excluded.map((e) => e.topic._id).sort(),
+    ['d-bad', 'legacy', 't-orphan', 't-under-bad', 't-under-legacy'],
+    'unclassified, orphaned, and misplaced topics must be excluded',
+  );
+  assert.ok(!domainTree.slugMap.has('legacy-root'), 'excluded topics must not be routable through the tree');
+  assert.equal(domainTree.nodeMap.get('d-sd').rollupArticleCount, 1, 'domain rollups must include nested topic articles');
+  assert.deepEqual(
+    getTopicBreadcrumbs('write-through', domainTree).map((c) => c.label),
+    ['Topics', 'System Design', 'Caching', 'Write-through'],
+    'breadcrumbs must follow the domain tree',
+  );
+  const domainValidation = validateTopicHierarchy(taxonomy);
+  for (const expected of ['Legacy Root', 'Nested Domain', 'Under Legacy']) {
+    assert.ok(domainValidation.errors.some((err) => err.includes(expected)), `validateTopicHierarchy must report ${expected}`);
+  }
+
+  const nav = buildNavigation(domainTree, 'articles');
+  assert.equal(nav.domains, domainTree.rootTopics, 'navigation must start from the domain tree');
+  assert.deepEqual(nav.browse.map((l) => l.href), ['/topics/', '/articles/', '/series/'], 'browse links must not include projects');
+  assert.deepEqual(nav.browse.map((l) => l.active), [false, true, false], 'the current browse destination must be active');
+  assert.equal(buildNavigation(buildTopicTree([])).domains.length, 0, 'an empty taxonomy must yield no domains');
 
   // 6. Test validateTopicParent in Studio schema validation (including failure and error paths)
   const selfRefResult = await validateTopicParent({ _ref: 't-self' }, { document: { _id: 't-self' } });
@@ -467,12 +525,15 @@ async function testConfiguration() {
     'topics index must pass articles to buildTopicTree for deduplicated rollups',
   );
   assert.ok(
-    leftNavComponent.includes('buildTopicTree(topics, articles)'),
-    'LeftNav must pass articles to buildTopicTree for deduplicated rollups',
+    wikiLayout.includes("buildTopicTree(navData?.topics ?? [], navData?.articles ?? [])"),
+    'WikiLayout must pass articles to buildTopicTree for deduplicated rollups',
   );
+  assert.ok(wikiLayout.includes('tree={navTree}'), 'WikiLayout must pass the shared tree to LeftNav');
+  assert.ok(leftNavComponent.includes('buildNavigation(tree, currentSlug)'), 'LeftNav must render from buildNavigation');
+  assert.ok(!leftNavComponent.includes('Sections') && !leftNavComponent.includes('/projects/'), 'LeftNav must not keep the Sections block or a Projects link');
   assert.ok(
-    wikiLayout.includes('articles={navData?.articles}'),
-    'WikiLayout must pass navData.articles to LeftNav',
+    leftNavComponent.indexOf('Domains') < leftNavComponent.indexOf('Browse'),
+    'LeftNav must list domains before the Browse group',
   );
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'repositoryUrl', 'projectUrl']) {
     assert.ok(projectSchema.includes(`name: '${field}'`), `project schema must define ${field}`);

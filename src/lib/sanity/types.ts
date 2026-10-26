@@ -1,3 +1,4 @@
+import type { TopicKind } from '../taxonomy.ts';
 import type { PortableTextBlock } from '@portabletext/types';
 import type { SanityImageSource } from '@sanity/image-url';
 
@@ -60,7 +61,7 @@ export interface Topic {
   _type: 'topic';
   title: string;
   slug: string;
-  domain?: string;
+  kind?: TopicKind;
   summary: string;
   description?: BodyBlock[];
   icon?: string;
@@ -70,6 +71,7 @@ export interface Topic {
     _id: string;
     title: string;
     slug: string;
+    kind?: TopicKind;
   };
   articleCount?: number;
 }

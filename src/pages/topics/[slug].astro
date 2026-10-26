@@ -65,7 +65,7 @@ const topicArticles = allArticles.filter((article) =>
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="badge">{topic.parent ? 'Subtopic' : 'Domain / Root Topic'}</span>
+        <span class="badge">{topic.kind === 'domain' ? 'Domain' : 'Topic'}</span>
         {topic.parent && (
           <span>Part of <a href={`/topics/${topic.parent.slug}/`}>{topic.parent.title}</a></span>
         )}
@@ -83,13 +83,13 @@ const topicArticles = allArticles.filter((article) =>
       </section>
     )}
 
-    {topic.subtopics && topic.subtopics.length > 0 && (
+    {currentNode && currentNode.children.length > 0 && (
       <section class="section subtopics-section" aria-label="Subtopics">
         <div class="section-header">
           <h2>Subtopics</h2>
         </div>
         <div class="subtopics-grid">
-          {topic.subtopics.map((sub) => (
+          {currentNode.children.map(({ topic: sub }) => (
             <a href={`/topics/${sub.slug}/`} class="subtopic-card">
               <h3>{sub.title}</h3>
               {sub.summary && <p>{sub.summary}</p>}
