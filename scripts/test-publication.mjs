@@ -77,6 +77,15 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
       assert.ok(!leftNav.includes(removed), `${path} left nav must not contain ${removed}`);
     }
   }
+  const footer = html.match(/<footer class="site-footer"[\s\S]*?<\/footer>/)?.[0] ?? '';
+  assert.ok(footer.includes(`© ${new Date().getFullYear()} Eiakoji`), `${path} footer must show the build-year copyright line`);
+  assert.match(
+    footer,
+    /<a href="https:\/\/eiakoji\.me" aria-label="Visit personal website at eiakoji\.me"/,
+    `${path} footer must keep the labelled eiakoji.me link`,
+  );
+  assert.equal(footer.match(/<a /g)?.length, 1, `${path} footer must contain only the eiakoji.me link`);
+  assert.ok(!footer.includes('Notes from building, testing, and learning in public.'), `${path} footer must drop the old tagline`);
   assert.ok(html.includes('src="/images/avatar.jpeg"'), `${path} must render the avatar brand image in header`);
 
   if (requiredText) {
