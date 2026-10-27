@@ -1,0 +1,1594 @@
+{
+  "_id": "drafts.article-ai-execution-environment-architecture",
+  "_type": "article",
+  "title": "Architecture of an Issue-Driven AI Execution Environment",
+  "slug": {
+    "_type": "slug",
+    "current": "ai-execution-environment-architecture"
+  },
+  "format": "article",
+  "summary": "How isolated runtimes, durable work-item state, identity boundaries, and bounded agent workflows turn external issues into reviewed changes across independent repositories.",
+  "difficulty": "Advanced",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "domain-platform-engineering"
+  },
+  "relatedTopics": [
+    {
+      "_key": "related-ai-engineering",
+      "_type": "reference",
+      "_ref": "domain-ai-engineering"
+    },
+    {
+      "_key": "related-system-design",
+      "_type": "reference",
+      "_ref": "domain-system-design"
+    }
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/ai-execution-environment",
+  "technologies": [
+    "Docker",
+    "Dev Containers",
+    "Git worktrees",
+    "GitHub CLI",
+    "Shell",
+    "Astro",
+    "Sanity"
+  ],
+  "seo": {
+    "_type": "seo",
+    "title": "Issue-Driven AI Execution Environment Architecture",
+    "description": "A practical architecture for isolated agent runtimes, durable workflow state, credential boundaries, and bounded issue-to-PR automation."
+  },
+  "publishedAt": "2026-10-27T17:03:11.012Z",
+  "featuredImage": {
+    "_type": "imageWithAlt",
+    "asset": {
+      "_type": "reference",
+        "_ref": "image-ef80ca2643564f2c885fda2cd9b27b5278d36cd0-2300x3022-png"
+    },
+    "alt": "High-level design of the AI Execution Environment showing its control plane, storage boundaries, context and state model, and bounded runtime pool.",
+    "caption": "The AI Execution Environment separates orchestration, durable state, isolated storage, and containerized execution. View the editable source in the project repository."
+  },
+  "body": [
+    {
+      "_type": "block",
+      "_key": "b-000-e01ac9154687",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-000-e01ac9154687-s0",
+          "text": "The first coding-agent task is usually straightforward: open a repository, ask for a change, inspect the diff, and decide whether to keep it. The architecture problem appears with the second repository, the second ticket, or the second identity.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-001-0bd6d8fba62d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-001-0bd6d8fba62d-s0",
+          "text": "Which checkout is canonical? Where should unfinished work survive after a conversation ends? Which account is allowed to push? Can two tasks safely share a container? What prevents a testing and review loop from running forever? A capable model does not answer these operational questions by itself.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-002-485c25f47ae6",
+      "style": "normal",
+      "markDefs": [
+        {
+          "_type": "link",
+          "_key": "b-002-485c25f47ae6-link0",
+          "href": "https://github.com/eiakoji-me/ai-execution-environment"
+        }
+      ],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-002-485c25f47ae6-s0",
+          "text": "The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-002-485c25f47ae6-s1",
+          "text": "AI Execution Environment",
+          "marks": [
+            "b-002-485c25f47ae6-link0"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-002-485c25f47ae6-s2",
+          "text": " (AEE) is my attempt to make those boundaries explicit. It is a workspace control plane for issue-driven work across independent projects. Agents remain replaceable interfaces. Repositories, work-item state, runtimes, and identities receive durable contracts.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-003-bad1819623a8",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-003-bad1819623a8-s0",
+          "text": "The problem is execution, not code generation",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-004-3c7644d16ef9",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-004-3c7644d16ef9-s0",
+          "text": "Most agent demonstrations begin after the difficult decisions have already been made. The repository is selected, credentials are available, the branch exists, and the task has enough context. A long-running personal or team environment cannot assume any of those conditions.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-005-ae7949eaebfe",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-005-ae7949eaebfe-s0",
+          "text": "A useful execution platform has to answer four questions before an agent changes code:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-006-f091b6f68e68",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-006-f091b6f68e68-s0",
+          "text": "Where may this task write?",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-006-f091b6f68e68-s1",
+          "text": " A human's canonical checkout should not become an agent scratch space.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-007-7dc0329e7f91",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-007-7dc0329e7f91-s0",
+          "text": "What survives interruption?",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-007-7dc0329e7f91-s1",
+          "text": " Conversation history is too volatile to be workflow state.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-008-0d9c1cd01b0f",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-008-0d9c1cd01b0f-s0",
+          "text": "Whose authority does the task use?",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-008-0d9c1cd01b0f-s1",
+          "text": " The active host login may belong to the wrong account or trust domain.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-009-83b27ed8dfb0",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-009-83b27ed8dfb0-s0",
+          "text": "How does work terminate?",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-009-83b27ed8dfb0-s1",
+          "text": " Testing, review, and CI feedback need bounded return paths and a human escape hatch.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-010-297a3bf495e9",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-010-297a3bf495e9-s0",
+          "text": "AEE treats these as architectural constraints rather than prompt instructions. Prompts still describe intent, but filesystem layout, runtime assignment, state files, and identity wrappers enforce the operating model.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-011-85f1faf11ea2",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-011-85f1faf11ea2-s0",
+          "text": "A four-part mental model",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-012-4af4bda22aa6",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-012-4af4bda22aa6-s0",
+          "text": "The system is easiest to understand as four cooperating domains.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-013-ae289cd095b6",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-013-ae289cd095b6-s0",
+          "text": "Control plane",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-014-492c834fb7fc",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-014-492c834fb7fc-s0",
+          "text": "The control plane contains the unified ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-014-492c834fb7fc-s1",
+          "text": "aee",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-014-492c834fb7fc-s2",
+          "text": " command, agent interfaces, provider intake, the ticket coordinator, and the workflow stages. Its job is to decide what should happen next and to invoke the correct subsystem. It does not turn the entire workspace into one application repository.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-015-f94c90555f43",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-015-f94c90555f43-s0",
+          "text": "Antigravity, Claude Code, and Codex can all enter through different interfaces while following the same stage contracts. That makes the model or assistant an interchangeable participant rather than the keeper of system state.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-016-0029cbba41c7",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-016-0029cbba41c7-s0",
+          "text": "Data plane",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-017-57baa9b08d52",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-017-57baa9b08d52-s0",
+          "text": "The data plane is the execution engine: a host or VM running Docker and the Dev Container CLI, plus a bounded pool of task-specific containers. Each active worktree receives one exclusive container slot. The default pool holds five assignments, so a sixth concurrent start fails visibly instead of silently sharing or overcommitting a runtime.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-018-65b6d229bdcb",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-018-65b6d229bdcb-s0",
+          "text": "Containers reuse a common built image, but they are not copies of one another. Their worktree mount, runtime state, and credential boundary belong to one work item.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-019-3e0c41e47005",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-019-3e0c41e47005-s0",
+          "text": "Storage boundaries",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-020-6581d9abd662",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s0",
+          "text": "Source code, task memory, and disposable execution state have different lifetimes, so AEE stores them separately. Canonical repositories live under ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s1",
+          "text": "repos/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s2",
+          "text": ", durable work items under ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s3",
+          "text": "workspaces/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s4",
+          "text": ", and disposable checkouts under ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s5",
+          "text": "worktrees/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s6",
+          "text": ". Host-local identities live under ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s7",
+          "text": ".local/state/identities/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-6581d9abd662-s8",
+          "text": " and are never tracked.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-021-5dc664998c69",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-021-5dc664998c69-s0",
+          "text": "Context and state",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-022-e1ca49f4dab4",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-022-e1ca49f4dab4-s0",
+          "text": "Pipeline state answers questions such as “which stage is next?” and “has review passed?” Session context answers a different question: “which facts and recent turns should be loaded into the current prompt?” Separating those responsibilities prevents context-window management from becoming a workflow database.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-023-d55f881f738e",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-023-d55f881f738e-s0",
+          "text": "From an issue to an isolated runtime",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-024-6417c3b9aed0",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-024-6417c3b9aed0-s0",
+          "text": "Today, the normal entry point is an existing external issue. The provider adapter reads the issue and normalizes it into a stable shape containing the source, key, repository, title, body, labels, and original payload. Downstream stages do not need to know whether the ticket came from a particular tracker.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-025-6dadc221c118",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-025-6dadc221c118-s0",
+          "text": "The workspace scaffolder then performs a deterministic sequence:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-026-f163c15d504d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-026-f163c15d504d-s0",
+          "text": "Resolve the project from ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-026-f163c15d504d-s1",
+          "text": "config/projects.json",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-026-f163c15d504d-s2",
+          "text": ".",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-027-58452c88c238",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-027-58452c88c238-s0",
+          "text": "Resolve the repository and issue identities.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-028-1f9ad3918e80",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-028-1f9ad3918e80-s0",
+          "text": "Create the durable work-item directory and initial state files.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-029-c70358540555",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-029-c70358540555-s0",
+          "text": "Synchronize the canonical repository using fetch-only behavior.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-030-69f2d8038386",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-030-69f2d8038386-s0",
+          "text": "Resolve the remote's current default branch.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-031-35c42b7cab04",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-031-35c42b7cab04-s0",
+          "text": "Create a task branch explicitly from ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-35c42b7cab04-s1",
+          "text": "origin/<default>",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-35c42b7cab04-s2",
+          "text": ".",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-032-3b7306602f01",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-032-3b7306602f01-s0",
+          "text": "Create or reuse the disposable Git worktree.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-033-0977f8302a87",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-033-0977f8302a87-s0",
+          "text": "Claim an available runtime-pool slot and start its container.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-034-ce567e7d6251",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-034-ce567e7d6251-s0",
+          "text": "The explicit upstream start point matters. A branch must not accidentally inherit the canonical checkout's current ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-034-ce567e7d6251-s1",
+          "text": "HEAD",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-034-ce567e7d6251-s2",
+          "text": ", which may be stale, detached, or on an unrelated human branch. Fetching may update remote-tracking references and ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-034-ce567e7d6251-s3",
+          "text": "origin/HEAD",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-034-ce567e7d6251-s4",
+          "text": ", but it never checks out, merges, resets, or rewrites the canonical working tree.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-035-206761d564d0",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-035-206761d564d0-s0",
+          "text": "Three storage lifetimes",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-036-226503fd3d83",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-036-226503fd3d83-s0",
+          "text": "The separation between repositories, workspaces, and worktrees is the core invariant.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-037-a334765a875e",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-037-a334765a875e-s0",
+          "text": "Canonical repository",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-038-0280a353279a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-038-0280a353279a-s0",
+          "text": "repos/<project>/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-038-0280a353279a-s1",
+          "text": " is the stable local clone. It owns the Git object database and can still be used independently by a human. Platform synchronization is fetch-only, so automation does not take control of its index or working tree.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-039-05bdf47f3691",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-039-05bdf47f3691-s0",
+          "text": "Durable work item",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-040-c990392c7406",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-040-c990392c7406-s0",
+          "text": "workspaces/<workspace>/<item>/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-040-c990392c7406-s1",
+          "text": " outlives the agent session, container, and disposable checkout. It contains the normalized ticket, structured pipeline state, the latest narrative checkpoint, transition history, stage artifacts, and context-memory partitions.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-041-16f2d60e4313",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-041-16f2d60e4313-s0",
+          "text": "Stopping a runtime preserves this directory, the branch, the worktree, the container, and its assigned slot. Closing a work item happens only after safety checks; it removes disposable runtime resources and records whether the item was merged or abandoned while retaining the durable evidence.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-042-fc804a68ea55",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-042-fc804a68ea55-s0",
+          "text": "Disposable worktree",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-043-89b9a44917db",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-043-89b9a44917db-s0",
+          "text": "worktrees/<item>/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-043-89b9a44917db-s1",
+          "text": " is the only project checkout exposed as the task's writable workspace. Its Git administrative paths are relative, and the runtime receives access to the canonical repository's common Git directory so ordinary Git operations still work. Closing the item removes the worktree without erasing its commits or durable work-item record.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-044-ff6bba97ac74",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-044-ff6bba97ac74-s0",
+          "text": "This model allows two tasks in the same repository—and tasks from entirely different repositories—to run concurrently without sharing a checkout or container.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-045-5673d913fea0",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-045-5673d913fea0-s0",
+          "text": "A bounded agent pipeline",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "imageWithAlt",
+      "_key": "image-agent-pipeline",
+      "asset": {
+        "_type": "reference",
+          "_ref": "image-599b4eab334f71162a2bac97ad41b8040ee73edd-2677x2089-png"
+      },
+      "alt": "Issue-driven agent pipeline showing intake and definition, a bounded implementation, testing and review loop, pull-request stages, and the durable handoff contract.",
+      "caption": "The issue-driven pipeline uses deterministic stages, bounded feedback loops, and durable file handoffs. View the editable source in the project repository."
+    },
+    {
+      "_type": "block",
+      "_key": "b-047-22dbe25c1502",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-047-22dbe25c1502-s0",
+          "text": "The pipeline is deliberately staged. Refinement turns a ticket into scope and acceptance criteria. Solution design turns that definition into an executable plan. Implementation changes the worktree. Testing records evidence. Code review compares the result with the original intent and architectural boundaries. PR creation and maintenance publish the branch and respond to CI or reviewer feedback. Closure releases disposable resources.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-048-90c4ef84af0d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-048-90c4ef84af0d-s0",
+          "text": "Each stage has one primary responsibility and one durable handoff. The ticket coordinator is not another implementation agent. It reads persistent state, reports the current position, and advances the next eligible stage.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-049-c2f8eedf5208",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-049-c2f8eedf5208-s0",
+          "text": "Testing or review can return work to implementation, but the return path is bounded. The default state model allows three attempts for implementation, testing, and review loops. Reaching the limit blocks the work item for human judgment rather than asking an agent to repeat itself indefinitely.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-050-35aad750b83d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-050-35aad750b83d-s0",
+          "text": "That distinction matters. Automation should make progress when evidence supports another attempt; it should stop when the system no longer has a justified next action.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-051-4faa15b2c257",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-051-4faa15b2c257-s0",
+          "text": "Durable state without conversation dependence",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-052-04b02b0e69d9",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-052-04b02b0e69d9-s0",
+          "text": "Every work item carries four stage-handoff primitives:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-053-05bbabd0724d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-053-05bbabd0724d-s0",
+          "text": "meta.json",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-053-05bbabd0724d-s1",
+          "text": " stores machine-readable lifecycle state, gates, loop counters, branch and PR references, CI status, blocking state, and runtime pointers.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-054-764cb8e0dcc7",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-054-764cb8e0dcc7-s0",
+          "text": "session-state.md",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-764cb8e0dcc7-s1",
+          "text": " is the latest human-readable checkpoint: status, next action, open questions, decisions, and files in flight.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-055-71128680c7e0",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-055-71128680c7e0-s0",
+          "text": "history.log",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-055-71128680c7e0-s1",
+          "text": " is the append-only transition trail.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-056-790143683f43",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-056-790143683f43-s0",
+          "text": "artifacts/",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-056-790143683f43-s1",
+          "text": " contains refined requirements, design plans, test summaries, and review evidence.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-057-cab62df11083",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-057-cab62df11083-s0",
+          "text": "Every stage reads the global state before acting and updates it before returning. A new agent can therefore resume from files rather than reconstructing intent from an earlier chat.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-058-5cd449e6d4b2",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-058-5cd449e6d4b2-s0",
+          "text": "Long interactive sessions have a separate context-memory mechanism. Incoming context is first written to a write-ahead log. A bounded L0 window holds recent turns, L1 holds the mutable in-session map, L2 stores compacted immutable runs, and L3 retains cold cross-session knowledge. Topic snapshots allow a session to switch context without replaying the complete log or mixing unrelated work.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-059-a53e39545a3b",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-059-a53e39545a3b-s0",
+          "text": "The LSM-tree analogy is useful because prompt context has the same tension as storage: recent writes need to be cheap, active reads need to stay bounded, and older information must remain recoverable without occupying the fastest tier.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-060-d4580d7922dd",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-060-d4580d7922dd-s0",
+          "text": "Identity is part of the architecture",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-061-c2562669290e",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-061-c2562669290e-s0",
+          "text": "Repository selection is not enough when one operator uses several accounts or providers. AEE binds every project to a named identity profile. Repository and issue operations may use separate identities, and both are recorded in the work item's durable state.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-062-e47781a818cd",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-062-e47781a818cd-s0",
+          "text": "An isolated profile contains only the credentials, Git identity, provider configuration, and SSH material assigned to it. Host credentials, global Git configuration, inherited provider tokens, the SSH agent, and the system keychain are excluded. The runtime mounts only the selected profile, read-only, at ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-062-e47781a818cd-s1",
+          "text": "/home/vscode/.identity",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-062-e47781a818cd-s2",
+          "text": ".",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-063-0c8a9f6e3b33",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-063-0c8a9f6e3b33-s0",
+          "text": "Provider and Git commands run through ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-063-0c8a9f6e3b33-s1",
+          "text": "platform/identity/run.sh",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-063-0c8a9f6e3b33-s2",
+          "text": ". Before a push or pull-request mutation, the wrapper verifies that the authenticated account matches the declared profile. A mismatch fails visibly; the platform never fixes it by switching accounts.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-064-9db72b5b8a9d",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-064-9db72b5b8a9d-s0",
+          "text": "Host-mode profiles remain available for hardware-backed or password-manager credentials, but their credentials are deliberately not mounted into containers. The trade-off is explicit rather than accidental.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-065-597030ecf9f7",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-065-597030ecf9f7-s0",
+          "text": "Walking one ticket through the system",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-066-1bcc1ea3067a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-066-1bcc1ea3067a-s0",
+          "text": "Consider a GitHub issue requesting an architecture article for another project.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-067-7fae0ba2529a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-067-7fae0ba2529a-s0",
+          "text": "The intake adapter reads the issue. The scaffolder creates ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-067-7fae0ba2529a-s1",
+          "text": "TASK-17",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-067-7fae0ba2529a-s2",
+          "text": ", records its source and identities, branches from the wiki repository's current ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-067-7fae0ba2529a-s3",
+          "text": "origin/main",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-067-7fae0ba2529a-s4",
+          "text": ", assigns a runtime slot, and starts an isolated worktree. Refinement turns the issue into an editorial contract. Design maps that contract to sources, article structure, visuals, and verification. Implementation prepares the content and publication assets. Testing renders the result and checks its metadata, links, images, and responsive layout. Review compares the article with both its acceptance criteria and the source architecture.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-068-3be522e16257",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-068-3be522e16257-s0",
+          "text": "If the article requires a reader-site code correction, the remaining stages commit the change, open a pull request, and monitor CI. If it is purely a Sanity content publication, manufacturing a meaningless code diff would add ceremony without safety; publication evidence can close the content task directly. That exception also exposes a useful platform design question: a general execution environment eventually needs terminal workflows for external artifacts, not only Git pull requests.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-069-71ba549227dd",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-069-71ba549227dd-s0",
+          "text": "Trade-offs and current limits",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-070-6da0af748bbb",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-070-6da0af748bbb-s0",
+          "text": "The architecture favors explicit boundaries over minimum setup.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-071-48a6cb7a4347",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-071-48a6cb7a4347-s0",
+          "text": "A bounded pool prevents hidden resource contention, but capacity must be managed.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-072-4339a6737351",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-072-4339a6737351-s0",
+          "text": "Durable state makes resumption auditable, but every stage must maintain its handoff correctly.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-073-0e3b8398e521",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-073-0e3b8398e521-s0",
+          "text": "Isolated identities reduce credential mistakes, but profiles require deliberate setup.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-074-1187d21350cd",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-074-1187d21350cd-s0",
+          "text": "Disposable worktrees protect canonical checkouts, but runtime and worktree repair become platform responsibilities.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-075-55f61769d867",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-075-55f61769d867-s0",
+          "text": "The context engine retains useful history, but compaction policies must be tuned to avoid either prompt bloat or excessive summarization.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-076-f7c7993a58a6",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-076-f7c7993a58a6-s0",
+          "text": "Provider neutrality is also an interface, not a claim that every provider is complete. GitHub currently implements repository and issue intake. Jira remains a visible adapter stub. The present flow ingests existing tickets; creating external tickets through the provider layer is a natural extension, but it should be described as planned until the implementation and its identity rules exist.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-077-8869f5d64e0f",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-077-8869f5d64e0f-s0",
+          "text": "The durable contract is the product",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-078-3b1bcd6accb4",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-078-3b1bcd6accb4-s0",
+          "text": "Agent quality will continue to change. The more stable investment is the execution contract around the agent: a known source repository, a bounded writable checkout, an exclusive runtime, an explicit identity, durable state, verifiable gates, and a safe terminal condition.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-079-9fc93aad7a7c",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-079-9fc93aad7a7c-s0",
+          "text": "That perspective changes the role of an AI assistant. It is no longer the environment. It is one participant moving a work item through an environment designed to survive interruption, concurrency, failure, and replacement.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-080-55a655c2026f",
+      "style": "normal",
+      "markDefs": [
+        {
+          "_type": "link",
+          "_key": "b-080-55a655c2026f-link0",
+          "href": "https://github.com/eiakoji-me/ai-execution-environment/blob/main/documentation/assets/aee-current-hld-excalidraw.svg"
+        },
+        {
+          "_type": "link",
+          "_key": "b-080-55a655c2026f-link1",
+          "href": "https://github.com/eiakoji-me/ai-execution-environment/blob/main/documentation/assets/aee-current-hld-excalidraw.drawio"
+        },
+        {
+          "_type": "link",
+          "_key": "b-080-55a655c2026f-link2",
+          "href": "https://github.com/eiakoji-me/ai-execution-environment/blob/main/documentation/assets/aee-agent-pipeline-excalidraw.svg"
+        },
+        {
+          "_type": "link",
+          "_key": "b-080-55a655c2026f-link3",
+          "href": "https://github.com/eiakoji-me/ai-execution-environment/blob/main/documentation/assets/aee-architecture.svg"
+        }
+      ],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s0",
+          "text": "The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s1",
+          "text": "high-level diagram",
+          "marks": [
+            "b-080-55a655c2026f-link0"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s2",
+          "text": ", ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s3",
+          "text": "editable Draw.io source",
+          "marks": [
+            "b-080-55a655c2026f-link1"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s4",
+          "text": ", ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s5",
+          "text": "agent-pipeline diagram",
+          "marks": [
+            "b-080-55a655c2026f-link2"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s6",
+          "text": ", and ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s7",
+          "text": "high-density technical schematic",
+          "marks": [
+            "b-080-55a655c2026f-link3"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-080-55a655c2026f-s8",
+          "text": " provide the next level of detail.",
+          "marks": []
+        }
+      ]
+    }
+  ]
+}
