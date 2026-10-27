@@ -15,6 +15,7 @@ const isCurrent = currentSlug === node.topic.slug;
   <a
     href={`/topics/${node.topic.slug}/`}
     class={`topic-link depth-${depth} ${isCurrent ? 'active' : ''}`}
+    aria-current={isCurrent ? 'page' : undefined}
   >
     <span class="topic-title">{node.topic.title}</span>
     {node.rollupArticleCount > 0 && (

@@ -2,13 +2,23 @@
 import TableOfContents from './TableOfContents.astro';
 import type { HeadingItem } from '../lib/slugify';
 import type { Article } from '../lib/sanity/types';
+import { topicHref, type TopicTree } from '../lib/topics';
 
 interface Props {
   headings?: HeadingItem[];
   article?: Article;
+  /** Topic links are rendered only for topics that have a hub page in this tree. */
+  topicTree?: TopicTree;
 }
 
-const { headings = [], article } = Astro.props;
+const { headings = [], article, topicTree } = Astro.props;
+const primaryTopicHref = topicTree ? topicHref(topicTree, article?.primaryTopic?.slug) : undefined;
+const relatedTopicLinks = topicTree
+  ? (article?.relatedTopics ?? []).flatMap((t) => {
+      const href = topicHref(topicTree, t.slug);
+      return href ? [{ title: t.title, href }] : [];
+    })
+  : [];
 const hasActions = Boolean(article?.repositoryUrl || article?.demoUrl);
 const hasSeries = Boolean(article?.series && article.series.articles && article.series.articles.length > 0);
 
@@ -78,18 +88,18 @@ if (hasSeries && article?.series?.articles) {
     </div>
   )}
 
-  {article?.primaryTopic && (
+  {article?.primaryTopic && primaryTopicHref && (
     <div class="rail-card topic-card">
       <div class="rail-header">Topic Hub</div>
-      <a href={`/topics/${article.primaryTopic.slug}/`} class="topic-link">
+      <a href={primaryTopicHref} class="topic-link">
         <span>Explore {article.primaryTopic.title}</span>
         <span aria-hidden="true">→</span>
       </a>
-      {article.relatedTopics && article.relatedTopics.length > 0 && (
+      {relatedTopicLinks.length > 0 && (
         <div class="related-topics">
           <span class="related-label">Related:</span>
-          {article.relatedTopics.map((t) => (
-            <a href={`/topics/${t.slug}/`} class="related-tag">{t.title}</a>
+          {relatedTopicLinks.map((t) => (
+            <a href={t.href} class="related-tag">{t.title}</a>
           ))}
         </div>
       )}

@@ -1,19 +1,17 @@
 ---
-import type { Topic, Series, ContentSummary } from '../lib/sanity/types';
-import { buildTopicTree, type TopicNode } from '../lib/topics';
+import type { Series } from '../lib/sanity/types';
+import { buildNavigation, type TopicNode, type TopicTree } from '../lib/topics';
 import TopicTreeItem from './TopicTreeItem.astro';
 
 interface Props {
-  topics?: Topic[];
-  articles?: ContentSummary[];
+  tree: TopicTree;
   series?: Series[];
   currentSlug?: string;
 }
 
-const { topics = [], articles = [], series = [], currentSlug } = Astro.props;
+const { tree, series = [], currentSlug } = Astro.props;
 
-const tree = buildTopicTree(topics, articles);
-const rootTopics = tree.rootTopics;
+const nav = buildNavigation(tree, currentSlug);
 ---
 
 <aside class="wiki-left-nav" aria-label="Knowledge navigation">
@@ -24,26 +22,29 @@ const rootTopics = tree.rootTopics;
     </summary>
 
     <div class="wiki-nav-content">
-      <div class="nav-section">
-        <div class="nav-section-title">Sections</div>
-        <ul class="nav-links-list">
-          <li><a href="/topics/" class={currentSlug === 'topics' ? 'active' : ''}>All Topics</a></li>
-          <li><a href="/articles/" class={currentSlug === 'articles' ? 'active' : ''}>Articles & Notes</a></li>
-          <li><a href="/series/" class={currentSlug === 'series' ? 'active' : ''}>Learning Paths</a></li>
-          <li><a href="/projects/" class={currentSlug === 'projects' ? 'active' : ''}>Projects</a></li>
-        </ul>
-      </div>
-
-      {rootTopics.length > 0 && (
+      {nav.domains.length > 0 && (
         <div class="nav-section">
-          <div class="nav-section-title">Topics & Domains</div>
+          <div class="nav-section-title">Domains</div>
           <ul class="topic-tree">
-            {rootTopics.map((rootNode: TopicNode) => (
-              <TopicTreeItem node={rootNode} currentSlug={currentSlug} depth={1} />
+            {nav.domains.map((domainNode: TopicNode) => (
+              <TopicTreeItem node={domainNode} currentSlug={currentSlug} depth={1} />
             ))}
           </ul>
         </div>
       )}
+
+      <div class="nav-section">
+        <div class="nav-section-title">Browse</div>
+        <ul class="nav-links-list">
+          {nav.browse.map((link) => (
+            <li>
+              <a href={link.href} class={link.active ? 'active' : ''} aria-current={link.active ? 'page' : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {series.length > 0 && (
         <div class="nav-section">
@@ -51,7 +52,7 @@ const rootTopics = tree.rootTopics;
           <ul class="nav-links-list series-nav-list">
             {series.map((s) => (
               <li>
-                <a href={`/series/${s.slug}/`} class={currentSlug === s.slug ? 'active' : ''}>
+                <a href={`/series/${s.slug}/`} class={currentSlug === s.slug ? 'active' : ''} aria-current={currentSlug === s.slug ? 'page' : undefined}>
                   {s.title}
                 </a>
               </li>

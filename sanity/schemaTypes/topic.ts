@@ -1,7 +1,8 @@
 import { defineField, defineType } from 'sanity';
+import { MAX_TOPIC_ANCESTORS, TOPIC_KINDS, topicPlacementError } from '../../src/lib/taxonomy.ts';
 
 export interface TopicParentValidationContext {
-  document?: { _id?: string };
+  document?: { _id?: string; kind?: string };
   getClient?: (options: { apiVersion: string }) => {
     fetch: <T = unknown>(query: string, params?: Record<string, unknown>) => Promise<T>;
   };
@@ -11,10 +12,18 @@ export async function validateTopicParent(
   parent: { _ref?: string } | undefined,
   context: TopicParentValidationContext
 ): Promise<true | string> {
-  if (!parent?._ref) return true;
+  const kind = context.document?.kind;
+  // The required Kind field already reports a missing kind.
+  if (!kind) return true;
+  if (!parent?._ref) {
+    return topicPlacementError({ kind, hasParent: false, ancestorKinds: [] }) ?? true;
+  }
   const currentDocId = context.document?._id?.replace(/^drafts\./, '');
   if (parent._ref === currentDocId) {
     return 'A topic cannot reference itself as its parent.';
+  }
+  if (kind === 'domain') {
+    return topicPlacementError({ kind, hasParent: true, ancestorKinds: [] }) ?? true;
   }
 
   try {
@@ -22,32 +31,31 @@ export async function validateTopicParent(
     if (!client) return true;
 
     const visited = new Set<string>([currentDocId || '']);
+    const ancestorKinds: Array<string | undefined> = [];
     let currentParentId: string | undefined = parent._ref;
-    let depth = 0;
+    let cycle = false;
 
-    while (currentParentId && depth <= 6) {
+    // Walk one ancestor past the limit so over-deep chains are reported.
+    while (currentParentId && ancestorKinds.length <= MAX_TOPIC_ANCESTORS) {
       if (visited.has(currentParentId)) {
-        return 'Circular parent reference detected in topic hierarchy.';
+        cycle = true;
+        break;
       }
       visited.add(currentParentId);
-      depth++;
 
-      if (depth > 4) {
-        return 'Topic hierarchy exceeds maximum supported depth of 4 levels.';
-      }
-
-      const parentDoc: { parent?: { _ref: string } } | null = await client.fetch(
-        `coalesce(*[_id == "drafts." + $id][0], *[_id == $id][0]){ parent }`,
+      const parentDoc: { parent?: { _ref: string }; kind?: string } | null = await client.fetch(
+        `coalesce(*[_id == "drafts." + $id][0], *[_id == $id][0]){ parent, kind }`,
         { id: currentParentId }
       );
+      ancestorKinds.push(parentDoc?.kind);
       currentParentId = parentDoc?.parent?._ref;
     }
+
+    return topicPlacementError({ kind, hasParent: true, ancestorKinds, cycle }) ?? true;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return `Topic hierarchy validation could not be completed: ${message}`;
   }
-
-  return true;
 }
 
 export const topic = defineType({
@@ -55,6 +63,15 @@ export const topic = defineType({
   title: 'Topic',
   type: 'document',
   fields: [
+    defineField({
+      name: 'kind',
+      title: 'Kind',
+      type: 'string',
+      options: { list: TOPIC_KINDS, layout: 'radio' },
+      initialValue: 'topic',
+      description: 'Domains are the top-level areas shown first in navigation. Topics sit under a domain or another topic.',
+      validation: (rule) => rule.required(),
+    }),
     defineField({
       name: 'title',
       title: 'Title',
@@ -70,10 +87,12 @@ export const topic = defineType({
     }),
     defineField({
       name: 'parent',
-      title: 'Parent Topic / Domain',
+      title: 'Parent',
       type: 'reference',
       to: [{ type: 'topic' }],
-      description: 'Leave empty for Root Topics / Domains (e.g., Distributed Systems, Languages, Cloud). Select a parent for subtopics.',
+      description: 'Required for topics. Domains have no parent.',
+      // Keep a stale parent visible on a domain so the editor can remove it.
+      hidden: ({ document }) => document?.kind === 'domain' && !document?.parent,
       validation: (rule) => rule.custom(validateTopicParent),
     }),
     defineField({
@@ -127,13 +146,14 @@ export const topic = defineType({
   preview: {
     select: {
       title: 'title',
+      kind: 'kind',
       parentTitle: 'parent.title',
     },
-    prepare({ title, parentTitle }) {
-      return {
-        title,
-        subtitle: parentTitle ? `under ${parentTitle}` : 'Root Domain / Area',
-      };
+    prepare({ title, kind, parentTitle }) {
+      let subtitle = 'Unclassified';
+      if (kind === 'domain') subtitle = 'Domain';
+      else if (kind === 'topic') subtitle = parentTitle ? `under ${parentTitle}` : 'Topic without a parent';
+      return { title, subtitle };
     },
   },
 });

@@ -11,15 +11,30 @@ export const structure: StructureResolver = (S) =>
             .title('Topic Taxonomy')
             .items([
               S.listItem()
-                .title('All Topics')
-                .child(S.documentTypeList('topic').title('All Topics')),
-              S.listItem()
-                .title('Root Topics / Domains')
+                .title('Domains')
                 .child(
                   S.documentList()
-                    .title('Root Topics & Domains')
-                    .filter('_type == "topic" && !defined(parent)')
+                    .title('Domains')
+                    .filter('_type == "topic" && kind == "domain"')
+                    .defaultOrdering([{ field: 'order', direction: 'asc' }, { field: 'title', direction: 'asc' }])
                 ),
+              S.listItem()
+                .title('Topics')
+                .child(
+                  S.documentList()
+                    .title('Topics')
+                    .filter('_type == "topic" && kind == "topic"')
+                ),
+              S.listItem()
+                .title('Unclassified')
+                .child(
+                  S.documentList()
+                    .title('Unclassified Topics')
+                    .filter('_type == "topic" && !defined(kind)')
+                ),
+              S.listItem()
+                .title('All Topics')
+                .child(S.documentTypeList('topic').title('All Topics')),
             ])
         ),
       S.listItem()

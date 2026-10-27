@@ -1,4 +1,5 @@
 import type { Topic, ContentSummary } from './sanity/types';
+import { MAX_TOPIC_ANCESTORS, isTopicKind, topicPlacementError } from './taxonomy.ts';
 
 export interface TopicNode {
   topic: Topic;
@@ -12,10 +13,18 @@ export interface TopicNode {
   rollupArticleCount: number;
 }
 
+export interface ExcludedTopic {
+  topic: Topic;
+  reason: string;
+}
+
 export interface TopicTree {
+  /** Domains, ordered by `order` then title. */
   rootTopics: TopicNode[];
   nodeMap: Map<string, TopicNode>;
   slugMap: Map<string, TopicNode>;
+  /** Topics left out of the tree because they are unclassified or misplaced. */
+  excluded: ExcludedTopic[];
 }
 
 export interface TopicHierarchyValidation {
@@ -25,9 +34,9 @@ export interface TopicHierarchyValidation {
 
 /**
  * Validates a list of topics for self-references, multi-hop circular dependencies,
- * orphaned parent references, and maximum hierarchy depth.
+ * orphaned parent references, maximum hierarchy depth, and domain/topic placement.
  */
-export function validateTopicHierarchy(topics: Topic[], maxDepth = 4): TopicHierarchyValidation {
+export function validateTopicHierarchy(topics: Topic[], maxDepth = MAX_TOPIC_ANCESTORS): TopicHierarchyValidation {
   const errors: string[] = [];
   const topicMap = new Map<string, Topic>();
 
@@ -41,6 +50,14 @@ export function validateTopicHierarchy(topics: Topic[], maxDepth = 4): TopicHier
   }
 
   for (const topic of topics) {
+    if (!isTopicKind(topic.kind)) {
+      errors.push(`Topic "${topic.title}" (${topic._id}) is not classified as a domain or topic.`);
+    } else if (topic.kind === 'domain' && topic.parent?._id) {
+      errors.push(`Domain "${topic.title}" (${topic._id}) cannot have a parent.`);
+    } else if (topic.kind === 'topic' && !topic.parent?._id) {
+      errors.push(`Topic "${topic.title}" (${topic._id}) must have a parent topic or domain.`);
+    }
+
     if (!topic.parent?._id) continue;
 
     const parentId = topic.parent._id;
@@ -78,6 +95,9 @@ export function validateTopicHierarchy(topics: Topic[], maxDepth = 4): TopicHier
       }
 
       const parentDoc: Topic | undefined = topicMap.get(currentParentId) ?? topicMap.get(`drafts.${currentParentId}`);
+      if (!parentDoc?.parent?._id && topic.kind === 'topic' && parentDoc?.kind !== 'domain') {
+        errors.push(`Topic "${topic.title}" (${topic._id}) does not sit under a domain.`);
+      }
       currentParentId = parentDoc?.parent?._id?.replace(/^drafts\./, '');
     }
   }
@@ -88,13 +108,22 @@ export function validateTopicHierarchy(topics: Topic[], maxDepth = 4): TopicHier
   };
 }
 
+export function compareTopics(a: Topic, b: Topic): number {
+  return (a.order ?? 999) - (b.order ?? 999) || a.title.localeCompare(b.title);
+}
+
+/**
+ * Builds the domain-rooted taxonomy. Domains become roots; a topic attaches to its
+ * parent only when its whole ancestor chain is valid and ends at a domain. Anything
+ * else is reported in `excluded` instead of being promoted to a root.
+ */
 export function buildTopicTree(
   topics: Topic[],
-  articles: ContentSummary[] = [],
-  maxDepth = 4
+  articles: ContentSummary[] = []
 ): TopicTree {
   const nodeMap = new Map<string, TopicNode>();
   const slugMap = new Map<string, TopicNode>();
+  const topicById = new Map(topics.map((t) => [t._id, t]));
 
   // Map article IDs by topic ID to avoid double-counting articles assigned via primary or related topics
   const topicArticleIdMap = new Map<string, Set<string>>();
@@ -122,8 +151,44 @@ export function buildTopicTree(
     }
   }
 
-  // Initialize nodes
+  // Resolve each topic's placement once; a topic is valid only if its parent is.
+  const placement = new Map<string, string | null>();
+  function placementOf(t: Topic): string | null {
+    if (placement.has(t._id)) return placement.get(t._id)!;
+    const ancestorKinds: Array<string | undefined> = [];
+    const visited = new Set<string>([t._id]);
+    let cycle = false;
+    let ancestorId = t.parent?._id;
+    while (ancestorId && ancestorKinds.length <= MAX_TOPIC_ANCESTORS) {
+      if (visited.has(ancestorId)) {
+        cycle = true;
+        break;
+      }
+      visited.add(ancestorId);
+      const ancestor = topicById.get(ancestorId);
+      ancestorKinds.push(ancestor?.kind);
+      ancestorId = ancestor?.parent?._id;
+    }
+    let reason = topicPlacementError({ kind: t.kind, hasParent: Boolean(t.parent?._id), ancestorKinds, cycle });
+    if (!reason && t.kind === 'topic') {
+      // The cycle check above guarantees this recursion terminates.
+      const parent = topicById.get(t.parent!._id)!;
+      if (placementOf(parent)) reason = `Its parent "${parent.title}" is not in the taxonomy.`;
+    }
+    placement.set(t._id, reason);
+    return reason;
+  }
+
+  const excluded: ExcludedTopic[] = [];
+  const validTopics: Topic[] = [];
   for (const t of topics) {
+    const reason = placementOf(t);
+    if (reason) excluded.push({ topic: t, reason });
+    else validTopics.push(t);
+  }
+
+  // Initialize nodes
+  for (const t of validTopics) {
     const directSet = new Set<string>(topicArticleIdMap.get(t._id) ?? []);
     const directCount = directSet.size > 0 ? directSet.size : (t.articleCount ?? 0);
     const node: TopicNode = {
@@ -140,43 +205,15 @@ export function buildTopicTree(
     slugMap.set(t.slug, node);
   }
 
-  // Build parent-child relationships with robust multi-document cycle detection
   const rootTopics: TopicNode[] = [];
-
-  for (const t of topics) {
+  for (const t of [...validTopics].sort(compareTopics)) {
     const node = nodeMap.get(t._id)!;
-    if (t.parent?._id && nodeMap.has(t.parent._id)) {
-      const visited = new Set<string>([t._id]);
-      let ancestorId: string | undefined = t.parent._id;
-      let depth = 0;
-      let hasCycle = false;
-
-      while (ancestorId && depth <= maxDepth + 1) {
-        if (visited.has(ancestorId)) {
-          hasCycle = true;
-          break;
-        }
-        visited.add(ancestorId);
-        const ancestorNode = nodeMap.get(ancestorId);
-        ancestorId = ancestorNode?.topic.parent?._id;
-        depth++;
-      }
-
-      if (!hasCycle && depth <= maxDepth) {
-        const parentNode = nodeMap.get(t.parent._id)!;
-        node.parent = parentNode;
-        parentNode.children.push(node);
-      } else {
-        // Strip invalid/cyclic parent reference so the document does not present contradictory metadata
-        node.topic.parent = undefined;
-        rootTopics.push(node);
-      }
-    } else {
-      // Ensure root node has no dangling parent metadata
-      if (node.topic.parent) {
-        node.topic.parent = undefined;
-      }
+    if (t.kind === 'domain') {
       rootTopics.push(node);
+    } else {
+      const parentNode = nodeMap.get(t.parent!._id)!;
+      node.parent = parentNode;
+      parentNode.children.push(node);
     }
   }
 
@@ -216,7 +253,49 @@ export function buildTopicTree(
     populateNode(root, []);
   }
 
-  return { rootTopics, nodeMap, slugMap };
+  return { rootTopics, nodeMap, slugMap, excluded };
+}
+
+// Lives for the whole process, so a long-running `astro dev` warns about a
+// topic once even if it is fixed and broken again; restart to see it again.
+const reportedExclusions = new Set<string>();
+
+/** Reports topics left out of the taxonomy once per build so they stay visible. */
+export function logExcludedTopics(tree: TopicTree): void {
+  for (const { topic, reason } of tree.excluded) {
+    if (reportedExclusions.has(topic._id)) continue;
+    reportedExclusions.add(topic._id);
+    console.warn(`[taxonomy] Excluded "${topic.title}" (${topic._id}): ${reason}`);
+  }
+}
+
+/** The hub URL for a topic in the tree, or undefined when the topic has no page. */
+export function topicHref(tree: TopicTree, slug: string | undefined): string | undefined {
+  return slug && tree.slugMap.has(slug) ? `/topics/${slug}/` : undefined;
+}
+
+export interface NavigationLink {
+  label: string;
+  href: string;
+  active: boolean;
+}
+
+export interface Navigation {
+  domains: TopicNode[];
+  browse: NavigationLink[];
+}
+
+export const BROWSE_LINKS: Array<{ label: string; href: string; slug: string }> = [
+  { label: 'All topics', href: '/topics/', slug: 'topics' },
+  { label: 'Articles & notes', href: '/articles/', slug: 'articles' },
+  { label: 'Learning paths', href: '/series/', slug: 'series' },
+];
+
+export function buildNavigation(tree: TopicTree, currentSlug?: string): Navigation {
+  return {
+    domains: tree.rootTopics,
+    browse: BROWSE_LINKS.map(({ label, href, slug }) => ({ label, href, active: currentSlug === slug })),
+  };
 }
 
 export function getTopicBreadcrumbs(

@@ -8,6 +8,12 @@ const sanityClient = createClient({
 });
 
 export async function fetchContent<T>(query: string, params: QueryParams = {}): Promise<T> {
+  // Local fixture builds only (see README); never set in Netlify or CI.
+  const fixtures = process.env.WIKI_FIXTURES;
+  if (fixtures) {
+    const { queryFixtures } = await import('./fixtures/index.ts');
+    return queryFixtures<T>(fixtures, query, params);
+  }
   return sanityClient.fetch<T>(query, params);
 }
 
@@ -58,35 +64,3 @@ export function formatContentLabel(
       .join(' ')
   );
 }
-
-export interface CoreDomainTopic {
-  _id: string;
-  _type: 'topic';
-  title: string;
-  slug: string;
-  summary: string;
-}
-
-export const CORE_DOMAIN_TOPICS: Record<string, CoreDomainTopic> = {
-  'system-design': {
-    _id: 'domain-system-design',
-    _type: 'topic',
-    title: 'System Design',
-    slug: 'system-design',
-    summary: 'Architecture patterns, distributed systems foundations, and real-world system case studies.',
-  },
-  'platform-engineering': {
-    _id: 'domain-platform-engineering',
-    _type: 'topic',
-    title: 'Platform Engineering',
-    slug: 'platform-engineering',
-    summary: 'Internal developer platforms, infrastructure as code, runtime environments, and developer experience.',
-  },
-  'ai-engineering': {
-    _id: 'domain-ai-engineering',
-    _type: 'topic',
-    title: 'AI Engineering',
-    slug: 'ai-engineering',
-    summary: 'Machine learning systems, generative AI architectures, agentic workflows, and LLM application engineering.',
-  },
-};

@@ -23,8 +23,11 @@ import {
 } from '../src/lib/sanity/queries.ts';
 import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
-import { buildTopicTree, getTopicBreadcrumbs, validateTopicHierarchy } from '../src/lib/topics.ts';
+import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, topicHref, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
+import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
+import { DOMAIN_SEEDS, planDomainSeed } from './domains.ts';
+import { queryFixtures } from '../src/lib/fixtures/index.ts';
 
 const origin = 'http://127.0.0.1:4322';
 const expectedPages = [
@@ -57,8 +60,10 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   for (const label of ['System Design', 'Platform Engineering', 'AI Engineering', 'Workshops', 'Projects']) {
     assert.ok(html.includes(label), `${path} must include the ${label} navigation item`);
   }
+  const primaryNav = html.match(/<nav[^>]*aria-label="Primary navigation"[^>]*>[\s\S]*?<\/nav>/)?.[0] ?? '';
+  assert.ok(primaryNav.includes('System Design'), `${path} primary navigation must be found to check its items`);
   for (const excluded of ['>Articles<', '>Series<', '>Writing<', '>Archetypes<']) {
-    assert.ok(!html.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
+    assert.ok(!primaryNav.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
   }
   assert.ok(html.includes('https://eiakoji.me'), `${path} must include the eiakoji.me return link in footer`);
   assert.ok(html.includes('src="/images/avatar.jpeg"'), `${path} must render the avatar brand image in header`);
@@ -99,7 +104,13 @@ async function testBuiltSite() {
   try {
     await waitForServer(preview);
     for (const page of expectedPages) {
-      const builtHtml = await readFile(page.file, 'utf8');
+      const builtHtml = await readFile(page.file, 'utf8').catch(() => {
+        assert.fail(
+          page.path.startsWith('/topics/') && page.path !== '/topics/'
+            ? `${page.path} was not built: the domain is missing from the dataset. Run npm run seed:domains (see README).`
+            : `${page.path} was not built (${page.file} is missing).`,
+        );
+      });
       assertPageMarkup(builtHtml, page);
       const response = await fetch(`${origin}${page.path}`);
       assert.equal(response.status, 200, `${page.path} must return HTTP 200`);
@@ -137,6 +148,16 @@ async function testSanityQueries() {
   }
   for (const query of [latestContentQuery, articlesQuery, projectsQuery, articleBySlugQuery, projectBySlugQuery, seriesBySlugQuery]) {
     assert.ok(query.includes('publishedAt <= now()'), 'published article/project queries must exclude future content');
+  }
+
+  for (const query of [topicsListQuery, topicBySlugQuery, wikiNavQuery]) {
+    assert.match(query, /"slug": slug\.current,\n\s+kind,/, 'topic queries must project kind');
+  }
+  for (const domain of ['system-design', 'platform-engineering', 'ai-engineering']) {
+    assert.ok(homepageQuery.includes(`kind == "domain" && slug.current == "${domain}"`), `homepage must select the ${domain} domain by kind`);
+  }
+  for (const alias of ['systems-design', 'cloud-platform', '"cloud"', 'ai-systems', '"ai"', 'multi-agent-systems']) {
+    assert.ok(!homepageQuery.includes(alias), `homepage must not match legacy domain alias ${alias}`);
   }
 
   assert.ok(
@@ -218,17 +239,17 @@ async function testUnitBehaviors() {
     'validation errors must report circular reference',
   );
 
-  // Verify runtime tree builder breaks cycles and strips invalid parent metadata
-  const cycleTree = buildTopicTree(multiHopCycleTopics);
-  for (const node of cycleTree.rootTopics) {
-    assert.equal(node.topic.parent, undefined, 'cycle members promoted to root must have invalid parent stripped');
-  }
+  // Verify the runtime tree builder excludes cycle members instead of promoting them to roots
+  const cycleTree = buildTopicTree(multiHopCycleTopics.map((t) => ({ ...t, kind: 'topic' })));
+  assert.equal(cycleTree.rootTopics.length, 0, 'cycle members must not become roots');
+  assert.deepEqual(cycleTree.excluded.map((e) => e.topic._id).sort(), ['t-a', 't-b', 't-c'], 'cycle members must be excluded');
+  assert.ok(cycleTree.excluded.every((e) => e.reason.includes('Circular')), 'cycle exclusions must explain the cycle');
 
   // 3. Test Rollup Deduplication (prevent double counting an article in primary + related topics)
   const hierarchyTopics = [
-    { _id: 't-root', _type: 'topic', title: 'Architecture', slug: 'architecture', summary: 'Root domain' },
-    { _id: 't-child', _type: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', summary: 'Subtopic', parent: { _id: 't-root', title: 'Architecture', slug: 'architecture' } },
-    { _id: 't-leaf', _type: 'topic', title: 'Consensus', slug: 'consensus', summary: 'Leaf topic', parent: { _id: 't-child', title: 'Distributed Systems', slug: 'distributed-systems' } },
+    { _id: 't-root', _type: 'topic', kind: 'domain', title: 'Architecture', slug: 'architecture', summary: 'Root domain' },
+    { _id: 't-child', _type: 'topic', kind: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', summary: 'Subtopic', parent: { _id: 't-root', title: 'Architecture', slug: 'architecture' } },
+    { _id: 't-leaf', _type: 'topic', kind: 'topic', title: 'Consensus', slug: 'consensus', summary: 'Leaf topic', parent: { _id: 't-child', title: 'Distributed Systems', slug: 'distributed-systems' } },
   ];
 
   // Article assigned to Leaf as primary AND Parent as related
@@ -277,10 +298,10 @@ async function testUnitBehaviors() {
 
   // 5. Test 4-level deep hierarchy and breadcrumbs
   const fourLevelTopics = [
-    { _id: 'l1', _type: 'topic', title: 'Engineering', slug: 'engineering' },
-    { _id: 'l2', _type: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', parent: { _id: 'l1', title: 'Engineering', slug: 'engineering' } },
-    { _id: 'l3', _type: 'topic', title: 'Storage Engines', slug: 'storage-engines', parent: { _id: 'l2', title: 'Distributed Systems', slug: 'distributed-systems' } },
-    { _id: 'l4', _type: 'topic', title: 'LSM Trees', slug: 'lsm-trees', parent: { _id: 'l3', title: 'Storage Engines', slug: 'storage-engines' } },
+    { _id: 'l1', _type: 'topic', kind: 'domain', title: 'Engineering', slug: 'engineering' },
+    { _id: 'l2', _type: 'topic', kind: 'topic', title: 'Distributed Systems', slug: 'distributed-systems', parent: { _id: 'l1', title: 'Engineering', slug: 'engineering' } },
+    { _id: 'l3', _type: 'topic', kind: 'topic', title: 'Storage Engines', slug: 'storage-engines', parent: { _id: 'l2', title: 'Distributed Systems', slug: 'distributed-systems' } },
+    { _id: 'l4', _type: 'topic', kind: 'topic', title: 'LSM Trees', slug: 'lsm-trees', parent: { _id: 'l3', title: 'Storage Engines', slug: 'storage-engines' } },
   ];
   const fourLevelTree = buildTopicTree(fourLevelTopics);
   const crumbs = getTopicBreadcrumbs('lsm-trees', fourLevelTree);
@@ -291,13 +312,65 @@ async function testUnitBehaviors() {
   assert.equal(crumbs[3].label, 'Storage Engines');
   assert.equal(crumbs[4].label, 'LSM Trees');
 
+  // 5b. Domain-rooted tree: only domains are roots, ordering, exclusions, and navigation groups
+  const ref = (id) => ({ _id: id, title: id, slug: id });
+  const taxonomy = [
+    { _id: 'd-ai', _type: 'topic', kind: 'domain', title: 'AI Engineering', slug: 'ai-engineering', order: 3 },
+    { _id: 'd-sd', _type: 'topic', kind: 'domain', title: 'System Design', slug: 'system-design', order: 1 },
+    { _id: 'd-pe', _type: 'topic', kind: 'domain', title: 'Platform Engineering', slug: 'platform-engineering', order: 2 },
+    { _id: 't-z', _type: 'topic', kind: 'topic', title: 'Zookeeper', slug: 'zookeeper', parent: ref('d-sd') },
+    { _id: 't-c', _type: 'topic', kind: 'topic', title: 'Caching', slug: 'caching', parent: ref('d-sd'), order: 1 },
+    { _id: 't-b', _type: 'topic', kind: 'topic', title: 'Batching', slug: 'batching', parent: ref('d-sd'), order: 1 },
+    { _id: 't-deep', _type: 'topic', kind: 'topic', title: 'Write-through', slug: 'write-through', parent: ref('t-c') },
+    { _id: 'legacy', _type: 'topic', title: 'Legacy Root', slug: 'legacy-root' },
+    { _id: 't-orphan', _type: 'topic', kind: 'topic', title: 'Orphan', slug: 'orphan', parent: ref('missing') },
+    { _id: 't-under-legacy', _type: 'topic', kind: 'topic', title: 'Under Legacy', slug: 'under-legacy', parent: ref('legacy') },
+    { _id: 'd-bad', _type: 'topic', kind: 'domain', title: 'Nested Domain', slug: 'nested-domain', parent: ref('d-sd') },
+    { _id: 't-under-bad', _type: 'topic', kind: 'topic', title: 'Under Nested Domain', slug: 'under-nested-domain', parent: ref('d-bad') },
+  ];
+  const domainTree = buildTopicTree(taxonomy, [
+    { _id: 'a-1', _type: 'article', title: 'A', slug: 'a', summary: 's', primaryTopic: ref('t-deep') },
+  ]);
+  assert.deepEqual(domainTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering'], 'roots must be domains ordered by order');
+  assert.deepEqual(
+    domainTree.nodeMap.get('d-sd').children.map((n) => n.topic.slug),
+    ['batching', 'caching', 'zookeeper'],
+    'children must be ordered by order, then title',
+  );
+  assert.deepEqual(
+    domainTree.excluded.map((e) => e.topic._id).sort(),
+    ['d-bad', 'legacy', 't-orphan', 't-under-bad', 't-under-legacy'],
+    'unclassified, orphaned, and misplaced topics must be excluded',
+  );
+  assert.ok(!domainTree.slugMap.has('legacy-root'), 'excluded topics must not be routable through the tree');
+  assert.equal(domainTree.nodeMap.get('d-sd').rollupArticleCount, 1, 'domain rollups must include nested topic articles');
+  assert.deepEqual(
+    getTopicBreadcrumbs('write-through', domainTree).map((c) => c.label),
+    ['Topics', 'System Design', 'Caching', 'Write-through'],
+    'breadcrumbs must follow the domain tree',
+  );
+  const domainValidation = validateTopicHierarchy(taxonomy);
+  for (const expected of ['Legacy Root', 'Nested Domain', 'Under Legacy']) {
+    assert.ok(domainValidation.errors.some((err) => err.includes(expected)), `validateTopicHierarchy must report ${expected}`);
+  }
+
+  const nav = buildNavigation(domainTree, 'articles');
+  assert.equal(nav.domains, domainTree.rootTopics, 'navigation must start from the domain tree');
+  assert.deepEqual(nav.browse.map((l) => l.href), ['/topics/', '/articles/', '/series/'], 'browse links must not include projects');
+  assert.deepEqual(nav.browse.map((l) => l.active), [false, true, false], 'the current browse destination must be active');
+  assert.equal(buildNavigation(buildTopicTree([])).domains.length, 0, 'an empty taxonomy must yield no domains');
+  assert.equal(topicHref(domainTree, 'write-through'), '/topics/write-through/', 'topics in the tree link to their hub');
+  for (const missing of ['legacy-root', 'orphan', 'nested-domain', undefined]) {
+    assert.equal(topicHref(domainTree, missing), undefined, `excluded topic ${missing} must not get a hub link`);
+  }
+
   // 6. Test validateTopicParent in Studio schema validation (including failure and error paths)
-  const selfRefResult = await validateTopicParent({ _ref: 't-self' }, { document: { _id: 't-self' } });
+  const selfRefResult = await validateTopicParent({ _ref: 't-self' }, { document: { _id: 't-self', kind: 'topic' } });
   assert.equal(selfRefResult, 'A topic cannot reference itself as its parent.');
 
   // Transient query error must NOT fail open
   const failingContext = {
-    document: { _id: 't-child' },
+    document: { _id: 't-child', kind: 'topic' },
     getClient: () => ({
       fetch: async () => {
         throw new Error('Sanity API connection timeout');
@@ -312,7 +385,7 @@ async function testUnitBehaviors() {
 
   // Multi-hop cycle via client lookup
   const cycleContext = {
-    document: { _id: 't-a' },
+    document: { _id: 't-a', kind: 'topic' },
     getClient: () => ({
       fetch: async (_query, params) => {
         if (params?.id === 't-b') return { parent: { _ref: 't-a' } };
@@ -325,13 +398,130 @@ async function testUnitBehaviors() {
 
   // Valid acyclic hierarchy passes
   const validContext = {
-    document: { _id: 't-leaf' },
+    document: { _id: 't-leaf', kind: 'topic' },
     getClient: () => ({
-      fetch: async () => ({ parent: undefined }),
+      fetch: async () => ({ parent: undefined, kind: 'domain' }),
     }),
   };
   const successResult = await validateTopicParent({ _ref: 't-root' }, validContext);
   assert.equal(successResult, true, 'valid hierarchy must pass validation');
+
+  // Kind rules in Studio validation: ancestors are looked up draft-first with their kind
+  const chainContext = (kind, chain) => ({
+    document: { _id: 't-new', kind },
+    getClient: () => ({
+      fetch: async (query, params) => {
+        assert.ok(query.includes('{ parent, kind }'), 'ancestor lookup must project kind');
+        return chain[params.id] ?? null;
+      },
+    }),
+  });
+  const domainChain = {
+    'd-1': { kind: 'domain' },
+    't-1': { kind: 'topic', parent: { _ref: 'd-1' } },
+    't-2': { kind: 'topic', parent: { _ref: 't-1' } },
+    't-3': { kind: 'topic', parent: { _ref: 't-2' } },
+    't-4': { kind: 'topic', parent: { _ref: 't-3' } },
+    'orphan': { kind: 'topic' },
+    'legacy-root': {},
+  };
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 'd-new', kind: 'domain' } }), true, 'a domain without a parent is valid');
+  assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('domain', domainChain)), 'A domain cannot have a parent.');
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new', kind: 'topic' } }), 'A topic must have a parent topic or domain.');
+  assert.equal(await validateTopicParent(undefined, { document: { _id: 't-new' } }), true, 'a missing kind is reported only by the required Kind field');
+  assert.equal(await validateTopicParent({ _ref: 'd-1' }, chainContext('topic', domainChain)), true, 'a topic directly under a domain is valid');
+  assert.equal(await validateTopicParent({ _ref: 't-3' }, chainContext('topic', domainChain)), true, 'a topic with four ancestors is valid');
+  assert.equal(
+    await validateTopicParent({ _ref: 't-4' }, chainContext('topic', domainChain)),
+    `Topic hierarchy exceeds maximum supported depth of ${MAX_TOPIC_ANCESTORS} levels.`,
+  );
+  assert.equal(await validateTopicParent({ _ref: 'orphan' }, chainContext('topic', domainChain)), 'A topic must sit under a domain.');
+  assert.equal(await validateTopicParent({ _ref: 'legacy-root' }, chainContext('topic', domainChain)), 'A topic must sit under a domain.');
+
+  // Pure placement rules
+  assert.equal(topicPlacementError({ kind: 'domain', hasParent: false, ancestorKinds: [] }), null);
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['domain'] }), null);
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'domain'], cycle: true }), 'Circular parent reference detected in topic hierarchy.');
+  assert.equal(topicPlacementError({ kind: 'topic', hasParent: true, ancestorKinds: ['topic', 'topic'] }), 'A topic must sit under a domain.');
+  assert.equal(topicPlacementError({ kind: 'area', hasParent: false, ancestorKinds: [] }), 'Choose whether this is a Domain or a Topic.');
+
+  // 6b. Domain seed planning is idempotent, preserves editor summaries, and never deletes
+  const applySeed = (docs, plan) => {
+    const store = new Map(docs.map((doc) => [doc._id, { ...doc }]));
+    for (const mutation of plan.mutations) {
+      if (mutation.createIfNotExists) {
+        const { slug, ...rest } = mutation.createIfNotExists;
+        if (!store.has(rest._id)) store.set(rest._id, { ...rest, slug: slug.current, hasParent: false });
+      } else {
+        const { id, set } = mutation.patch;
+        const next = { ...store.get(id), ...set };
+        if (set.slug) next.slug = set.slug.current;
+        store.set(id, next);
+      }
+    }
+    return [...store.values()];
+  };
+  const firstPlan = planDomainSeed([]);
+  assert.ok(firstPlan.mutations.every((m) => 'createIfNotExists' in m || 'patch' in m), 'the seed may only create or patch');
+  assert.equal(firstPlan.mutations.length, 3, 'an empty dataset must plan three domain creates');
+  assert.deepEqual(
+    firstPlan.mutations.map((m) => m.createIfNotExists._id),
+    ['domain-system-design', 'domain-platform-engineering', 'domain-ai-engineering'],
+  );
+  assert.ok(firstPlan.mutations.every((m) => m.createIfNotExists.kind === 'domain'), 'seeded documents must be domains');
+  const seeded = applySeed([], firstPlan);
+  assert.equal(planDomainSeed(seeded).mutations.length, 0, 'a second seed run must plan no changes');
+
+  const edited = seeded.map((doc) =>
+    doc._id === 'domain-system-design' ? { ...doc, title: 'Systems', summary: 'Written by an editor in Studio.' } : doc,
+  );
+  const repairPlan = planDomainSeed(edited);
+  assert.deepEqual(repairPlan.mutations, [{ patch: { id: 'domain-system-design', set: { title: 'System Design' } } }], 'only drifted canonical fields may be patched');
+  assert.equal(
+    applySeed(edited, repairPlan).find((doc) => doc._id === 'domain-system-design').summary,
+    'Written by an editor in Studio.',
+    'the seed must not replace an editor-written summary',
+  );
+
+  const legacy = [
+    { _id: 'legacy-sd', title: 'System Design (old)', slug: 'system-design' },
+    { _id: 'legacy-root', title: 'Languages', slug: 'languages' },
+  ];
+  const legacyPlan = planDomainSeed(legacy);
+  assert.equal(legacyPlan.mutations.length, 2, 'a slug already in use must not be seeded twice');
+  assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-sd') && w.includes('system-design')), 'slug conflicts must be reported');
+  assert.ok(legacyPlan.warnings.some((w) => w.includes('legacy-root') && w.includes('unclassified')), 'unclassified roots must be reported');
+  assert.deepEqual(legacyPlan.blocked, ['domain-system-design'], 'a domain skipped for a slug conflict must block the seed');
+  assert.deepEqual(firstPlan.blocked, [], 'a clean seed must not be blocked');
+  assert.equal(DOMAIN_SEEDS.length, 3);
+
+  // 6c. The real queries, run against the full fixture, drive the same tree
+  const fixtureTopics = await queryFixtures('full', topicsListQuery);
+  assert.ok(fixtureTopics.every((t) => t.kind || t.slug === 'languages'), 'topicsListQuery must project kind');
+  assert.ok(!fixtureTopics.some((t) => t.slug === 'draft-only'), 'topic queries must exclude drafts');
+  const fixtureArticles = await queryFixtures('full', articlesQuery);
+  assert.ok(!fixtureArticles.some((a) => a.slug === 'future-post'), 'article queries must exclude future content');
+  const fixtureTree = buildTopicTree(fixtureTopics, fixtureArticles);
+  assert.deepEqual(fixtureTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering']);
+  assert.equal(fixtureTree.slugMap.get('system-design').rollupArticleCount, 2, 'domain rollups must count nested articles once');
+  assert.deepEqual(fixtureTree.excluded.map((e) => e.topic.slug), ['languages']);
+  const orphanedArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'language-notes' });
+  assert.equal(orphanedArticle.primaryTopic.slug, 'languages');
+  assert.equal(topicHref(fixtureTree, orphanedArticle.primaryTopic.slug), undefined, 'an excluded primary topic must not be linked');
+  const fixtureHome = await queryFixtures('full', homepageQuery);
+  assert.equal(fixtureHome.platformTopic?.slug, 'platform-engineering', 'homepage must find domains by kind');
+  assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
+  await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
+
+  // Filtering a dereferenced array must filter the array, not each element
+  const fixtureArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'raft-log-replication' });
+  assert.deepEqual(fixtureArticle.series.articles.map((a) => a?.slug), ['raft-log-replication'], 'article series must list published articles');
+  const fixtureSeries = await queryFixtures('full', seriesListQuery);
+  assert.equal(fixtureSeries[0].publishedArticleCount, 1, 'series counts must count published articles');
+  assert.deepEqual(
+    (await queryFixtures('full', seriesBySlugQuery, { slug: 'consensus-from-scratch' })).articles.map((a) => a?.slug),
+    ['raft-log-replication'],
+  );
 
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
@@ -407,12 +597,12 @@ async function testConfiguration() {
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'series', 'format', 'primaryTopic', 'featured']) {
     assert.ok(articleSchema.includes(`name: '${field}'`), `article schema must define ${field}`);
   }
-  for (const field of ['slug', 'summary', 'parent', 'order']) {
+  for (const field of ['kind', 'slug', 'summary', 'parent', 'order']) {
     assert.ok(topicSchema.includes(`name: '${field}'`), `topic schema must define ${field}`);
   }
   assert.ok(
-    topicSchema.includes('Circular parent reference detected in topic hierarchy'),
-    'topic schema must implement ancestor cycle validation',
+    topicSchema.includes('cycle = true') && topicSchema.includes('topicPlacementError'),
+    'topic schema must implement ancestor cycle validation through the shared placement rules',
   );
   assert.ok(
     topicSchema.includes('coalesce(*[_id == "drafts." + $id][0], *[_id == $id][0])'),
@@ -427,12 +617,28 @@ async function testConfiguration() {
     'topics index must pass articles to buildTopicTree for deduplicated rollups',
   );
   assert.ok(
-    leftNavComponent.includes('buildTopicTree(topics, articles)'),
-    'LeftNav must pass articles to buildTopicTree for deduplicated rollups',
+    wikiLayout.includes("buildTopicTree(navData?.topics ?? [], navData?.articles ?? [])"),
+    'WikiLayout must pass articles to buildTopicTree for deduplicated rollups',
   );
+  assert.ok(wikiLayout.includes('tree={navTree}'), 'WikiLayout must pass the shared tree to LeftNav');
+  for (const file of ['netlify.toml', '.env.example', '.github/workflows/ci.yml', 'package.json']) {
+    assert.ok(!(await readFile(file, 'utf8')).includes('WIKI_FIXTURES'), `${file} must not enable fixture content`);
+  }
+  for (const file of ['src/pages/articles/[slug].astro', 'src/components/RightRail.astro']) {
+    const source = await readFile(file, 'utf8');
+    assert.ok(!source.includes('/topics/${'), `${file} must build topic links with topicHref so excluded topics are not linked`);
+    assert.ok(source.includes('topicHref('), `${file} must use topicHref`);
+  }
+  const articlePage = await readFile('src/pages/articles/[slug].astro', 'utf8');
+  assert.ok(!/<span class="(primary|related)-topic-link"/.test(articlePage), 'unlinked topics must not use link styling');
+  for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
+    assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
+  }
+  assert.ok(leftNavComponent.includes('buildNavigation(tree, currentSlug)'), 'LeftNav must render from buildNavigation');
+  assert.ok(!leftNavComponent.includes('Sections') && !leftNavComponent.includes('/projects/'), 'LeftNav must not keep the Sections block or a Projects link');
   assert.ok(
-    wikiLayout.includes('articles={navData?.articles}'),
-    'WikiLayout must pass navData.articles to LeftNav',
+    leftNavComponent.indexOf('Domains') < leftNavComponent.indexOf('Browse'),
+    'LeftNav must list domains before the Browse group',
   );
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'repositoryUrl', 'projectUrl']) {
     assert.ok(projectSchema.includes(`name: '${field}'`), `project schema must define ${field}`);

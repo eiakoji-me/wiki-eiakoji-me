@@ -32,18 +32,18 @@ export const homepageQuery = `{
     (_type == "series" && ${publicDocument})
   ] | order(coalesce(publishedAt, _updatedAt) desc)[0...6] {${summaryFields}},
   "workshops": *[_type == "article" && (format == "workshop" || kind == "workshop") && ${publishedDocument}] | order(publishedAt desc)[0...3] {${summaryFields}},
-  "systemDesignTopic": *[_type == "topic" && (slug.current in ["system-design", "systems-design"]) && ${publicDocument}][0] {
+  "systemDesignTopic": *[_type == "topic" && kind == "domain" && slug.current == "system-design" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary,
     "archetypesTopic": *[_type == "topic" && parent._ref == ^._id && (slug.current == "archetypes" || title match "Archetype*") && ${publicDocument}][0] {
       _id, title, "slug": slug.current, summary
     }
   },
   "archetypesArticles": *[_type == "article" && ${publishedDocument} && (primaryTopic->slug.current == "archetypes" || "archetypes" in relatedTopics[]->slug.current)] | order(publishedAt desc)[0...3] {${summaryFields}},
-  "systemDesignArticles": *[_type == "article" && ${publishedDocument} && (primaryTopic->slug.current in ["system-design", "systems-design", "distributed-systems", "design-patterns", "reliability-and-scale", "data-systems"] || "system-design" in relatedTopics[]->slug.current)] | order(publishedAt desc)[0...3] {${summaryFields}},
-  "platformTopic": *[_type == "topic" && (slug.current in ["platform-engineering", "cloud-platform", "cloud"]) && ${publicDocument}][0] {
+  "systemDesignArticles": *[_type == "article" && ${publishedDocument} && (primaryTopic->slug.current in ["system-design", "distributed-systems", "design-patterns", "reliability-and-scale", "data-systems"] || "system-design" in relatedTopics[]->slug.current)] | order(publishedAt desc)[0...3] {${summaryFields}},
+  "platformTopic": *[_type == "topic" && kind == "domain" && slug.current == "platform-engineering" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary
   },
-  "aiTopic": *[_type == "topic" && (slug.current in ["ai-engineering", "ai-systems", "ai", "multi-agent-systems"]) && ${publicDocument}][0] {
+  "aiTopic": *[_type == "topic" && kind == "domain" && slug.current == "ai-engineering" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary
   }
 }`;
@@ -53,7 +53,7 @@ export const projectsQuery = `*[_type == "project" && ${publishedDocument}] | or
 
 export const seriesListQuery = `*[_type == "series" && ${publicDocument}] | order(title asc) {
   ${summaryFields},
-  "publishedArticleCount": count(articles[]->[_type == "article" && ${publishedDocument}])
+  "publishedArticleCount": count((articles[]->)[_type == "article" && ${publishedDocument}])
 }`;
 
 export const articleSlugsQuery = `*[_type == "article" && ${publishedDocument}].slug.current`;
@@ -66,11 +66,12 @@ export const topicsListQuery = `*[_type == "topic" && ${publicDocument}] | order
   _type,
   title,
   "slug": slug.current,
+  kind,
   summary,
   icon,
   order,
   featured,
-  parent->{_id, title, "slug": slug.current},
+  parent->{_id, title, "slug": slug.current, kind},
   "articleCount": count(*[_type == "article" && ${publishedDocument} && (primaryTopic._ref == ^._id || ^._id in relatedTopics[]._ref)])
 }`;
 
@@ -79,18 +80,19 @@ export const topicBySlugQuery = `*[_type == "topic" && slug.current == $slug && 
   _type,
   title,
   "slug": slug.current,
+  kind,
   summary,
   description,
   icon,
   order,
   featured,
-  parent->{_id, title, "slug": slug.current},
+  parent->{_id, title, "slug": slug.current, kind},
   "subtopics": *[_type == "topic" && parent._ref == ^._id && ${publicDocument}] | order(coalesce(order, 999) asc, title asc) {
     _id,
     _type,
     title,
     "slug": slug.current,
-    summary,
+    kind,
     icon
   },
   "articles": *[_type == "article" && ${publishedDocument} && (primaryTopic._ref == ^._id || ^._id in relatedTopics[]._ref)] | order(publishedAt desc) {
@@ -118,7 +120,7 @@ export const articleBySlugQuery = `*[_type == "article" && slug.current == $slug
     title,
     "slug": slug.current,
     "articles": coalesce(
-      articles[]->[_type == "article" && ${publishedDocument}] {
+      (articles[]->)[_type == "article" && ${publishedDocument}] {
         _id,
         title,
         "slug": slug.current,
@@ -136,7 +138,7 @@ export const projectBySlugQuery = `*[_type == "project" && slug.current == $slug
 export const seriesBySlugQuery = `*[_type == "series" && slug.current == $slug && ${publicDocument}][0] {
   ${summaryFields}, seo,
   "articles": coalesce(
-    articles[]->[_type == "article" && ${publishedDocument}] {${summaryFields}},
+    (articles[]->)[_type == "article" && ${publishedDocument}] {${summaryFields}},
     []
   )
 }`;
@@ -147,10 +149,12 @@ export const wikiNavQuery = `{
     _type,
     title,
     "slug": slug.current,
+    kind,
+    summary,
     icon,
     order,
     featured,
-    parent->{_id, title, "slug": slug.current}
+    parent->{_id, title, "slug": slug.current, kind}
   },
   "articles": *[_type == "article" && ${publishedDocument}] {
     _id,

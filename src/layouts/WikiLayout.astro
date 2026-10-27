@@ -5,6 +5,7 @@ import LeftNav from '../components/LeftNav.astro';
 import { fetchContent, formatPageTitle } from '../lib/content';
 import { wikiNavQuery } from '../lib/sanity/queries';
 import type { Topic, Series, ContentSummary } from '../lib/sanity/types';
+import { buildTopicTree, logExcludedTopics } from '../lib/topics';
 import '../styles/global.css';
 
 interface Props {
@@ -25,6 +26,8 @@ const pageTitle = formatPageTitle(title);
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://wiki.eiakoji.me');
 
 const navData = await fetchContent<{ topics: Topic[]; articles?: ContentSummary[]; series: Series[] }>(wikiNavQuery);
+const navTree = buildTopicTree(navData?.topics ?? [], navData?.articles ?? []);
+logExcludedTopics(navTree);
 ---
 
 <!doctype html>
@@ -47,7 +50,7 @@ const navData = await fetchContent<{ topics: Topic[]; articles?: ContentSummary[
     <a class="skip-link" href="#main-content">Skip to content</a>
     <SiteHeader />
     <div class="wiki-shell">
-      <LeftNav topics={navData?.topics} articles={navData?.articles} series={navData?.series} currentSlug={currentSlug} />
+      <LeftNav tree={navTree} series={navData?.series} currentSlug={currentSlug} />
       <main id="main-content">
         <div class="wiki-main">
           <slot />
