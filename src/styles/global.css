@@ -101,7 +101,7 @@ code, pre, kbd { font-family: var(--font-mono); }
 .primary-nav a:hover { color: var(--link); }
 .primary-nav a[aria-current="page"] { color: var(--selected-text); border-bottom-color: var(--selected-indicator); }
 .site-footer { margin-top: 64px; padding: 32px 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: var(--text-sm); }
-.footer-inner { display: flex; justify-content: space-between; gap: 24px; }
+.footer-inner { display: flex; flex-wrap: nowrap; align-items: baseline; justify-content: space-between; gap: 24px; }
 .footer-inner p { margin: 0; }
 .footer-inner a { font-weight: 500; }
 .footer-inner a:hover { text-decoration-thickness: 2px; }
@@ -330,7 +330,7 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
     --wiki-shell: min(100% - 28px, 1380px);
   }
   .card-grid { grid-template-columns: 1fr; }
-  .footer-inner, .section-header { align-items: flex-start; flex-direction: column; }
+  .section-header { align-items: flex-start; flex-direction: column; }
   .section-header { gap: 8px; }
 }
 

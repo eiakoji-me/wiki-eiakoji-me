@@ -602,6 +602,10 @@ async function testConfiguration() {
   assert.match(styles, /@media \(max-width: 820px\)/, 'styles must include the 820px mobile nav breakpoint');
   assert.match(styles, /@media \(max-width: 720px\)/, 'styles must include a small-screen layout');
   assert.ok(styles.includes('.nav-toggle'), 'styles must include .nav-toggle rules');
+  assert.ok(
+    !/\.footer-inner[^{]*\{[^}]*flex-direction:\s*column/.test(styles),
+    'the footer copyright line and link must stay in one row at every width',
+  );
   assert.ok(!/outline\s*:\s*none/.test(styles), 'styles must not suppress keyboard focus outlines');
   assert.match(netlify, /command = "npm run build"/, 'Netlify must use the production build command');
   assert.match(netlify, /publish = "dist"/, 'Netlify must publish dist');
