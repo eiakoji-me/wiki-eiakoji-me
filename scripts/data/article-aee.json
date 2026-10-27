@@ -225,6 +225,16 @@
       "style": "normal"
     },
     {
+      "_key": "image-hld-diagram",
+      "_type": "imageWithAlt",
+      "alt": "Detailed high-level design schematic of the AI Execution Environment showing its control plane, storage boundaries, context and state model, and container runtime pool.",
+      "caption": "Detailed high-level design schematic of the AI Execution Environment showing the four cooperating architectural domains.",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-ef80ca2643564f2c885fda2cd9b27b5278d36cd0-2300x3022-png"
+      }
+    },
+    {
       "_key": "b-013-ae289cd095b6",
       "_type": "block",
       "children": [
@@ -1434,12 +1444,12 @@
   "difficulty": "Advanced",
   "featuredImage": {
     "_type": "imageWithAlt",
-    "alt": "High-level design of the AI Execution Environment showing its control plane, storage boundaries, context and state model, and bounded runtime pool.",
+    "alt": "Architecture of the AI Execution Environment: control plane, storage boundaries, container runtime pool, and durable state.",
+    "caption": "The AI Execution Environment separates orchestration, durable state, isolated storage, and containerized execution across four cooperating domains.",
     "asset": {
-      "_ref": "image-ef80ca2643564f2c885fda2cd9b27b5278d36cd0-2300x3022-png",
-      "_type": "reference"
-    },
-    "caption": "The AI Execution Environment separates orchestration, durable state, isolated storage, and containerized execution across four cooperating domains."
+      "_type": "reference",
+      "_ref": "image-3dc32f5a86b8319cd904269267876b35ce7e0adb-1600x900-png"
+    }
   },
   "format": "article",
   "primaryTopic": {
@@ -1462,7 +1472,14 @@
   "seo": {
     "_type": "seo",
     "description": "A practical architecture for isolated agent runtimes, durable workflow state, credential boundaries, and bounded issue-to-PR automation.",
-    "title": "Issue-Driven AI Execution Environment Architecture"
+    "title": "Issue-Driven AI Execution Environment Architecture",
+    "image": {
+      "_type": "image",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-3dc32f5a86b8319cd904269267876b35ce7e0adb-1600x900-png"
+      }
+    }
   },
   "slug": {
     "_type": "slug",
