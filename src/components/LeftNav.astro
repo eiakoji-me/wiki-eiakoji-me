@@ -12,15 +12,15 @@ const { tree, currentSlug } = Astro.props;
 const nav = buildNavigation(tree);
 ---
 
-<aside class="wiki-left-nav" aria-label="Knowledge navigation">
-  <details class="wiki-nav-disclosure" open>
-    <summary class="wiki-nav-summary">
-      <span>Navigation & Topics</span>
-      <span class="disclosure-arrow" aria-hidden="true">▾</span>
-    </summary>
+{nav.domains.length > 0 && (
+  <aside class="wiki-left-nav" aria-label="Knowledge navigation">
+    <details class="wiki-nav-disclosure" open>
+      <summary class="wiki-nav-summary">
+        <span>Navigation & Topics</span>
+        <span class="disclosure-arrow" aria-hidden="true">▾</span>
+      </summary>
 
-    <div class="wiki-nav-content">
-      {nav.domains.length > 0 && (
+      <div class="wiki-nav-content">
         <div class="nav-section">
           <div class="nav-section-title">Domains</div>
           <ul class="topic-tree">
@@ -29,10 +29,10 @@ const nav = buildNavigation(tree);
             ))}
           </ul>
         </div>
-      )}
-    </div>
-  </details>
-</aside>
+      </div>
+    </details>
+  </aside>
+)}
 
 <style>
   .wiki-left-nav {

@@ -651,6 +651,12 @@ async function testConfiguration() {
   for (const removed of ['Browse', 'Curated Series', '/articles/', '/series/', 'series', 'Series']) {
     assert.ok(!leftNavComponent.includes(removed), `LeftNav must be domains-only and not contain ${removed}`);
   }
+  assert.match(
+    leftNavComponent,
+    /\{nav\.domains\.length > 0 && \(\s*<aside class="wiki-left-nav"/,
+    'LeftNav must omit the whole aside when there are no domains',
+  );
+  assert.ok(styles.includes('.wiki-shell:not(:has(.wiki-left-nav))'), 'styles must lay out the shell without a left nav');
   assert.ok(!wikiLayout.includes('series='), 'WikiLayout must not pass series to LeftNav');
   const navDataType = wikiLayout.match(/fetchContent<([^>]*)>\(wikiNavQuery\)/)?.[1] ?? '';
   assert.ok(navDataType.includes('topics'), 'WikiLayout navData type must be found');

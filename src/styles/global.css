@@ -210,6 +210,13 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
 .wiki-shell:not(:has(.wiki-right-rail)) {
   grid-template-columns: 240px minmax(0, 1fr);
 }
+/* No domains: the left nav is omitted, so main takes its column. */
+.wiki-shell:not(:has(.wiki-left-nav)) {
+  grid-template-columns: minmax(0, 1fr) 260px;
+}
+.wiki-shell:not(:has(.wiki-left-nav)):not(:has(.wiki-right-rail)) {
+  grid-template-columns: minmax(0, 1fr);
+}
 .wiki-main {
   min-width: 0;
 }
@@ -227,6 +234,12 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
     margin-top: 48px;
     padding-top: 32px;
     border-top: 1px solid var(--border);
+  }
+  .wiki-shell:not(:has(.wiki-left-nav)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wiki-shell:not(:has(.wiki-left-nav)) .wiki-right-rail {
+    grid-column: 1;
   }
 }
 
