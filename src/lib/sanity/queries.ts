@@ -160,11 +160,5 @@ export const wikiNavQuery = `{
     _id,
     primaryTopic->{_id, title, "slug": slug.current},
     "relatedTopics": relatedTopics[]->{_id, title, "slug": slug.current}
-  },
-  "series": *[_type == "series" && ${publicDocument}] | order(title asc) {
-    _id,
-    _type,
-    title,
-    "slug": slug.current
   }
 }`;

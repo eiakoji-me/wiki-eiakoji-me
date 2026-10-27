@@ -23,6 +23,7 @@ import {
 } from '../src/lib/sanity/queries.ts';
 import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
+import * as topicsModule from '../src/lib/topics.ts';
 import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, topicHref, validateTopicHierarchy } from '../src/lib/topics.ts';
 import { validateTopicParent } from '../sanity/schemaTypes/topic.ts';
 import { MAX_TOPIC_ANCESTORS, topicPlacementError } from '../src/lib/taxonomy.ts';
@@ -66,6 +67,25 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
     assert.ok(!primaryNav.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
   }
   assert.ok(html.includes('https://eiakoji.me'), `${path} must include the eiakoji.me return link in footer`);
+  const leftNav = html.match(/<aside[^>]*class="wiki-left-nav[^"]*"[\s\S]*?<\/aside>/)?.[0];
+  // The homepage and 404 use BaseLayout and have no left nav; every WikiLayout page renders it.
+  if (!['/', '/404.html'].includes(path)) {
+    assert.ok(leftNav, `${path} must render the domain left nav`);
+  }
+  if (leftNav) {
+    for (const removed of ['Browse', 'Curated Series', 'href="/articles/"', 'href="/series/"']) {
+      assert.ok(!leftNav.includes(removed), `${path} left nav must not contain ${removed}`);
+    }
+  }
+  const footer = html.match(/<footer class="site-footer"[\s\S]*?<\/footer>/)?.[0] ?? '';
+  assert.ok(footer.includes(`© ${new Date().getFullYear()} Eiakoji`), `${path} footer must show the build-year copyright line`);
+  assert.match(
+    footer,
+    /<a href="https:\/\/eiakoji\.me" aria-label="Visit personal website at eiakoji\.me"/,
+    `${path} footer must keep the labelled eiakoji.me link`,
+  );
+  assert.equal(footer.match(/<a /g)?.length, 1, `${path} footer must contain only the eiakoji.me link`);
+  assert.ok(!footer.includes('Notes from building, testing, and learning in public.'), `${path} footer must drop the old tagline`);
   assert.ok(html.includes('src="/images/avatar.jpeg"'), `${path} must render the avatar brand image in header`);
 
   if (requiredText) {
@@ -203,7 +223,6 @@ async function testSanityQueries() {
   const navResult = await client.fetch(wikiNavQuery);
   assert.ok(navResult && typeof navResult === 'object', 'wikiNavQuery must return an object');
   assert.ok(Array.isArray(navResult.topics), 'wikiNavQuery topics must be an array');
-  assert.ok(Array.isArray(navResult.series), 'wikiNavQuery series must be an array');
   assert.ok(Array.isArray(navResult.articles), 'wikiNavQuery articles must be an array');
 
   const homeResult = await client.fetch(homepageQuery);
@@ -354,10 +373,12 @@ async function testUnitBehaviors() {
     assert.ok(domainValidation.errors.some((err) => err.includes(expected)), `validateTopicHierarchy must report ${expected}`);
   }
 
-  const nav = buildNavigation(domainTree, 'articles');
+  const nav = buildNavigation(domainTree);
   assert.equal(nav.domains, domainTree.rootTopics, 'navigation must start from the domain tree');
-  assert.deepEqual(nav.browse.map((l) => l.href), ['/topics/', '/articles/', '/series/'], 'browse links must not include projects');
-  assert.deepEqual(nav.browse.map((l) => l.active), [false, true, false], 'the current browse destination must be active');
+  assert.deepEqual(Object.keys(nav), ['domains'], 'navigation must contain only the domain tree');
+  assert.ok(!('BROWSE_LINKS' in topicsModule), 'BROWSE_LINKS must no longer be exported');
+  assert.ok(!wikiNavQuery.includes('"series"'), 'wikiNavQuery must not project series');
+  assert.ok(!wikiNavQuery.includes('_type == "series"'), 'wikiNavQuery must not query series');
   assert.equal(buildNavigation(buildTopicTree([])).domains.length, 0, 'an empty taxonomy must yield no domains');
   assert.equal(topicHref(domainTree, 'write-through'), '/topics/write-through/', 'topics in the tree link to their hub');
   for (const missing of ['legacy-root', 'orphan', 'nested-domain', undefined]) {
@@ -634,12 +655,21 @@ async function testConfiguration() {
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
   }
-  assert.ok(leftNavComponent.includes('buildNavigation(tree, currentSlug)'), 'LeftNav must render from buildNavigation');
+  assert.ok(leftNavComponent.includes('buildNavigation(tree)'), 'LeftNav must render from buildNavigation');
   assert.ok(!leftNavComponent.includes('Sections') && !leftNavComponent.includes('/projects/'), 'LeftNav must not keep the Sections block or a Projects link');
-  assert.ok(
-    leftNavComponent.indexOf('Domains') < leftNavComponent.indexOf('Browse'),
-    'LeftNav must list domains before the Browse group',
+  for (const removed of ['Browse', 'Curated Series', '/articles/', '/series/', 'series', 'Series']) {
+    assert.ok(!leftNavComponent.includes(removed), `LeftNav must be domains-only and not contain ${removed}`);
+  }
+  assert.match(
+    leftNavComponent,
+    /\{nav\.domains\.length > 0 && \(\s*<aside class="wiki-left-nav"/,
+    'LeftNav must omit the whole aside when there are no domains',
   );
+  assert.ok(styles.includes('.wiki-shell:not(:has(.wiki-left-nav))'), 'styles must lay out the shell without a left nav');
+  assert.ok(!wikiLayout.includes('series='), 'WikiLayout must not pass series to LeftNav');
+  const navDataType = wikiLayout.match(/fetchContent<([^>]*)>\(wikiNavQuery\)/)?.[1] ?? '';
+  assert.ok(navDataType.includes('topics'), 'WikiLayout navData type must be found');
+  assert.ok(!navDataType.includes('Series'), 'WikiLayout navData type must not include Series');
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'repositoryUrl', 'projectUrl']) {
     assert.ok(projectSchema.includes(`name: '${field}'`), `project schema must define ${field}`);
   }
