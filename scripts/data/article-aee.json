@@ -1,6 +1,9 @@
 {
+  "_createdAt": "2026-10-27T18:50:45Z",
   "_id": "article-ai-execution-environment-architecture",
+  "_rev": "Ns7ZvAYVcpx9l8P5XJaTx0",
   "_type": "article",
+  "_updatedAt": "2026-10-27T20:46:00Z",
   "body": [
     {
       "_key": "b-000-e01ac9154687",
@@ -33,8 +36,6 @@
     {
       "_key": "b-002-485c25f47ae6",
       "_type": "block",
-      "style": "normal",
-      "markDefs": [],
       "children": [
         {
           "_key": "b-002-485c25f47ae6-s0",
@@ -42,7 +43,9 @@
           "marks": [],
           "text": "The AI Execution Environment (AEE) is an architecture to make those boundaries explicit. It is a workspace control plane for issue-driven work across independent projects. Agents remain replaceable interfaces. Repositories, work-item state, runtimes, and identities receive durable contracts."
         }
-      ]
+      ],
+      "markDefs": [],
+      "style": "normal"
     },
     {
       "_key": "b-003-bad1819623a8",
@@ -228,11 +231,11 @@
       "_key": "image-hld-diagram",
       "_type": "imageWithAlt",
       "alt": "Detailed high-level design schematic of the AI Execution Environment showing its control plane, storage boundaries, context and state model, and container runtime pool.",
-      "caption": "Detailed high-level design schematic of the AI Execution Environment showing the four cooperating architectural domains.",
       "asset": {
-        "_type": "reference",
-        "_ref": "image-ef80ca2643564f2c885fda2cd9b27b5278d36cd0-2300x3022-png"
-      }
+        "_ref": "image-ef80ca2643564f2c885fda2cd9b27b5278d36cd0-2300x3022-png",
+        "_type": "reference"
+      },
+      "caption": "Detailed high-level design schematic of the AI Execution Environment showing the four cooperating architectural domains."
     },
     {
       "_key": "b-013-ae289cd095b6",
@@ -1209,8 +1212,6 @@
     {
       "_key": "b-066-1bcc1ea3067a",
       "_type": "block",
-      "style": "normal",
-      "markDefs": [],
       "children": [
         {
           "_key": "b-066-1bcc1ea3067a-s0",
@@ -1218,13 +1219,13 @@
           "marks": [],
           "text": "Consider an external issue requesting an architecture deep dive or complex feature across an existing codebase."
         }
-      ]
+      ],
+      "markDefs": [],
+      "style": "normal"
     },
     {
       "_key": "b-067-7fae0ba2529a",
       "_type": "block",
-      "style": "normal",
-      "markDefs": [],
       "children": [
         {
           "_key": "b-067-7fae0ba2529a-s0",
@@ -1246,13 +1247,13 @@
           "marks": [],
           "text": "), assigns an exclusive runtime slot, and starts an isolated worktree. Refinement turns the issue into an actionable contract with explicit acceptance criteria. Design maps that contract to technical sources, component boundaries, and verification plans. Implementation prepares code and publication assets in the worktree. Testing verifies the result across automated suites and responsive layouts. Review compares the result with acceptance criteria and architectural invariants."
         }
-      ]
+      ],
+      "markDefs": [],
+      "style": "normal"
     },
     {
       "_key": "b-068-3be522e16257",
       "_type": "block",
-      "style": "normal",
-      "markDefs": [],
       "children": [
         {
           "_key": "b-068-3be522e16257-s0",
@@ -1260,7 +1261,9 @@
           "marks": [],
           "text": "If the task requires code changes, the remaining stages commit the changes, open a pull request, and monitor CI. If it is purely an external content or artifact publication, verified evidence can close the task directly. A general execution platform supports terminal workflows for both code changes and external publication artifacts."
         }
-      ]
+      ],
+      "markDefs": [],
+      "style": "normal"
     },
     {
       "_key": "b-069-71ba549227dd",
@@ -1429,8 +1432,6 @@
     {
       "_key": "b-080-55a655c2026f",
       "_type": "block",
-      "style": "normal",
-      "markDefs": [],
       "children": [
         {
           "_key": "b-080-55a655c2026f-s0",
@@ -1438,17 +1439,19 @@
           "marks": [],
           "text": "By treating repository boundaries, runtime assignments, and stage transitions as durable platform contracts, multi-agent systems can execute reliably without relying on volatile conversation memory."
         }
-      ]
+      ],
+      "markDefs": [],
+      "style": "normal"
     }
   ],
   "difficulty": "Advanced",
   "featuredImage": {
     "_type": "imageWithAlt",
-    "alt": "Architecture of the AI Execution Environment: control plane, storage boundaries, container runtime pool, and durable state.",
-    "caption": "The AI Execution Environment separates orchestration, durable state, isolated storage, and containerized execution across four cooperating domains.",
+    "alt": "Schematic architecture of the AI Execution Environment across intake, control plane, isolated runtime pool, and storage boundaries.",
+    "caption": "System topology: from issue intake to verified delivery across isolated runtimes and durable storage boundaries.",
     "asset": {
       "_type": "reference",
-      "_ref": "image-3dc32f5a86b8319cd904269267876b35ce7e0adb-1600x900-png"
+      "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png"
     }
   },
   "format": "article",
@@ -1472,14 +1475,14 @@
   "seo": {
     "_type": "seo",
     "description": "A practical architecture for isolated agent runtimes, durable workflow state, credential boundaries, and bounded issue-to-PR automation.",
-    "title": "Issue-Driven AI Execution Environment Architecture",
     "image": {
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-3dc32f5a86b8319cd904269267876b35ce7e0adb-1600x900-png"
+        "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png"
       }
-    }
+    },
+    "title": "Issue-Driven AI Execution Environment Architecture"
   },
   "slug": {
     "_type": "slug",
