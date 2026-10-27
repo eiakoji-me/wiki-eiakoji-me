@@ -26,9 +26,8 @@ export function formatDate(value: string): string {
 
 export function contentHref(type: string, slug: string): string {
   if (type === 'topic') return `/topics/${slug}/`;
-  if (type === 'article') return `/articles/${slug}/`;
   if (type === 'project') return `/projects/${slug}/`;
-  return `/series/${slug}/`;
+  return `/articles/${slug}/`;
 }
 
 export const SITE_TITLE = 'wiki.eiakoji.me';
@@ -53,7 +52,6 @@ export function formatContentLabel(
   formatOrKind?: string,
   type?: string
 ): string {
-  if (type === 'series') return 'Series';
   if (type === 'project') return 'Case Study';
   if (!formatOrKind) return 'Article';
   return (

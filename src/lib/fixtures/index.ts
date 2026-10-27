@@ -66,14 +66,6 @@ const full: Doc[] = [
   article('article-future-post', 'Scheduled Post', '2099-01-01T00:00:00Z', 'topic-agentic-workflows'),
   // Its primary topic is unclassified, so the article must not link to a topic page.
   article('article-language-notes', 'Language Notes', '2026-08-01T00:00:00Z', 'topic-languages'),
-  {
-    _id: 'series-consensus',
-    _type: 'series',
-    title: 'Consensus from Scratch',
-    slug: slug('consensus-from-scratch'),
-    summary: 'A fixture learning path.',
-    articles: [ref('article-raft-log-replication')],
-  },
 ];
 
 export const FIXTURE_DATASETS: Record<string, Doc[]> = { empty: [], partial, full };

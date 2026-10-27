@@ -67,11 +67,6 @@ if (article.primaryTopic?.slug) {
         <span class="badge">{formatLabel}</span>
         {article.difficulty && <span class="badge-neutral">{article.difficulty}</span>}
         <time datetime={article.publishedAt}>{formatDate(article.publishedAt!)}</time>
-        {article.series && (
-          <a href={`/series/${article.series.slug}/`} class="badge">
-            Part of {article.series.title}
-          </a>
-        )}
       </div>
 
       <h1>{article.title}</h1>
@@ -164,35 +159,6 @@ if (article.primaryTopic?.slug) {
     <div class="entry-body">
       <RichText value={article.body} />
     </div>
-
-    {article.series?.articles && article.series.articles.length > 1 && (
-      <nav class="series-pager" aria-label="Series navigation">
-        <div class="pager-title">Continue reading: {article.series.title}</div>
-        <div class="pager-grid">
-          {(() => {
-            const idx = article.series!.articles!.findIndex((a) => a.slug === article.slug);
-            const prev = idx > 0 ? article.series!.articles![idx - 1] : null;
-            const next = idx >= 0 && idx < article.series!.articles!.length - 1 ? article.series!.articles![idx + 1] : null;
-            return (
-              <>
-                {prev ? (
-                  <a href={`/articles/${prev.slug}/`} class="pager-item prev">
-                    <span class="dir">← Previous article</span>
-                    <span class="label">{prev.title}</span>
-                  </a>
-                ) : <div />}
-                {next ? (
-                  <a href={`/articles/${next.slug}/`} class="pager-item next">
-                    <span class="dir">Next article →</span>
-                    <span class="label">{next.title}</span>
-                  </a>
-                ) : <div />}
-              </>
-            );
-          })()}
-        </div>
-      </nav>
-    )}
   </article>
 
   <RightRail headings={headings} article={article} topicTree={tree} slot="right-rail" />
@@ -282,55 +248,5 @@ if (article.primaryTopic?.slug) {
   }
   .book-callout p {
     margin: 0;
-  }
-  .series-pager {
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-  }
-  .pager-title {
-    font-size: var(--text-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-  }
-  .pager-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-  .pager-item {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    text-decoration: none;
-    transition: border-color 140ms ease;
-  }
-  .pager-item:hover {
-    border-color: var(--border-strong);
-  }
-  .pager-item:hover .label {
-    text-decoration: underline;
-  }
-  .pager-item.next {
-    text-align: right;
-  }
-  .pager-item .dir {
-    font-size: var(--text-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-  }
-  .pager-item .label {
-    font-size: var(--text-base);
-    font-weight: 600;
-    color: var(--text);
   }
 </style>

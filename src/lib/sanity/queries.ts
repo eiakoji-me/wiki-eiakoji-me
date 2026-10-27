@@ -16,10 +16,7 @@ const summaryFields = `
   "relatedTopics": relatedTopics[]->{_id, title, "slug": slug.current}
 `;
 
-export const latestContentQuery = `*[
-  ((_type in ["article", "project"]) && ${publishedDocument}) ||
-  (_type == "series" && ${publicDocument})
-] | order(coalesce(publishedAt, _updatedAt) desc)[0...6] {${summaryFields}}`;
+export const latestContentQuery = `*[_type in ["article", "project"] && ${publishedDocument}] | order(publishedAt desc)[0...6] {${summaryFields}}`;
 
 export const workshopsQuery = `*[_type == "article" && (format == "workshop" || kind == "workshop") && ${publishedDocument}] | order(publishedAt desc) {${summaryFields}}`;
 
@@ -27,10 +24,7 @@ export const featuredArticlesQuery = `*[_type == "article" && ${publishedDocumen
 
 export const homepageQuery = `{
   "featured": *[_type == "article" && ${publishedDocument}] | order(coalesce(featured, false) desc, publishedAt desc)[0...3] {${summaryFields}},
-  "latest": *[
-    ((_type in ["article", "project"]) && ${publishedDocument}) ||
-    (_type == "series" && ${publicDocument})
-  ] | order(coalesce(publishedAt, _updatedAt) desc)[0...6] {${summaryFields}},
+  "latest": *[_type in ["article", "project"] && ${publishedDocument}] | order(publishedAt desc)[0...6] {${summaryFields}},
   "workshops": *[_type == "article" && (format == "workshop" || kind == "workshop") && ${publishedDocument}] | order(publishedAt desc)[0...3] {${summaryFields}},
   "systemDesignTopic": *[_type == "topic" && kind == "domain" && slug.current == "system-design" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary,
@@ -51,14 +45,8 @@ export const homepageQuery = `{
 export const articlesQuery = `*[_type == "article" && ${publishedDocument}] | order(publishedAt desc) {${summaryFields}}`;
 export const projectsQuery = `*[_type == "project" && ${publishedDocument}] | order(publishedAt desc) {${summaryFields}}`;
 
-export const seriesListQuery = `*[_type == "series" && ${publicDocument}] | order(title asc) {
-  ${summaryFields},
-  "publishedArticleCount": count((articles[]->)[_type == "article" && ${publishedDocument}])
-}`;
-
 export const articleSlugsQuery = `*[_type == "article" && ${publishedDocument}].slug.current`;
 export const projectSlugsQuery = `*[_type == "project" && ${publishedDocument}].slug.current`;
-export const seriesSlugsQuery = `*[_type == "series" && ${publicDocument}].slug.current`;
 export const topicSlugsQuery = `*[_type == "topic" && ${publicDocument}].slug.current`;
 
 export const topicsListQuery = `*[_type == "topic" && ${publicDocument}] | order(coalesce(order, 999) asc, title asc) {
@@ -114,33 +102,11 @@ export const articleBySlugQuery = `*[_type == "article" && slug.current == $slug
   technologies,
   bookAuthor,
   referenceUrl,
-  seo,
-  "series": *[_type == "series" && ^._id in articles[]._ref && ${publicDocument}][0] {
-    _id,
-    title,
-    "slug": slug.current,
-    "articles": coalesce(
-      (articles[]->)[_type == "article" && ${publishedDocument}] {
-        _id,
-        title,
-        "slug": slug.current,
-        summary
-      },
-      []
-    )
-  }
+  seo
 }`;
 
 export const projectBySlugQuery = `*[_type == "project" && slug.current == $slug && ${publishedDocument}][0] {
   ${summaryFields}, body, technologies, repositoryUrl, projectUrl, seo
-}`;
-
-export const seriesBySlugQuery = `*[_type == "series" && slug.current == $slug && ${publicDocument}][0] {
-  ${summaryFields}, seo,
-  "articles": coalesce(
-    (articles[]->)[_type == "article" && ${publishedDocument}] {${summaryFields}},
-    []
-  )
 }`;
 
 export const wikiNavQuery = `{

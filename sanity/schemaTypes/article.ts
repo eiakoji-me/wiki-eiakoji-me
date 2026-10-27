@@ -104,15 +104,6 @@ export const article = defineType({
       },
     }),
     defineField({
-      name: 'series',
-      title: 'Series (Deprecated — Managed by Series document)',
-      type: 'reference',
-      to: [{ type: 'series' }],
-      fieldset: 'editorial',
-      hidden: true,
-      description: 'Series membership is governed exclusively by the Series document.',
-    }),
-    defineField({
       name: 'topics',
       title: 'Tags / Legacy Topics',
       type: 'array',
