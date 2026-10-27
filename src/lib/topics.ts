@@ -274,28 +274,12 @@ export function topicHref(tree: TopicTree, slug: string | undefined): string | u
   return slug && tree.slugMap.has(slug) ? `/topics/${slug}/` : undefined;
 }
 
-export interface NavigationLink {
-  label: string;
-  href: string;
-  active: boolean;
-}
-
 export interface Navigation {
   domains: TopicNode[];
-  browse: NavigationLink[];
 }
 
-export const BROWSE_LINKS: Array<{ label: string; href: string; slug: string }> = [
-  { label: 'All topics', href: '/topics/', slug: 'topics' },
-  { label: 'Articles & notes', href: '/articles/', slug: 'articles' },
-  { label: 'Learning paths', href: '/series/', slug: 'series' },
-];
-
-export function buildNavigation(tree: TopicTree, currentSlug?: string): Navigation {
-  return {
-    domains: tree.rootTopics,
-    browse: BROWSE_LINKS.map(({ label, href, slug }) => ({ label, href, active: currentSlug === slug })),
-  };
+export function buildNavigation(tree: TopicTree): Navigation {
+  return { domains: tree.rootTopics };
 }
 
 export function getTopicBreadcrumbs(
