@@ -62,6 +62,7 @@ const full: Doc[] = [
   article('article-raft-log-replication', 'Raft Log Replication', '2026-09-01T00:00:00Z', 'topic-raft', ['topic-consensus']),
   article('article-lsm-trees', 'LSM Trees', '2026-09-15T00:00:00Z', 'topic-storage-engines'),
   article('article-golden-paths', 'Golden Paths', '2026-10-01T00:00:00Z', 'topic-internal-platforms'),
+  article('article-ai-execution-environment-architecture', 'Architecture of an Issue-Driven AI Execution Environment', '2026-10-27T17:03:11.012Z', 'domain-platform-engineering', ['topic-agentic-workflows', 'topic-internal-platforms']),
   article('article-future-post', 'Scheduled Post', '2099-01-01T00:00:00Z', 'topic-agentic-workflows'),
   // Its primary topic is unclassified, so the article must not link to a topic page.
   article('article-language-notes', 'Language Notes', '2026-08-01T00:00:00Z', 'topic-languages'),

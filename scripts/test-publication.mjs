@@ -98,10 +98,10 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   }
 }
 
-async function waitForServer(process, timeoutMs = 15_000) {
+async function waitForServer(process, logsRef, timeoutMs = 15_000) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    if (process.exitCode !== null) throw new Error(`preview server exited with ${process.exitCode}`);
+    if (process.exitCode !== null) throw new Error(`preview server exited with ${process.exitCode}: ${logsRef.logs}`);
     try {
       const response = await fetch(`${origin}/`);
       if (response.ok) return;
@@ -114,15 +114,15 @@ async function waitForServer(process, timeoutMs = 15_000) {
 }
 
 async function testBuiltSite() {
-  const preview = spawn('./node_modules/.bin/astro', ['preview', '--host', '127.0.0.1', '--port', '4322'], {
+  const preview = spawn('./node_modules/.bin/astro', ['preview', '--host', '127.0.0.1', '--port', '4322', '--ignore-lock'], {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  let logs = '';
-  preview.stdout.on('data', (chunk) => { logs += chunk; });
-  preview.stderr.on('data', (chunk) => { logs += chunk; });
+  const logsRef = { logs: '' };
+  preview.stdout.on('data', (chunk) => { logsRef.logs += chunk; });
+  preview.stderr.on('data', (chunk) => { logsRef.logs += chunk; });
 
   try {
-    await waitForServer(preview);
+    await waitForServer(preview, logsRef);
     for (const page of expectedPages) {
       const builtHtml = await readFile(page.file, 'utf8').catch(() => {
         assert.fail(
@@ -158,7 +158,7 @@ async function testBuiltSite() {
     }
   }
 
-  assert.ok(!logs.includes('[ERROR]'), `preview server logged an error:\n${logs}`);
+  assert.ok(!logsRef.logs.includes('[ERROR]'), `preview server logged an error:\n${logsRef.logs}`);
 }
 
 async function testSanityQueries() {
@@ -543,6 +543,10 @@ async function testUnitBehaviors() {
     (await queryFixtures('full', seriesBySlugQuery, { slug: 'consensus-from-scratch' })).articles.map((a) => a?.slug),
     ['raft-log-replication'],
   );
+
+  const aeeFixture = await queryFixtures('full', articleBySlugQuery, { slug: 'ai-execution-environment-architecture' });
+  assert.equal(aeeFixture.title, 'Architecture of an Issue-Driven AI Execution Environment');
+  assert.equal(aeeFixture.primaryTopic?.slug, 'platform-engineering');
 
   // 7. Test formatContentLabel formatting
   assert.equal(formatContentLabel('case-study'), 'Case Study');
