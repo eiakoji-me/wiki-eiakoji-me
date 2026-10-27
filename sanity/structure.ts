@@ -136,13 +136,10 @@ export const structure: StructureResolver = (S) =>
             ])
         ),
       S.listItem()
-        .title('Series / Learning Paths')
-        .child(S.documentTypeList('series').title('Series / Learning Paths')),
-      S.listItem()
         .title('Legacy Projects')
         .child(S.documentTypeList('project').title('Legacy Projects')),
       S.divider(),
       ...S.documentTypeListItems().filter(
-        (item) => !['topic', 'article', 'series', 'project'].includes(item.getId() ?? '')
+        (item) => !['topic', 'article', 'project'].includes(item.getId() ?? '')
       ),
     ]);

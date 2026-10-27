@@ -179,7 +179,7 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
 .code-block pre { margin: 0; padding: 16px 20px; overflow-x: auto; }
 .code-block pre code { font-size: 0.875em; }
 
-/* Tags, buttons, series */
+/* Tags, buttons */
 .tags { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 24px 0 0; list-style: none; }
 .tags li { padding: 2px 8px; border: 1px solid var(--border); border-radius: 3px; background: var(--badge-neutral-bg); color: var(--badge-neutral-text); font-size: var(--text-sm); }
 .entry-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 0; }
@@ -189,14 +189,6 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
 .button.primary:hover { background: var(--button-bg-hover); border-color: var(--button-bg-hover); }
 .button.primary:active { background: var(--button-bg-active); border-color: var(--button-bg-active); }
 .button.secondary { background: var(--background); color: var(--text); border-color: var(--border); }
-.series-list { counter-reset: article; display: grid; gap: 12px; padding: 0; list-style: none; }
-.series-list li { counter-increment: article; }
-.series-list a { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 16px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 4px; background: var(--background); text-decoration: none; transition: border-color 140ms ease; }
-.series-list a:hover { border-color: var(--border-strong); }
-.series-list a:hover strong { text-decoration: underline; }
-.series-list a::before { content: counter(article, decimal-leading-zero); color: var(--text-muted); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
-.series-list strong { font-size: var(--text-lg); font-weight: 600; }
-.series-list time { color: var(--text-muted); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 
 /* 3-Column Wiki Knowledge Base Layout */
 .wiki-shell {
@@ -340,8 +332,6 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
   .card-grid { grid-template-columns: 1fr; }
   .footer-inner, .section-header { align-items: flex-start; flex-direction: column; }
   .section-header { gap: 8px; }
-  .series-list a { grid-template-columns: 32px 1fr; }
-  .series-list time { grid-column: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

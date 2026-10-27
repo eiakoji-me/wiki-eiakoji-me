@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { createClient } from '@sanity/client';
 import {
   articleBySlugQuery,
@@ -12,16 +12,14 @@ import {
   projectBySlugQuery,
   projectsQuery,
   projectSlugsQuery,
-  seriesBySlugQuery,
-  seriesListQuery,
-  seriesSlugsQuery,
   topicBySlugQuery,
   topicsListQuery,
   topicSlugsQuery,
   wikiNavQuery,
   workshopsQuery,
 } from '../src/lib/sanity/queries.ts';
-import { formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
+import * as queriesModule from '../src/lib/sanity/queries.ts';
+import { contentHref, formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
 import * as topicsModule from '../src/lib/topics.ts';
 import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, topicHref, validateTopicHierarchy } from '../src/lib/topics.ts';
@@ -40,7 +38,6 @@ const expectedPages = [
   { path: '/topics/ai-engineering/', file: 'dist/topics/ai-engineering/index.html', requiredText: 'AI Engineering' },
   { path: '/articles/', file: 'dist/articles/index.html', emptyText: 'No published articles yet' },
   { path: '/projects/', file: 'dist/projects/index.html', emptyText: 'No published projects yet' },
-  { path: '/series/', file: 'dist/series/index.html', emptyText: 'No published series yet' },
   { path: '/404.html', file: 'dist/404.html', requiredText: 'That note isn’t here.' },
 ];
 
@@ -67,6 +64,7 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
     assert.ok(!primaryNav.includes(excluded), `${path} must not include ${excluded} in top-level navigation`);
   }
   assert.ok(html.includes('https://eiakoji.me'), `${path} must include the eiakoji.me return link in footer`);
+  assert.ok(!html.includes('href="/series/'), `${path} must not link to retired /series/ pages`);
   const leftNav = html.match(/<aside[^>]*class="wiki-left-nav[^"]*"[\s\S]*?<\/aside>/)?.[0];
   // The homepage and 404 use BaseLayout and have no left nav; every WikiLayout page renders it.
   if (!['/', '/404.html'].includes(path)) {
@@ -137,6 +135,15 @@ async function testBuiltSite() {
       assertPageMarkup(await response.text(), page);
     }
 
+    await assert.rejects(stat('dist/series'), 'the build must not produce /series/ pages');
+    const articleSlugs = await readdir('dist/articles', { withFileTypes: true });
+    for (const entry of articleSlugs.filter((e) => e.isDirectory())) {
+      const html = await readFile(`dist/articles/${entry.name}/index.html`, 'utf8');
+      for (const removed of ['series-pager', 'series-card', 'aria-label="Series navigation"']) {
+        assert.ok(!html.includes(removed), `/articles/${entry.name}/ must not render series UI (${removed})`);
+      }
+    }
+
     const unknownArticle = await fetch(`${origin}/articles/not-a-real-slug/`);
     assert.equal(unknownArticle.status, 404, 'an unknown article slug must return HTTP 404');
     assert.ok((await unknownArticle.text()).includes('That note isn’t here.'), 'unknown slugs must use the recovery page');
@@ -163,10 +170,10 @@ async function testBuiltSite() {
 
 async function testSanityQueries() {
   const requiredPublicFilter = '!(_id in path("drafts.**")) && defined(slug.current)';
-  for (const query of [latestContentQuery, articlesQuery, projectsQuery, seriesListQuery, topicsListQuery]) {
+  for (const query of [latestContentQuery, articlesQuery, projectsQuery, topicsListQuery]) {
     assert.ok(query.includes(requiredPublicFilter), 'public list queries must exclude drafts and require slugs');
   }
-  for (const query of [latestContentQuery, articlesQuery, projectsQuery, articleBySlugQuery, projectBySlugQuery, seriesBySlugQuery]) {
+  for (const query of [latestContentQuery, articlesQuery, projectsQuery, articleBySlugQuery, projectBySlugQuery]) {
     assert.ok(query.includes('publishedAt <= now()'), 'published article/project queries must exclude future content');
   }
 
@@ -180,10 +187,9 @@ async function testSanityQueries() {
     assert.ok(!homepageQuery.includes(alias), `homepage must not match legacy domain alias ${alias}`);
   }
 
-  assert.ok(
-    articleBySlugQuery.includes('"series": *[_type == "series" && ^._id in articles[]._ref'),
-    'article detail query must resolve series via reverse lookup from series.articles',
-  );
+  for (const [name, query] of Object.entries(queriesModule)) {
+    assert.ok(typeof query !== 'string' || !/series/i.test(query), `${name} must not reference the retired series type`);
+  }
 
   const client = createClient({
     projectId: '7rp2puan',
@@ -196,10 +202,8 @@ async function testSanityQueries() {
     latestContentQuery,
     articlesQuery,
     projectsQuery,
-    seriesListQuery,
     articleSlugsQuery,
     projectSlugsQuery,
-    seriesSlugsQuery,
     topicSlugsQuery,
     topicsListQuery,
     workshopsQuery,
@@ -210,15 +214,10 @@ async function testSanityQueries() {
     assert.ok(Array.isArray(result), 'list and slug queries must return arrays');
   }
 
-  for (const query of [articleBySlugQuery, projectBySlugQuery, seriesBySlugQuery, topicBySlugQuery]) {
+  for (const query of [articleBySlugQuery, projectBySlugQuery, topicBySlugQuery]) {
     const result = await client.fetch(query, { slug: 'not-a-real-slug' });
     assert.equal(result, null, 'unknown detail queries must resolve to null');
   }
-
-  assert.ok(
-    seriesBySlugQuery.includes('"articles": coalesce(') && seriesBySlugQuery.includes('[]'),
-    'series detail queries must return an empty article array when the field is missing',
-  );
 
   const navResult = await client.fetch(wikiNavQuery);
   assert.ok(navResult && typeof navResult === 'object', 'wikiNavQuery must return an object');
@@ -534,14 +533,11 @@ async function testUnitBehaviors() {
   assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
   await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
 
-  // Filtering a dereferenced array must filter the array, not each element
   const fixtureArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'raft-log-replication' });
-  assert.deepEqual(fixtureArticle.series.articles.map((a) => a?.slug), ['raft-log-replication'], 'article series must list published articles');
-  const fixtureSeries = await queryFixtures('full', seriesListQuery);
-  assert.equal(fixtureSeries[0].publishedArticleCount, 1, 'series counts must count published articles');
-  assert.deepEqual(
-    (await queryFixtures('full', seriesBySlugQuery, { slug: 'consensus-from-scratch' })).articles.map((a) => a?.slug),
-    ['raft-log-replication'],
+  assert.ok(!('series' in fixtureArticle), 'article detail must not project series');
+  assert.ok(
+    (await queryFixtures('full', latestContentQuery)).every((item) => ['article', 'project'].includes(item._type)),
+    'latest content must list only articles and projects',
   );
 
   // 7. Test formatContentLabel formatting
@@ -553,10 +549,13 @@ async function testUnitBehaviors() {
   assert.equal(formatContentLabel('workshop'), 'Workshop');
   assert.equal(formatContentLabel('showcase'), 'Showcase');
   assert.equal(formatContentLabel('reference'), 'Reference');
-  assert.equal(formatContentLabel(undefined, 'series'), 'Series');
   assert.equal(formatContentLabel(undefined, 'project'), 'Case Study');
   assert.equal(formatContentLabel(undefined, 'article'), 'Article');
   assert.equal(formatContentLabel('custom-type'), 'Custom Type');
+  assert.equal(contentHref('topic', 'raft'), '/topics/raft/');
+  assert.equal(contentHref('project', 'aee'), '/projects/aee/');
+  assert.equal(contentHref('article', 'raft'), '/articles/raft/');
+  assert.equal(contentHref('unknown', 'x'), '/articles/x/', 'unknown content types must not link to /series/');
 
   // 8. Test formatPageTitle and SITE_TITLE
   assert.equal(SITE_TITLE, 'wiki.eiakoji.me');
@@ -584,7 +583,7 @@ async function testUnitBehaviors() {
 }
 
 async function testConfiguration() {
-  const [styles, netlify, ignore, envExample, readme, articleSchema, projectSchema, seriesSchema, imageSchema, topicSchema, tocComponent, topicsIndexPage, leftNavComponent, wikiLayout] = await Promise.all([
+  const [styles, netlify, ignore, envExample, readme, articleSchema, projectSchema, imageSchema, topicSchema, tocComponent, topicsIndexPage, leftNavComponent, wikiLayout] = await Promise.all([
     readFile('src/styles/global.css', 'utf8'),
     readFile('netlify.toml', 'utf8'),
     readFile('.gitignore', 'utf8'),
@@ -592,7 +591,6 @@ async function testConfiguration() {
     readFile('README.md', 'utf8'),
     readFile('sanity/schemaTypes/article.ts', 'utf8'),
     readFile('sanity/schemaTypes/project.ts', 'utf8'),
-    readFile('sanity/schemaTypes/series.ts', 'utf8'),
     readFile('sanity/schemaTypes/imageWithAlt.ts', 'utf8'),
     readFile('sanity/schemaTypes/topic.ts', 'utf8'),
     readFile('src/components/TableOfContents.astro', 'utf8'),
@@ -615,7 +613,7 @@ async function testConfiguration() {
   for (const section of ['Local setup', 'Content authoring', 'Netlify preparation', 'Verification']) {
     assert.ok(readme.includes(section), `README must document ${section}`);
   }
-  for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'series', 'format', 'primaryTopic', 'featured']) {
+  for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'format', 'primaryTopic', 'featured']) {
     assert.ok(articleSchema.includes(`name: '${field}'`), `article schema must define ${field}`);
   }
   for (const field of ['kind', 'slug', 'summary', 'parent', 'order']) {
@@ -673,8 +671,14 @@ async function testConfiguration() {
   for (const field of ['slug', 'summary', 'publishedAt', 'featuredImage', 'body', 'repositoryUrl', 'projectUrl']) {
     assert.ok(projectSchema.includes(`name: '${field}'`), `project schema must define ${field}`);
   }
-  assert.ok(seriesSchema.includes("name: 'articles'"), 'series schema must define its ordered articles');
-  assert.ok(seriesSchema.includes("type: 'reference'"), 'series articles must use references');
+  assert.ok(!articleSchema.includes("name: 'series'"), 'article schema must not keep the retired series field');
+  assert.ok(!/series/i.test(await readFile('sanity/schemaTypes/index.ts', 'utf8')), 'Studio must not register a series schema type');
+  await assert.rejects(stat('sanity/schemaTypes/series.ts'), 'the series schema file must be deleted');
+  assert.ok(!(await readFile('sanity/structure.ts', 'utf8')).includes('series'), 'Studio structure must not list series');
+  for (const file of ['src/pages/articles/[slug].astro', 'src/components/RightRail.astro', 'src/lib/sanity/types.ts', 'src/lib/content.ts', 'src/layouts/BaseLayout.astro', 'README.md']) {
+    assert.ok(!/series|learning path/i.test(await readFile(file, 'utf8')), `${file} must not reference series or learning paths`);
+  }
+  assert.ok((await readFile('src/components/RightRail.astro', 'utf8')).includes('relatedTopicLinks'), 'RightRail must keep related topics');
   assert.ok(imageSchema.includes("name: 'alt'"), 'images must define alternative text');
   assert.ok(imageSchema.includes('rule.required()'), 'image alternative text must be required');
 }

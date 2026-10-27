@@ -1,6 +1,6 @@
 # wiki.eiakoji.me
 
-Technical articles, project write-ups, and connected learning series published
+Technical articles, project write-ups, and engineering references published
 with Astro and Sanity.
 
 ## Architecture
@@ -49,9 +49,8 @@ Studio origin must be approved and configured separately.
 
 The initial content model contains:
 
-- `article` — long-form technical writing, optionally attached to a series;
+- `article` — long-form technical writing;
 - `project` — project case studies and implementation notes;
-- `series` — ordered collections of related articles;
 - `topic` — the taxonomy. Each topic has a `kind`: a `domain` is a top-level
   area with no parent, and a `topic` sits under a domain or another topic. The
   left navigation is built from this tree, and topics outside it are left out

@@ -25,7 +25,7 @@ export type ContentFormat =
 
 export interface ContentSummary {
   _id: string;
-  _type: 'article' | 'project' | 'series' | 'topic';
+  _type: 'article' | 'project' | 'topic';
   title: string;
   slug: string;
   summary: string;
@@ -93,12 +93,6 @@ export interface Article extends ContentSummary {
   }>;
   difficulty?: 'Fundamentals' | 'Intermediate' | 'Advanced';
   topics?: string[];
-  series?: {
-    _id: string;
-    title: string;
-    slug: string;
-    articles?: ContentSummary[];
-  };
   repositoryUrl?: string;
   demoUrl?: string;
   technologies?: string[];
@@ -113,16 +107,5 @@ export interface Project extends ContentSummary {
   technologies?: string[];
   repositoryUrl?: string;
   projectUrl?: string;
-  seo?: SeoFields;
-}
-
-export interface Series extends ContentSummary {
-  _type: 'series';
-  articles: ContentSummary[];
-  primaryTopic?: {
-    _id: string;
-    title: string;
-    slug: string;
-  };
   seo?: SeoFields;
 }
