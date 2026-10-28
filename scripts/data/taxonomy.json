@@ -1,0 +1,52 @@
+{
+  "topics": [
+    {
+      "_id": "topic-software-architecture",
+      "title": "Software Architecture",
+      "slug": "software-architecture",
+      "parent": "domain-system-design",
+      "order": 10
+    },
+    {
+      "_id": "topic-architectural-patterns",
+      "title": "Architectural Patterns",
+      "slug": "architectural-patterns",
+      "parent": "topic-software-architecture",
+      "order": 10
+    },
+    {
+      "_id": "topic-domain-driven-design",
+      "title": "Domain-Driven Design",
+      "slug": "domain-driven-design",
+      "parent": "topic-software-architecture",
+      "order": 20
+    },
+    {
+      "_id": "topic-execution-environments",
+      "title": "Execution Environments",
+      "slug": "execution-environments",
+      "parent": "domain-platform-engineering",
+      "order": 10,
+      "summary": "Workspace control planes, isolated runtimes, and the boundaries that let agents and developers execute work safely."
+    },
+    {
+      "_id": "topic-agentic-workflows",
+      "title": "Agentic Workflows",
+      "slug": "agentic-workflows",
+      "parent": "domain-ai-engineering",
+      "order": 10,
+      "summary": "Multi-step agent pipelines, tool use, durable state, and human-in-the-loop control for LLM-driven work."
+    }
+  ],
+  "articles": [
+    {
+      "_id": "article-patterns-of-enterprise-application-architecture",
+      "featured": true
+    },
+    {
+      "_id": "article-ai-execution-environment-architecture",
+      "featured": true,
+      "primaryTopic": "topic-execution-environments"
+    }
+  ]
+}
