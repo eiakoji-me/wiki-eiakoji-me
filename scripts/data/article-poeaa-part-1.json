@@ -13,7 +13,7 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-a50e70635fc4554f0af3409e8d9be1fce072bc29-1600x900-png"
+      "_ref": "image-fe745ec7570cac19f7092a9654d4016afc7b7791-1600x900-png"
     },
     "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Architecture showing Three-Layer System, Service Layer, and Value Objects.",
     "caption": "Three-Layer Architecture, Domain Logic Continuum, and self-validating Value Objects."
@@ -57,7 +57,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-a50e70635fc4554f0af3409e8d9be1fce072bc29-1600x900-png"
+        "_ref": "image-fe745ec7570cac19f7092a9654d4016afc7b7791-1600x900-png"
       }
     }
   },
@@ -415,7 +415,7 @@
       "_key": "img-13-71c9ead27265",
       "asset": {
         "_type": "reference",
-        "_ref": "image-807f988a07f2643e019a9598dcf7bb3cfc0b47c1-1200x700-png"
+        "_ref": "image-af90fc268c3651dde6e9935239acde714c45964f-1200x700-png"
       },
       "alt": "The Three-Layer Architecture showing Presentation Layer, Domain Layer, and Data Source Layer with strict unidirectional dependency flow.",
       "caption": "The Three-Layer System: strict unidirectional dependency flow with zero inward coupling."
@@ -917,7 +917,7 @@
       "_key": "img-41-65af61ff46b8",
       "asset": {
         "_type": "reference",
-        "_ref": "image-e2732056a2bfe6a6a179a32f3a1602394123bda4-1200x750-png"
+        "_ref": "image-105df411b76f88a8331106eab495bf145c34ffa5-1200x750-png"
       },
       "alt": "The Service Layer as Workflow Coordinator establishing transaction boundaries and coordinating domain entities with infrastructure.",
       "caption": "The Service Layer coordinates transactions and infrastructure without bleeding domain calculations into procedural scripts."
@@ -1443,7 +1443,7 @@
       "_key": "img-61-f18388f43009",
       "asset": {
         "_type": "reference",
-        "_ref": "image-6157b0ad3fe0fd0cf0e1537fd34578a07fb2276f-1400x850-png"
+        "_ref": "image-28d56f171a57c593b8d38073da9c0a38674a67da-1400x850-png"
       },
       "alt": "Hands-On Architecture: Enterprise SaaS Subscription & Proration Engine sequence and component interactions.",
       "caption": "Hands-on workflow: Service Layer orchestrates I/O while Value Objects and Entities enforce pure domain invariants in memory."
