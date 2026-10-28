@@ -1,0 +1,1806 @@
+{
+  "_id": "article-poeaa-part-1-layering-and-domain-logic",
+  "_type": "article",
+  "title": "PoEAA Part I: Layering & Domain Logic Architecture",
+  "slug": {
+    "_type": "slug",
+    "current": "poeaa-part-1-layering-and-domain-logic"
+  },
+  "format": "article",
+  "difficulty": "Advanced",
+  "featured": false,
+  "featuredImage": {
+    "_type": "imageWithAlt",
+    "asset": {
+      "_type": "reference",
+      "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+    },
+    "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Continuum showing Three-Layer System, Service Layer, and Rich Domain Model vs Transaction Script.",
+    "caption": "Three-Layer System architecture, Domain Logic Continuum, and self-validating Value Objects."
+  },
+  "publishedAt": "2026-10-28T00:00:00.000Z",
+  "summary": "How enterprise systems organize domain logic and protect business invariants: comparing Transaction Scripts, Table Modules, and Domain Models, coordinating workflows via the Service Layer, and eliminating Primitive Obsession with Value Objects.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-architectural-patterns"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "topic-domain-driven-design",
+      "_key": "rel-topic-ddd"
+    },
+    {
+      "_type": "reference",
+      "_ref": "topic-software-architecture",
+      "_key": "rel-topic-sa"
+    }
+  ],
+  "topics": [
+    "Software Architecture",
+    "Enterprise Patterns",
+    "Domain-Driven Design",
+    "TypeScript",
+    "Clean Architecture"
+  ],
+  "technologies": [
+    "TypeScript",
+    "Node.js",
+    "Domain-Driven Design",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "title": "PoEAA Part I: Layering & Domain Logic Architecture — wiki.eiakoji.me",
+    "description": "An advanced architectural exploration of Fowler's PoEAA patterns: Three-Layer System, Transaction Scripts vs Domain Models, Service Layer, and Value Objects in TypeScript.",
+    "image": {
+      "_type": "image",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+      }
+    }
+  },
+  "body": [
+    {
+      "_type": "block",
+      "_key": "b-000-1b528f4ef16e",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-000-1b528f4ef16e-s0",
+          "text": "Series Navigation",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-000-1b528f4ef16e-s1",
+          "text": ": Part I of IV in ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-000-1b528f4ef16e-s2",
+          "text": "Patterns of Enterprise Application Architecture",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-001-62949553b8ae",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-001-62949553b8ae-s0",
+          "text": "- ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-001-62949553b8ae-s1",
+          "text": "Part I: Layering & Domain Logic Architecture",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-001-62949553b8ae-s2",
+          "text": " (Current)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-002-1df3ac99fbfc",
+      "style": "blockquote",
+      "markDefs": [
+        {
+          "_type": "link",
+          "_key": "b-002-1df3ac99fbfc-link0",
+          "href": "/articles/poeaa-part-2-data-source-persistence/"
+        }
+      ],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-002-1df3ac99fbfc-s0",
+          "text": "- ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-002-1df3ac99fbfc-s1",
+          "text": "Part II: Data Source & Persistence Patterns",
+          "marks": [
+            "b-002-1df3ac99fbfc-link0"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-002-1df3ac99fbfc-s2",
+          "text": " ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-002-1df3ac99fbfc-s3",
+          "text": "(Upcoming)",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-003-108d570f15b6",
+      "style": "blockquote",
+      "markDefs": [
+        {
+          "_type": "link",
+          "_key": "b-003-108d570f15b6-link0",
+          "href": "/articles/poeaa-part-3-web-presentation-distribution/"
+        }
+      ],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-003-108d570f15b6-s0",
+          "text": "- ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-003-108d570f15b6-s1",
+          "text": "Part III: Web Presentation & Distribution Strategies",
+          "marks": [
+            "b-003-108d570f15b6-link0"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-003-108d570f15b6-s2",
+          "text": " ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-003-108d570f15b6-s3",
+          "text": "(Upcoming)",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-004-db98a10c12a8",
+      "style": "blockquote",
+      "markDefs": [
+        {
+          "_type": "link",
+          "_key": "b-004-db98a10c12a8-link0",
+          "href": "/articles/poeaa-part-4-offline-concurrency-session-state/"
+        }
+      ],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-004-db98a10c12a8-s0",
+          "text": "- ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-004-db98a10c12a8-s1",
+          "text": "Part IV: Offline Concurrency & Resilient Foundation",
+          "marks": [
+            "b-004-db98a10c12a8-link0"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-004-db98a10c12a8-s2",
+          "text": " ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-004-db98a10c12a8-s3",
+          "text": "(Upcoming)",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-005-6e16922c129a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-005-6e16922c129a-s0",
+          "text": "In 2002, Martin Fowler codified fifty-one foundational patterns in ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-005-6e16922c129a-s1",
+          "text": "Patterns of Enterprise Application Architecture",
+          "marks": [
+            "em"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-005-6e16922c129a-s2",
+          "text": " (PoEAA). While technologies, programming languages, and cloud topologies have evolved radically over the subsequent decades, the core tension of enterprise software engineering remains unchanged: ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-005-6e16922c129a-s3",
+          "text": "how do we organize complex business rules so that changes remain predictable, invariants remain strictly enforced, and data integrity is guaranteed?",
+          "marks": [
+            "strong"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-006-dff7ef7eedd5",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-006-dff7ef7eedd5-s0",
+          "text": "In modern distributed microservices and serverless stacks, teams frequently abandon structured architectural layering under the guise of agility. The consequence is predictably disastrous: business validation scattered across React frontends and API gateways, database entities treated as simple bags of state, and procedural controllers spanning thousands of lines.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-007-4bdb59b43830",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-007-4bdb59b43830-s0",
+          "text": "In this first installment of our four-part deep dive, we re-examine Fowler’s foundational architectural patterns through the lens of modern TypeScript and Domain-Driven Design (DDD). We explore the mechanics of strict unidirectional layering, navigate the trade-offs along the Domain Logic Continuum, define the boundaries of the Service Layer, and eliminate Primitive Obsession using self-validating Value Objects.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-008-7c8b076f6c3a",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-008-7c8b076f6c3a-s0",
+          "text": "1. The Three-Layer System & Strict Directionality",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-009-b4626b041eea",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-009-b4626b041eea-s0",
+          "text": "The bedrock of enterprise architecture is the division of software into three primary layers:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-010-93180823a3e0",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-010-93180823a3e0-s0",
+          "text": "Presentation Layer",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-010-93180823a3e0-s1",
+          "text": ": Handles user interaction, HTTP request parsing, authentication tokens, serialization/deserialization, and view formatting.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-011-3d81bbca186a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-011-3d81bbca186a-s0",
+          "text": "Domain Layer (Domain Logic)",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-011-3d81bbca186a-s1",
+          "text": ": The intellectual heart of the system. Contains business rules, domain invariants, calculations, workflow validations, and domain events.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-012-c874b5f612f8",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-012-c874b5f612f8-s0",
+          "text": "Data Source Layer",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-012-c874b5f612f8-s1",
+          "text": ": Manages interactions with external infrastructural mechanisms: relational databases, document stores, message buses, search indexes, and third-party APIs.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-13-2336396fc199",
+      "code": "┌─────────────────────────────────────────────────────────────┐\n│                     Presentation Layer                      │\n│            (HTTP Controllers, GraphQL Resolvers)            │\n└──────────────────────────────┬──────────────────────────────┘\n                               │ depends on\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│                        Domain Layer                         │\n│         (Entities, Value Objects, Domain Services)          │\n│              ★ Zero infrastructural dependencies ★          │\n└──────────────────────────────┬──────────────────────────────┘\n                               │ depends on\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│                      Data Source Layer                      │\n│        (Repositories, ORM Mappings, Gateway Clients)        │\n└─────────────────────────────────────────────────────────────┘",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-014-e03065de8404",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-014-e03065de8404-s0",
+          "text": "The Invariant of Directionality",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-015-e1dad696a007",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-015-e1dad696a007-s0",
+          "text": "Fowler’s non-negotiable rule is ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-015-e1dad696a007-s1",
+          "text": "unidirectional dependency",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-015-e1dad696a007-s2",
+          "text": ":",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-016-02443828d47a",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-016-02443828d47a-s0",
+          "text": "The domain layer must never depend on the presentation layer, and the domain layer must not be coupled to the concrete storage mechanics of the data source layer.",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-017-35bba5f6cfa7",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-017-35bba5f6cfa7-s0",
+          "text": "When the domain layer is kept pure—free from HTTP request objects, framework decorators, and raw database client imports—it becomes trivially testable in isolation. Unit tests can execute in milliseconds with zero mocking of database connections or network sockets.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-018-83144ec37223",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-018-83144ec37223-s0",
+          "text": "Common Layering Violations in Modern TypeScript",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-019-f176a088401c",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-019-f176a088401c-s0",
+          "text": "The Leaky Database Model",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-019-f176a088401c-s1",
+          "text": ": Importing an ORM entity (e.g. TypeORM, Prisma, or Mongoose schema) directly into an API controller, exposing persistence-specific annotations and auto-generated database columns directly to the network.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-020-715347b13fd7",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-020-715347b13fd7-s0",
+          "text": "The \"Smart\" Repository",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-020-715347b13fd7-s1",
+          "text": ": Placing calculation and validation logic inside custom SQL queries or repository helper methods, fragmenting business rules between application code and database stored procedures.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-021-3089b649a1fa",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-021-3089b649a1fa-s0",
+          "text": "The Presentation Spillover",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-021-3089b649a1fa-s1",
+          "text": ": Calculating financial balances, discounts, or permissions in UI client components rather than enforcing them as domain invariants in the backend.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-022-74a289a8a53b",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-022-74a289a8a53b-s0",
+          "text": "2. The Domain Logic Continuum",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-023-6c000daf181a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-023-6c000daf181a-s0",
+          "text": "How should domain logic be structured within the application? Fowler outlines three primary architectural patterns, which represent a spectrum of complexity:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-024-dd0ebf9cc713",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-024-dd0ebf9cc713-s0",
+          "text": "Pattern  ·  Mental Model  ·  Best Suited For  ·  Maintenance Risk",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-025-5de3160cdb8a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-025-5de3160cdb8a-s0",
+          "text": "Transaction Script",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-025-5de3160cdb8a-s1",
+          "text": "  ·  Procedural scripts handling one request from start to finish  ·  Simple CRUD, batch jobs, ETL, internal tools  ·  Severe duplication and scattered validation as rules grow",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-026-73dc56ba4690",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-026-73dc56ba4690-s0",
+          "text": "Table Module",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-026-73dc56ba4690-s1",
+          "text": "  ·  Single class per database table/view operating on recordsets  ·  Data-centric apps with tabular recordset tooling  ·  Inability to represent complex polymorphic domain models",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-027-86848875d817",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-027-86848875d817-s0",
+          "text": "Rich Domain Model",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-027-86848875d817-s1",
+          "text": "  ·  Network of objects encapsulating state and behavior  ·  Complex business logic, state transitions, invariants  ·  Higher initial cognitive overhead and mapping cost",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-028-e6372ce1771b",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-028-e6372ce1771b-s0",
+          "text": "Transaction Script (Procedural Simplicity)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-029-4bd7ab6e9857",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-029-4bd7ab6e9857-s0",
+          "text": "A Transaction Script organizes business logic into a single procedure that handles a single request from the presentation layer. It makes database queries, validates input, executes calculations, and writes updates directly back to storage.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-30-8883142e20ae",
+      "code": "// Transaction Script Anti-Pattern when applied to complex logic:\nasync function upgradeSubscriptionScript(customerId: string, newPlanId: string) {\n  const db = await getDbConnection();\n  const sub = await db.query('SELECT * FROM subscriptions WHERE customer_id = $1', [customerId]);\n  if (!sub.rows[0]) throw new Error('Not found');\n\n  // Business invariant manually calculated in the script:\n  const daysRemaining = calculateDaysRemaining(sub.rows[0].period_end);\n  const credit = (sub.rows[0].price_cents / 30) * daysRemaining;\n  const newPlan = await db.query('SELECT * FROM plans WHERE id = $1', [newPlanId]);\n  const chargeAmount = newPlan.rows[0].price_cents - credit;\n\n  await db.query('UPDATE subscriptions SET plan_id = $1 WHERE id = $2', [newPlanId, sub.rows[0].id]);\n  await paymentGateway.charge(customerId, chargeAmount);\n}",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-031-f66ffaecdc34",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s0",
+          "text": "The Failure Mode",
+          "marks": [
+            "em"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s1",
+          "text": ": When a second workflow (e.g. ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s2",
+          "text": "cancelSubscriptionScript",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s3",
+          "text": " or ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s4",
+          "text": "downgradeSubscriptionScript",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-031-f66ffaecdc34-s5",
+          "text": ") needs to calculate unspent credit, the logic is copied. Over time, subtle variations emerge, creating inconsistent financial balances.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-032-67576b3ff960",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-032-67576b3ff960-s0",
+          "text": "Table Module (Recordset Orientation)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-033-8012bdeb5fa9",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-033-8012bdeb5fa9-s0",
+          "text": "Popularized during the desktop and early web era (particularly with Microsoft ADO.NET and DataSet architectures), the Table Module pattern provides a single class per database table or view. Unlike an entity in a Domain Model, an instance of a Table Module has no individual identity—it operates on tabular data collections.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-034-7b1be6929f62",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-034-7b1be6929f62-s0",
+          "text": "While rare in modern object-oriented TypeScript backends, its intellectual descendant appears in columnar data processing pipelines (such as Pandas, Apache Arrow, or BigQuery BigFrames).",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-035-735c7dfe38ef",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-035-735c7dfe38ef-s0",
+          "text": "Rich Domain Model (Behavioral Encapsulation)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-036-ea0f09ea1d00",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-036-ea0f09ea1d00-s0",
+          "text": "In a Rich Domain Model, the business domain is represented by an interconnected graph of objects. Each entity encapsulates its own data and provides methods that guarantee its invariants can never be violated. Outside code cannot mutate private fields; state transitions occur only through explicit business operations.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-037-8d7f8273b4f3",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-037-8d7f8273b4f3-s0",
+          "text": "3. The Coordinator: The Service Layer Pattern",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-038-5e95928c9db2",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-038-5e95928c9db2-s0",
+          "text": "A critical challenge when adopting a Rich Domain Model is deciding where the boundary of the application lies. If domain entities only encapsulate their own business rules, who handles transaction rollback, database retrieval, external payment gateways, and event dispatch?",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-039-3466162774c7",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-039-3466162774c7-s0",
+          "text": "This is the purpose of the ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-039-3466162774c7-s1",
+          "text": "Service Layer",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-039-3466162774c7-s2",
+          "text": ":",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-040-069fb3be08eb",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-040-069fb3be08eb-s0",
+          "text": "The Service Layer defines an application's boundary with a layer of services that establishes a set of available operations and coordinates the application's response in each operation.",
+          "marks": [
+            "em"
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-41-d365c160b3a1",
+      "code": "[ HTTP Controller / GraphQL ]\n            │\n            ▼\n┌────────────────────────────────────────────────────────┐\n│                     Service Layer                      │\n│            SubscriptionBillingService                  │\n│                                                        │\n│  1. Begin Unit of Work / Transaction                   │\n│  2. Load Aggregate from Repository                     │\n│  3. Invoke Domain Operation: sub.changePlan(...)       │\n│  4. Charge Payment Gateway                             │\n│  5. Persist Aggregate to Repository                    │\n│  6. Commit Transaction & Publish Domain Events         │\n└───────────────────────────┬────────────────────────────┘\n                            │\n               ┌────────────┴────────────┐\n               ▼                         ▼\n      [ Domain Entities ]       [ Repositories & Gateways ]",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-042-f2475ce8169c",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-042-f2475ce8169c-s0",
+          "text": "Avoiding the Anemic Domain Model Anti-Pattern",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-043-3353f1656230",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-043-3353f1656230-s0",
+          "text": "In 2003, Fowler identified the rampant misuse of the Service Layer: the ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-043-3353f1656230-s1",
+          "text": "Anemic Domain Model",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-043-3353f1656230-s2",
+          "text": ". In an anemic system:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-044-f092fcb814bd",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-044-f092fcb814bd-s0",
+          "text": "Entities are completely hollow: mere bags of public getters and setters with zero methods.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-045-a22b36f47f05",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-045-a22b36f47f05-s0",
+          "text": "All business logic, conditional validations, calculations, and state checks are extracted into gigantic procedural ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-045-a22b36f47f05-s1",
+          "text": "Service",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-045-a22b36f47f05-s2",
+          "text": " classes.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-046-5f30c24c455a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-046-5f30c24c455a-s0",
+          "text": "This is simply a Transaction Script masquerading as an object-oriented architecture.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-047-c9717303de5a",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-047-c9717303de5a-s0",
+          "text": "The Golden Rule",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-047-c9717303de5a-s1",
+          "text": ":",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-048-0c49923da1b2",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-048-0c49923da1b2-s0",
+          "text": "Entity Responsibility",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-048-0c49923da1b2-s1",
+          "text": ": \"Can this plan be upgraded given the current status? How much credit is refunded?\" (Pure logic, no I/O).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-049-ae4d1828593b",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-049-ae4d1828593b-s0",
+          "text": "Service Layer Responsibility",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-049-ae4d1828593b-s1",
+          "text": ": \"Fetch the customer, initiate database transaction, invoke the entity's upgrade method, process the payment charge, save to DB, send confirmation email.\" (Coordination and I/O).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-050-de300e3c665f",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-050-de300e3c665f-s0",
+          "text": "4. Pattern Spotlight: Self-Validating Value Objects",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-051-fbc44efa25cd",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s0",
+          "text": "In enterprise applications, one of the most widespread code smells is ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s1",
+          "text": "Primitive Obsession",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s2",
+          "text": "—the practice of using built-in language primitives (",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s3",
+          "text": "number",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s4",
+          "text": ", ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s5",
+          "text": "string",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s6",
+          "text": ", ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s7",
+          "text": "Date",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-051-fbc44efa25cd-s8",
+          "text": ") to represent domain concepts that possess strict business invariants.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-052-a8c64f2e16ae",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-052-a8c64f2e16ae-s0",
+          "text": "Consider the following function signature:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-53-f6be04214f67",
+      "code": "function applyDiscount(price: number, discount: number): number",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-054-511ace2bf425",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s0",
+          "text": "What currency is ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s1",
+          "text": "price",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s2",
+          "text": "? Can ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s3",
+          "text": "price",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s4",
+          "text": " be negative? Is ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s5",
+          "text": "discount",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s6",
+          "text": " a percentage (",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s7",
+          "text": "0.15",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s8",
+          "text": "), a whole number (",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s9",
+          "text": "15",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s10",
+          "text": "), or a fixed dollar amount? What happens if ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s11",
+          "text": "price",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s12",
+          "text": " is in USD and ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s13",
+          "text": "discount",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-054-511ace2bf425-s14",
+          "text": " is in EUR?",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-055-8f2d52bf83b5",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-055-8f2d52bf83b5-s0",
+          "text": "A ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-055-8f2d52bf83b5-s1",
+          "text": "Value Object",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-055-8f2d52bf83b5-s2",
+          "text": " solves this by encapsulating value semantics:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-056-206b78333f30",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-056-206b78333f30-s0",
+          "text": "Immutability",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-056-206b78333f30-s1",
+          "text": ": Once created, its internal state cannot be modified. Any mathematical operation or transformation returns a brand new instance.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-057-3246dece95f1",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-057-3246dece95f1-s0",
+          "text": "Structural Equality",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-057-3246dece95f1-s1",
+          "text": ": Two Value Objects are equal if their attributes are equal, not because they share an in-memory pointer or synthetic database ID.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-058-2fa341fa1ba8",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-058-2fa341fa1ba8-s0",
+          "text": "Self-Validation",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-058-2fa341fa1ba8-s1",
+          "text": ": The constructor or factory method validates all invariants upon instantiation. An invalid Value Object can literally never exist in memory.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-059-2ca7be4297d1",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-059-2ca7be4297d1-s0",
+          "text": "5. Production Case Study: SaaS Subscription & Proration Engine",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-060-1febcc06f412",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-060-1febcc06f412-s0",
+          "text": "To demonstrate these patterns working in harmony, we implement an enterprise SaaS subscription engine. The application must support mid-cycle plan upgrades, calculating unspent balance from the old plan and prorating the charge for the remainder of the billing period.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-061-469de7b0acbf",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-061-469de7b0acbf-s0",
+          "text": "Step 1: The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-061-469de7b0acbf-s1",
+          "text": "Money",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-061-469de7b0acbf-s2",
+          "text": " Value Object",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-62-363bb909099f",
+      "code": "export type CurrencyCode = 'USD' | 'EUR' | 'GBP';\n\nexport class Money {\n  readonly amountCents: number;\n  readonly currency: CurrencyCode;\n\n  private constructor(amountCents: number, currency: CurrencyCode) {\n    if (!Number.isInteger(amountCents)) {\n      throw new Error(`Money amount must be an integer (in cents). Received: ${amountCents}`);\n    }\n    this.amountCents = amountCents;\n    this.currency = currency;\n  }\n\n  static fromCents(cents: number, currency: CurrencyCode): Money {\n    return new Money(cents, currency);\n  }\n\n  static fromDollars(dollars: number, currency: CurrencyCode): Money {\n    return new Money(Math.round(dollars * 100), currency);\n  }\n\n  static zero(currency: CurrencyCode): Money {\n    return new Money(0, currency);\n  }\n\n  add(other: Money): Money {\n    this.assertMatchingCurrency(other);\n    return new Money(this.amountCents + other.amountCents, this.currency);\n  }\n\n  subtract(other: Money): Money {\n    this.assertMatchingCurrency(other);\n    return new Money(this.amountCents - other.amountCents, this.currency);\n  }\n\n  multiply(factor: number): Money {\n    return new Money(Math.round(this.amountCents * factor), this.currency);\n  }\n\n  isGreaterThan(other: Money): boolean {\n    this.assertMatchingCurrency(other);\n    return this.amountCents > other.amountCents;\n  }\n\n  equals(other: Money): boolean {\n    return this.amountCents === other.amountCents && this.currency === other.currency;\n  }\n\n  private assertMatchingCurrency(other: Money): void {\n    if (this.currency !== other.currency) {\n      throw new Error(`Currency mismatch: cannot operate between ${this.currency} and ${other.currency}`);\n    }\n  }\n}",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-063-f1bd8beb2d3b",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-063-f1bd8beb2d3b-s0",
+          "text": "Step 2: The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-063-f1bd8beb2d3b-s1",
+          "text": "BillingPeriod",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-063-f1bd8beb2d3b-s2",
+          "text": " Value Object",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-64-71000ba34389",
+      "code": "export class BillingPeriod {\n  readonly start: Date;\n  readonly end: Date;\n\n  constructor(start: Date, end: Date) {\n    if (start >= end) {\n      throw new Error(`Invalid billing period: start (${start.toISOString()}) must precede end (${end.toISOString()})`);\n    }\n    this.start = new Date(start.getTime());\n    this.end = new Date(end.getTime());\n  }\n\n  totalDurationDays(): number {\n    const diffMs = this.end.getTime() - this.start.getTime();\n    return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));\n  }\n\n  remainingDurationDays(asOf: Date): number {\n    if (asOf < this.start) return this.totalDurationDays();\n    if (asOf >= this.end) return 0;\n    const diffMs = this.end.getTime() - asOf.getTime();\n    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));\n  }\n\n  remainingFraction(asOf: Date): number {\n    const total = this.totalDurationDays();\n    const remaining = this.remainingDurationDays(asOf);\n    return remaining / total;\n  }\n}",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-065-8b58d40ff9dd",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-065-8b58d40ff9dd-s0",
+          "text": "Step 3: The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-065-8b58d40ff9dd-s1",
+          "text": "Subscription",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-065-8b58d40ff9dd-s2",
+          "text": " Aggregate Entity",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-066-b32710d106d0",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-066-b32710d106d0-s0",
+          "text": "The aggregate root protects state invariants. Notice how the calculation of proration credit and plan assignment is performed entirely by domain methods, keeping business rules inside the domain layer.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-67-eb96e15ec573",
+      "code": "export interface BillingPlan {\n  readonly id: string;\n  readonly name: string;\n  readonly price: Money;\n}\n\nexport interface ProrationCalculation {\n  readonly unusedCredit: Money;\n  readonly newPlanProratedCost: Money;\n  readonly netAmountDue: Money;\n}\n\nexport type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';\n\nexport class Subscription {\n  readonly id: string;\n  readonly customerId: string;\n  private _status: SubscriptionStatus;\n  private _currentPlan: BillingPlan;\n  private _currentPeriod: BillingPeriod;\n\n  constructor(\n    id: string,\n    customerId: string,\n    initialPlan: BillingPlan,\n    period: BillingPeriod,\n    status: SubscriptionStatus = 'ACTIVE'\n  ) {\n    this.id = id;\n    this.customerId = customerId;\n    this._currentPlan = initialPlan;\n    this._currentPeriod = period;\n    this._status = status;\n  }\n\n  get status(): SubscriptionStatus { return this._status; }\n  get currentPlan(): BillingPlan { return this._currentPlan; }\n  get currentPeriod(): BillingPeriod { return this._currentPeriod; }\n\n  calculateUpgradeProration(newPlan: BillingPlan, effectiveDate: Date): ProrationCalculation {\n    if (this._status !== 'ACTIVE') {\n      throw new Error(`Cannot upgrade subscription in status: ${this._status}`);\n    }\n    if (this._currentPlan.id === newPlan.id) {\n      throw new Error(`Customer is already subscribed to plan: ${newPlan.name}`);\n    }\n\n    const remainingFraction = this._currentPeriod.remainingFraction(effectiveDate);\n    \n    // 1. Calculate credit for unspent portion of the current plan\n    const unusedCredit = this._currentPlan.price.multiply(remainingFraction);\n    \n    // 2. Calculate prorated cost of the new plan for the remainder of the cycle\n    const newPlanProratedCost = newPlan.price.multiply(remainingFraction);\n    \n    // 3. Determine net balance due (zero if credit exceeds new cost)\n    const netCents = Math.max(0, newPlanProratedCost.amountCents - unusedCredit.amountCents);\n    const netAmountDue = Money.fromCents(netCents, newPlan.price.currency);\n\n    return { unusedCredit, newPlanProratedCost, netAmountDue };\n  }\n\n  applyPlanUpgrade(newPlan: BillingPlan, effectiveDate: Date): ProrationCalculation {\n    const proration = this.calculateUpgradeProration(newPlan, effectiveDate);\n    this._currentPlan = newPlan;\n    return proration;\n  }\n}",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-068-3f25759f0538",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-068-3f25759f0538-s0",
+          "text": "Step 4: The ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-068-3f25759f0538-s1",
+          "text": "SubscriptionBillingService",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-068-3f25759f0538-s2",
+          "text": " (Service Layer Coordinator)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-069-12ad94ada658",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-069-12ad94ada658-s0",
+          "text": "The service layer coordinates between the repositories, payment gateways, and domain entities. It does not calculate proration math itself; it delegates to the entity and handles side-effects.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "codeBlock",
+      "_key": "code-70-8e894bfb0275",
+      "code": "export interface SubscriptionRepository {\n  findById(id: string): Promise<Subscription | null>;\n  save(subscription: Subscription): Promise<void>;\n}\n\nexport interface PaymentGateway {\n  charge(customerId: string, amount: Money, description: string): Promise<{ transactionId: string }>;\n}\n\nexport interface NotificationService {\n  sendReceipt(customerId: string, amount: Money, planName: string): Promise<void>;\n}\n\nexport class SubscriptionBillingService {\n  constructor(\n    private readonly subRepo: SubscriptionRepository,\n    private readonly paymentGateway: PaymentGateway,\n    private readonly notifications: NotificationService\n  ) {}\n\n  async upgradePlan(\n    subscriptionId: string,\n    newPlan: BillingPlan,\n    effectiveDate: Date = new Date()\n  ): Promise<{ transactionId: string | null; proration: ProrationCalculation }> {\n    // 1. Load Aggregate\n    const subscription = await this.subRepo.findById(subscriptionId);\n    if (!subscription) {\n      throw new Error(`Subscription not found: ${subscriptionId}`);\n    }\n\n    // 2. Execute Domain Operation (Invariants protected inside entity)\n    const proration = subscription.applyPlanUpgrade(newPlan, effectiveDate);\n\n    // 3. Infrastructure Side Effect: Payment processing\n    let transactionId: string | null = null;\n    if (proration.netAmountDue.amountCents > 0) {\n      const chargeResult = await this.paymentGateway.charge(\n        subscription.customerId,\n        proration.netAmountDue,\n        `Prorated upgrade to ${newPlan.name}`\n      );\n      transactionId = chargeResult.transactionId;\n    }\n\n    // 4. Persistence\n    await this.subRepo.save(subscription);\n\n    // 5. Asynchronous notification\n    if (transactionId) {\n      await this.notifications.sendReceipt(\n        subscription.customerId,\n        proration.netAmountDue,\n        newPlan.name\n      );\n    }\n\n    return { transactionId, proration };\n  }\n}",
+      "language": "typescript"
+    },
+    {
+      "_type": "block",
+      "_key": "b-071-b307c6cfb19c",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-071-b307c6cfb19c-s0",
+          "text": "6. Key Architectural Takeaways",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-072-d969f29fcd52",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-072-d969f29fcd52-s0",
+          "text": "Unidirectional Layering is Non-Negotiable",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-072-d969f29fcd52-s1",
+          "text": ": Keep domain entities isolated from frameworks, databases, and HTTP transports to ensure high velocity and testability.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-073-c7a68c112b83",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-073-c7a68c112b83-s0",
+          "text": "Match Complexity to the Domain Continuum",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-073-c7a68c112b83-s1",
+          "text": ": Use Transaction Scripts for simple tabular pipelines; transition to a Rich Domain Model when business rules, lifecycle state, and calculations become non-trivial.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-074-35f330b7a936",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-074-35f330b7a936-s0",
+          "text": "Guard Against the Anemic Model",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-074-35f330b7a936-s1",
+          "text": ": Keep the Service Layer thin. It coordinates transactions, external I/O, and persistence, but delegates core calculations and state transitions to the aggregate entities.",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-075-65934af80531",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s0",
+          "text": "Eradicate Primitive Obsession",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s1",
+          "text": ": Wrap domain primitives in immutable, self-validating Value Objects like ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s2",
+          "text": "Money",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s3",
+          "text": " and ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s4",
+          "text": "BillingPeriod",
+          "marks": [
+            "code"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-075-65934af80531-s5",
+          "text": ".",
+          "marks": []
+        }
+      ],
+      "listItem": "number",
+      "level": 1
+    },
+    {
+      "_type": "block",
+      "_key": "b-076-b31727b2e8e9",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-076-b31727b2e8e9-s0",
+          "text": "Series Continuity & What's Next",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-077-549377379acf",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-077-549377379acf-s0",
+          "text": "This concludes Part I of our ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-077-549377379acf-s1",
+          "text": "Patterns of Enterprise Application Architecture",
+          "marks": [
+            "em"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-077-549377379acf-s2",
+          "text": " series.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_type": "block",
+      "_key": "b-078-9c1bae688e64",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_type": "span",
+          "_key": "b-078-9c1bae688e64-s0",
+          "text": "In ",
+          "marks": []
+        },
+        {
+          "_type": "span",
+          "_key": "b-078-9c1bae688e64-s1",
+          "text": "[Part II: Data Source & Object-Relational Persistence Patterns](/articles/poeaa-part-2-data-source-persistence/)",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "_type": "span",
+          "_key": "b-078-9c1bae688e64-s2",
+          "text": ", we address the infamous Object-Relational Impedance Mismatch, analyzing Table Data Gateways, Row Data Gateways, Active Record, and Data Mappers, alongside behavioral mechanisms like the Unit of Work and Identity Map.",
+          "marks": []
+        }
+      ]
+    }
+  ]
+}

@@ -95,8 +95,8 @@ SANITY_WRITE_TOKEN=... npm run seed:taxonomy -- --dataset production --write
 - The seed owns article `featured` and `primaryTopic`. Every run sets them to the
   values in the data file, so unfeaturing an article in Studio is undone by the
   next run; remove the entry from the data file instead.
-- `seed:article:aee` replaces the whole article, so run `seed:taxonomy` again
-  after it.
+- `seed:article:aee` and `seed:article:poeaa-part-1` replace the whole article,
+  so run `seed:taxonomy` again after either of them.
 - The seed warns when a seeded topic or article has an unpublished draft, because
   publishing that draft would replace the seeded values. Drafts are private, so
   these warnings appear only when `SANITY_WRITE_TOKEN` is set; a dry run without
