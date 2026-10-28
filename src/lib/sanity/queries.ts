@@ -37,7 +37,7 @@ export const homepageQuery = `{
   "platformTopic": *[_type == "topic" && kind == "domain" && slug.current == "platform-engineering" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary
   },
-  "aiTopic": *[_type == "topic" && kind == "domain" && slug.current == "ai-engineering" && ${publicDocument}][0] {
+  "architectureTopic": *[_type == "topic" && kind == "domain" && slug.current == "software-architecture" && ${publicDocument}][0] {
     _id, title, "slug": slug.current, summary
   }
 }`;

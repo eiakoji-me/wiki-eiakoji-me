@@ -67,5 +67,64 @@ export const blockContent = defineType({
         }),
       },
     }),
+    defineArrayMember({
+      name: 'callout',
+      title: 'Callout',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'tone',
+          title: 'Tone',
+          type: 'string',
+          options: {
+            list: [
+              { title: 'Series Navigation', value: 'series' },
+              { title: 'Note', value: 'note' },
+              { title: 'Tip', value: 'tip' },
+              { title: 'Warning', value: 'warning' },
+            ],
+          },
+          initialValue: 'series',
+        }),
+        defineField({
+          name: 'title',
+          title: 'Title',
+          type: 'string',
+        }),
+        defineField({
+          name: 'items',
+          title: 'Items',
+          type: 'array',
+          of: [
+            defineArrayMember({
+              type: 'object',
+              fields: [
+                defineField({ name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required() }),
+                defineField({ name: 'href', title: 'Link URL', type: 'string' }),
+                defineField({
+                  name: 'status',
+                  title: 'Status',
+                  type: 'string',
+                  options: {
+                    list: [
+                      { title: 'Current', value: 'current' },
+                      { title: 'Upcoming', value: 'upcoming' },
+                      { title: 'Completed', value: 'completed' },
+                    ],
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+      preview: {
+        select: { title: 'title', subtitle: 'tone' },
+        prepare: ({ title, subtitle }) => ({
+          title: title || 'Callout',
+          subtitle: subtitle || 'Callout card',
+        }),
+      },
+    }),
   ],
 });

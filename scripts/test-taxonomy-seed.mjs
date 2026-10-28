@@ -66,9 +66,9 @@ const domain = (id, title, slug, order) => ({
   _id: id, title, slug, hasSlug: true, kind: 'domain', order, summary: `${title} domain summary text.`, featured: null, parent: null, hasParent: false,
 });
 const domains = [
-  domain('domain-system-design', 'System Design', 'system-design', 1),
-  domain('domain-platform-engineering', 'Platform Engineering', 'platform-engineering', 2),
-  domain('domain-ai-engineering', 'AI Engineering', 'ai-engineering', 3),
+  domain('domain-software-architecture', 'Software Architecture', 'software-architecture', 1),
+  domain('domain-system-design', 'System Design', 'system-design', 2),
+  domain('domain-platform-engineering', 'Platform Engineering', 'platform-engineering', 3),
 ];
 const existingTopic = (id, slug, parent, extra = {}) => ({
   _id: id, title: extra.title ?? slug, slug, hasSlug: true, kind: null, order: null, summary: 'An existing topic summary.', featured: null,
@@ -82,18 +82,42 @@ const newTopic = (id, parent, extra = {}) => ({ _id: id, title: `Title ${id}`, s
 const prodState = {
   topics: [
     ...clone(domains),
-    existingTopic('topic-architectural-patterns', 'architectural-patterns', 'topic-software-architecture', { title: 'Architectural Patterns', order: 10 }),
-    existingTopic('topic-domain-driven-design', 'domain-driven-design', 'topic-software-architecture', { title: 'Domain-Driven Design', order: 20 }),
-    existingTopic('topic-software-architecture', 'software-architecture', 'domain-system-design', { title: 'Software Architecture', order: 10 }),
+    existingTopic('topic-architectural-patterns', 'architectural-patterns', 'domain-software-architecture', {
+      title: 'Architectural Patterns',
+      order: 10,
+      summary: 'Enterprise application patterns, domain logic structuring, layering invariants, and object-relational mapping.',
+    }),
+    existingTopic('topic-domain-driven-design', 'domain-driven-design', 'domain-software-architecture', {
+      title: 'Domain-Driven Design',
+      order: 20,
+      summary: 'Domain modeling principles, ubiquitous language, aggregate boundaries, value objects, and bounded contexts.',
+    }),
+    existingTopic('topic-agentic-workflows', 'agentic-workflows', 'domain-software-architecture', {
+      title: 'Agentic Workflows',
+      order: 30,
+      summary: 'Multi-step agent pipelines, tool use, durable state, and human-in-the-loop control for LLM-driven work.',
+    }),
+    existingTopic('topic-distributed-systems', 'distributed-systems', 'domain-system-design', {
+      title: 'Distributed Systems',
+      order: 10,
+      summary: 'Foundational consensus algorithms, replication strategies, partitioning, and high-availability systems.',
+    }),
+    existingTopic('topic-execution-environments', 'execution-environments', 'domain-platform-engineering', {
+      title: 'Execution Environments',
+      order: 10,
+      summary: 'Workspace control planes, isolated runtimes, and the boundaries that let agents and developers execute work safely.',
+    }),
   ],
   articles: [
-    { _id: 'article-ai-execution-environment-architecture', featured: null, primaryTopic: 'domain-platform-engineering' },
+    { _id: 'article-ai-execution-environment-architecture', featured: true, primaryTopic: 'topic-execution-environments' },
     { _id: 'article-poeaa-part-1-layering-and-domain-logic', featured: false, primaryTopic: 'topic-architectural-patterns' },
   ],
   slugOwners: [
-    { _id: 'topic-software-architecture', _type: 'topic', title: 'Software Architecture', slug: 'software-architecture' },
     { _id: 'topic-architectural-patterns', _type: 'topic', title: 'Architectural Patterns', slug: 'architectural-patterns' },
     { _id: 'topic-domain-driven-design', _type: 'topic', title: 'Domain-Driven Design', slug: 'domain-driven-design' },
+    { _id: 'topic-agentic-workflows', _type: 'topic', title: 'Agentic Workflows', slug: 'agentic-workflows' },
+    { _id: 'topic-distributed-systems', _type: 'topic', title: 'Distributed Systems', slug: 'distributed-systems' },
+    { _id: 'topic-execution-environments', _type: 'topic', title: 'Execution Environments', slug: 'execution-environments' },
   ],
   drafts: [],
 };
@@ -101,12 +125,12 @@ const prodArticles = [
   {
     _id: 'article-ai-execution-environment-architecture', slug: 'ai-execution-environment-architecture',
     title: 'Architecture of an Issue-Driven AI Execution Environment', publishedAt: '2026-10-27T17:03:11.012Z',
-    related: ['domain-ai-engineering', 'domain-system-design'],
+    related: ['domain-software-architecture', 'domain-system-design'],
   },
   {
     _id: 'article-poeaa-part-1-layering-and-domain-logic', slug: 'poeaa-part-1-layering-and-domain-logic',
     title: 'PoEAA Part I: Layering & Domain Logic Architecture', publishedAt: '2026-10-28T00:00:00.000Z',
-    related: ['topic-domain-driven-design', 'topic-software-architecture'], featured: false, primaryTopic: 'topic-architectural-patterns',
+    related: ['topic-domain-driven-design', 'domain-software-architecture'], featured: false, primaryTopic: 'topic-architectural-patterns',
   },
 ];
 
@@ -137,12 +161,12 @@ const assertBlocked = (result, id, ...fragments) => {
   }), articles: [] };
   const result = plan(prodState, seed);
   assert.deepEqual(result.blocked, []);
-  assert.deepEqual(ids(result), ['topic-software-architecture', 'topic-architectural-patterns', 'topic-domain-driven-design']);
+  assert.deepEqual(ids(result), ['topic-architectural-patterns', 'topic-domain-driven-design', 'topic-agentic-workflows', 'topic-distributed-systems', 'topic-execution-environments']);
 }
 
 // 2. Nested creates: parents first whatever the seed order, with createIfNotExists only.
 const nestedSeed = {
-  topics: [newTopic('topic-child', 'topic-parent'), newTopic('topic-parent', 'domain-ai-engineering', { order: 5, featured: true })],
+  topics: [newTopic('topic-child', 'topic-parent'), newTopic('topic-parent', 'domain-software-architecture', { order: 5, featured: true })],
   articles: [],
 };
 {
@@ -154,7 +178,7 @@ const nestedSeed = {
   assert.deepEqual(result.mutations[0], {
     createIfNotExists: {
       _id: 'topic-parent', _type: 'topic', kind: 'topic', title: 'Title topic-parent', slug: { _type: 'slug', current: 'topic-parent' },
-      parent: { _type: 'reference', _ref: 'domain-ai-engineering' }, summary, order: 5, featured: true,
+      parent: { _type: 'reference', _ref: 'domain-software-architecture' }, summary, order: 5, featured: true,
     },
   });
   assert.deepEqual(result.mutations[2].createIfNotExists.parent, { _type: 'reference', _ref: 'topic-parent' });
@@ -238,7 +262,7 @@ for (const [label, state, seed] of [
   const domainSlug = plan(baseState(), { topics: [newTopic('topic-a', 'domain-system-design', { slug: 'system-design' })], articles: [] });
   assertBlocked(domainSlug, 'topic-a', 'domain-system-design');
 
-  const isDomain = plan(baseState(), { topics: [newTopic('domain-system-design', 'domain-ai-engineering', { slug: 'system-design' })], articles: [] });
+  const isDomain = plan(baseState(), { topics: [newTopic('domain-system-design', 'domain-software-architecture', { slug: 'system-design' })], articles: [] });
   assertBlocked(isDomain, 'domain-system-design', 'domain');
   assert.deepEqual(isDomain.mutations, [], 'a domain must never be patched by the taxonomy seed');
 
@@ -272,7 +296,7 @@ for (const [label, state, seed] of [
   const noSummary = plan(baseState(), { topics: [{ _id: 'topic-a', title: 'Topic A', slug: 'a', parent: 'domain-system-design' }], articles: [] });
   assertBlocked(noSummary, 'topic-a', 'needs a summary');
 
-  const duplicateId = plan(baseState(), { topics: [newTopic('topic-a', 'domain-system-design'), newTopic('topic-a', 'domain-ai-engineering', { slug: 'a2' })], articles: [] });
+  const duplicateId = plan(baseState(), { topics: [newTopic('topic-a', 'domain-system-design'), newTopic('topic-a', 'domain-software-architecture', { slug: 'a2' })], articles: [] });
   assertBlocked(duplicateId, 'topic-a', 'more than once');
 
   const duplicateSlug = plan(baseState(), { topics: [newTopic('topic-a', 'domain-system-design', { slug: 's' }), newTopic('topic-b', 'domain-system-design', { slug: 's' })], articles: [] });
@@ -301,9 +325,9 @@ for (const [label, state, seed] of [
     const result = plan(state, { topics: [newTopic('topic-blocked', 'domain-system-design', { slug: 'foo' })], articles: [entry] });
     assertBlocked(result, entry._id, reason);
   }
-  const toDomain = plan(state, { topics: [], articles: [{ _id: 'article-a', primaryTopic: 'domain-ai-engineering' }] });
+  const toDomain = plan(state, { topics: [], articles: [{ _id: 'article-a', primaryTopic: 'domain-software-architecture' }] });
   assert.deepEqual(toDomain.blocked, []);
-  assert.deepEqual(toDomain.mutations, [{ patch: { id: 'article-a', set: { primaryTopic: { _type: 'reference', _ref: 'domain-ai-engineering' } } } }]);
+  assert.deepEqual(toDomain.mutations, [{ patch: { id: 'article-a', set: { primaryTopic: { _type: 'reference', _ref: 'domain-software-architecture' } } } }]);
 }
 
 // 7. Article patches set only featured and primaryTopic, and only when they differ.
@@ -361,22 +385,20 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
 {
   assert.deepEqual(taxonomyQueryParams(seed), {
     articleIds: ['article-poeaa-part-1-layering-and-domain-logic', 'article-ai-execution-environment-architecture'],
-    slugs: ['software-architecture', 'architectural-patterns', 'domain-driven-design', 'execution-environments', 'agentic-workflows'],
+    slugs: ['architectural-patterns', 'domain-driven-design', 'agentic-workflows', 'distributed-systems', 'execution-environments'],
     draftIds: [
-      'drafts.topic-software-architecture', 'drafts.topic-architectural-patterns', 'drafts.topic-domain-driven-design',
-      'drafts.topic-execution-environments', 'drafts.topic-agentic-workflows',
+      'drafts.topic-architectural-patterns', 'drafts.topic-domain-driven-design', 'drafts.topic-agentic-workflows',
+      'drafts.topic-distributed-systems', 'drafts.topic-execution-environments',
       'drafts.article-poeaa-part-1-layering-and-domain-logic', 'drafts.article-ai-execution-environment-architecture',
     ],
   });
   const result = plan(prodState, seed);
   assert.deepEqual(result.changes, [
-    'update topic-software-architecture: kind',
-    'create topic-execution-environments (Execution Environments)',
-    'create topic-agentic-workflows (Agentic Workflows)',
     'update topic-architectural-patterns: kind',
     'update topic-domain-driven-design: kind',
-    'update article-poeaa-part-1-layering-and-domain-logic: featured',
-    'update article-ai-execution-environment-architecture: featured, primaryTopic',
+    'update topic-agentic-workflows: kind',
+    'update topic-distributed-systems: kind',
+    'update topic-execution-environments: kind',
   ]);
   assert.deepEqual(result.warnings, []);
   assert.deepEqual(result.blocked, []);
@@ -409,7 +431,7 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
   assert.deepEqual(tree.excluded.map((e) => `${e.topic._id}: ${e.reason}`), [], 'the seeded taxonomy must exclude nothing');
 
   const popular = buildNavigation(tree, { articles });
-  assert.deepEqual(popular.featured.map((f) => f.slug), ['poeaa-part-1-layering-and-domain-logic', 'ai-execution-environment-architecture']);
+  assert.deepEqual(popular.featured.map((f) => f.slug), ['ai-execution-environment-architecture']);
   assert.equal(popular.topics.mode, 'popular');
   const popularSlugs = popular.topics.topics.map((t) => t.slug);
   assert.ok(popularSlugs.includes('architectural-patterns'), 'Popular topics must list architectural-patterns');
@@ -422,14 +444,10 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
   assert.deepEqual(platform.topics.topics.map((t) => [t.slug, t.current]), [['execution-environments', true]]);
   assert.ok(platform.featured.find((f) => f.slug === 'ai-execution-environment-architecture').current);
 
-  const systemDesign = buildNavigation(tree, { currentSlug: 'architectural-patterns' });
-  assert.equal(systemDesign.topics.mode, 'domain');
-  assert.deepEqual(systemDesign.topics.domain, { title: 'System Design', slug: 'system-design' });
-  assert.deepEqual(systemDesign.topics.topics.map((t) => t.slug), ['software-architecture']);
-
-  const ai = buildNavigation(tree, { currentSlug: 'ai-engineering' });
-  assert.equal(ai.topics.mode, 'domain');
-  assert.deepEqual(ai.topics.topics.map((t) => t.slug), ['agentic-workflows']);
+  const softwareArch = buildNavigation(tree, { currentSlug: 'architectural-patterns' });
+  assert.equal(softwareArch.topics.mode, 'domain');
+  assert.deepEqual(softwareArch.topics.domain, { title: 'Software Architecture', slug: 'software-architecture' });
+  assert.deepEqual(softwareArch.topics.topics.map((t) => t.slug), ['architectural-patterns', 'domain-driven-design', 'agentic-workflows']);
 }
 
 // 11. State assembly: drafts come from a separate raw-perspective query and reach the planner.

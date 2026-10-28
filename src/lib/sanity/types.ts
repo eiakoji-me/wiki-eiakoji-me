@@ -54,7 +54,22 @@ export interface CodeBlock {
   filename?: string;
 }
 
-export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock;
+export interface CalloutItem {
+  _key?: string;
+  title: string;
+  href?: string;
+  status?: string;
+}
+
+export interface CalloutBlock {
+  _key: string;
+  _type: 'callout';
+  tone?: string;
+  title?: string;
+  items?: CalloutItem[];
+}
+
+export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock | CalloutBlock;
 
 export interface Topic {
   _id: string;

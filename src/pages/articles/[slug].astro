@@ -101,10 +101,10 @@ if (article.primaryTopic?.slug) {
         </div>
       )}
 
-      {(article.repositoryUrl || article.demoUrl || (article.technologies && article.technologies.length > 0)) && (
+      {((article.repositoryUrl && (article.format === 'workshop' || article.kind === 'workshop') && !article.repositoryUrl.includes('wiki-eiakoji-me')) || article.demoUrl || (article.technologies && article.technologies.length > 0)) && (
         <div class="workshop-callout">
           <div class="workshop-links">
-            {article.repositoryUrl && (
+            {article.repositoryUrl && (article.format === 'workshop' || article.kind === 'workshop') && !article.repositoryUrl.includes('wiki-eiakoji-me') && (
               <a href={article.repositoryUrl} target="_blank" rel="noopener noreferrer" class="button secondary">
                 GitHub Repository ↗
               </a>

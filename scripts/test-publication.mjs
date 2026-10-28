@@ -33,9 +33,9 @@ const expectedPages = [
   { path: '/', file: 'dist/index.html', emptyText: 'Publication ready' },
   { path: '/workshops/', file: 'dist/workshops/index.html', emptyText: 'No published workshops yet' },
   { path: '/topics/', file: 'dist/topics/index.html', emptyText: 'No published topics yet' },
+  { path: '/topics/software-architecture/', file: 'dist/topics/software-architecture/index.html', requiredText: 'Software Architecture' },
   { path: '/topics/system-design/', file: 'dist/topics/system-design/index.html', requiredText: 'System Design' },
   { path: '/topics/platform-engineering/', file: 'dist/topics/platform-engineering/index.html', requiredText: 'Platform Engineering' },
-  { path: '/topics/ai-engineering/', file: 'dist/topics/ai-engineering/index.html', requiredText: 'AI Engineering' },
   { path: '/articles/', file: 'dist/articles/index.html', emptyText: 'No published articles yet' },
   { path: '/projects/', file: 'dist/projects/index.html', emptyText: 'No published projects yet' },
   { path: '/404.html', file: 'dist/404.html', requiredText: 'That note isn’t here.' },
@@ -55,7 +55,7 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   assert.ok(!html.includes('Eiakoji wiki'), `${path} must not retain old Eiakoji wiki title`);
   assert.match(html, /<title>.*wiki\.eiakoji\.me<\/title>/, `${path} title must end with wiki.eiakoji.me`);
 
-  for (const label of ['System Design', 'Platform Engineering', 'AI Engineering', 'Workshops', 'Projects']) {
+  for (const label of ['Software Architecture', 'System Design', 'Platform Engineering', 'Workshops', 'Projects']) {
     assert.ok(html.includes(label), `${path} must include the ${label} navigation item`);
   }
   const primaryNav = html.match(/<nav[^>]*aria-label="Primary navigation"[^>]*>[\s\S]*?<\/nav>/)?.[0] ?? '';
@@ -75,7 +75,7 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
       assert.ok(!leftNav.includes(removed), `${path} left nav must not contain ${removed}`);
     }
     // The top nav already links the domains; the left nav must not repeat them.
-    for (const domain of ['system-design', 'platform-engineering', 'ai-engineering']) {
+    for (const domain of ['software-architecture', 'system-design', 'platform-engineering']) {
       assert.ok(!leftNav.includes(`href="/topics/${domain}/"`), `${path} left nav must not link the ${domain} domain`);
     }
     assert.ok(leftNav.includes('Featured &amp; Topics') || leftNav.includes('Featured & Topics'), `${path} left nav disclosure must be labelled Featured & Topics`);
@@ -83,7 +83,7 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
       assert.ok(leftNav.includes('href="/topics/"') && leftNav.includes('All topics'), `${path} left nav must show popular topics with an All topics link`);
       assert.ok(!leftNav.includes('nav-domain-label'), `${path} left nav must not show a domain context`);
     }
-    const domainTitle = { '/topics/system-design/': 'System Design', '/topics/platform-engineering/': 'Platform Engineering', '/topics/ai-engineering/': 'AI Engineering' }[path];
+    const domainTitle = { '/topics/software-architecture/': 'Software Architecture', '/topics/system-design/': 'System Design', '/topics/platform-engineering/': 'Platform Engineering' }[path];
     if (domainTitle && leftNav.includes('nav-domain-label')) {
       assert.match(leftNav, new RegExp(`class="nav-section-title nav-domain-label"[^>]*>${domainTitle}<`), `${path} left nav must label its domain ${domainTitle}`);
       assert.ok(!leftNav.includes('All topics'), `${path} left nav must not show the popular fallback in domain mode`);
@@ -194,7 +194,7 @@ async function testSanityQueries() {
   for (const query of [topicsListQuery, topicBySlugQuery, wikiNavQuery]) {
     assert.match(query, /"slug": slug\.current,\n\s+kind,/, 'topic queries must project kind');
   }
-  for (const domain of ['system-design', 'platform-engineering', 'ai-engineering']) {
+  for (const domain of ['software-architecture', 'system-design', 'platform-engineering']) {
     assert.ok(homepageQuery.includes(`kind == "domain" && slug.current == "${domain}"`), `homepage must select the ${domain} domain by kind`);
   }
   for (const alias of ['systems-design', 'cloud-platform', '"cloud"', 'ai-systems', '"ai"', 'multi-agent-systems']) {
@@ -347,9 +347,9 @@ async function testUnitBehaviors() {
   // 5b. Domain-rooted tree: only domains are roots, ordering, exclusions, and navigation groups
   const ref = (id) => ({ _id: id, title: id, slug: id });
   const taxonomy = [
-    { _id: 'd-ai', _type: 'topic', kind: 'domain', title: 'AI Engineering', slug: 'ai-engineering', order: 3 },
-    { _id: 'd-sd', _type: 'topic', kind: 'domain', title: 'System Design', slug: 'system-design', order: 1 },
-    { _id: 'd-pe', _type: 'topic', kind: 'domain', title: 'Platform Engineering', slug: 'platform-engineering', order: 2 },
+    { _id: 'd-sa', _type: 'topic', kind: 'domain', title: 'Software Architecture', slug: 'software-architecture', order: 1 },
+    { _id: 'd-sd', _type: 'topic', kind: 'domain', title: 'System Design', slug: 'system-design', order: 2 },
+    { _id: 'd-pe', _type: 'topic', kind: 'domain', title: 'Platform Engineering', slug: 'platform-engineering', order: 3 },
     { _id: 't-z', _type: 'topic', kind: 'topic', title: 'Zookeeper', slug: 'zookeeper', parent: ref('d-sd') },
     { _id: 't-c', _type: 'topic', kind: 'topic', title: 'Caching', slug: 'caching', parent: ref('d-sd'), order: 1 },
     { _id: 't-b', _type: 'topic', kind: 'topic', title: 'Batching', slug: 'batching', parent: ref('d-sd'), order: 1 },
@@ -363,7 +363,7 @@ async function testUnitBehaviors() {
   const domainTree = buildTopicTree(taxonomy, [
     { _id: 'a-1', _type: 'article', title: 'A', slug: 'a', summary: 's', primaryTopic: ref('t-deep') },
   ]);
-  assert.deepEqual(domainTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering'], 'roots must be domains ordered by order');
+  assert.deepEqual(domainTree.rootTopics.map((n) => n.topic.slug), ['software-architecture', 'system-design', 'platform-engineering'], 'roots must be domains ordered by order');
   assert.deepEqual(
     domainTree.nodeMap.get('d-sd').children.map((n) => n.topic.slug),
     ['batching', 'caching', 'zookeeper'],
@@ -420,7 +420,7 @@ async function testUnitBehaviors() {
     assert.equal(fallback.topics.allTopicsHref, '/topics/', 'popular mode must link All topics');
     assert.deepEqual(fallback.topics.topics.map((i) => i.slug), ['caching', 'write-through'], 'popular mode lists only non-domain topics with articles');
   }
-  assert.equal(buildNavigation(domainTree, { currentSlug: 'ai-engineering' }).topics.mode, 'popular', 'a domain with no topics must fall back to popular topics');
+  assert.equal(buildNavigation(domainTree, { currentSlug: 'software-architecture' }).topics.mode, 'popular', 'a domain with no topics must fall back to popular topics');
 
   // Popular ordering: featured first, then rollup count, then order and title; capped at 8.
   const popularTaxonomy = [
@@ -574,7 +574,7 @@ async function testUnitBehaviors() {
   assert.equal(firstPlan.mutations.length, 3, 'an empty dataset must plan three domain creates');
   assert.deepEqual(
     firstPlan.mutations.map((m) => m.createIfNotExists._id),
-    ['domain-system-design', 'domain-platform-engineering', 'domain-ai-engineering'],
+    ['domain-software-architecture', 'domain-system-design', 'domain-platform-engineering'],
   );
   assert.ok(firstPlan.mutations.every((m) => m.createIfNotExists.kind === 'domain'), 'seeded documents must be domains');
   const seeded = applySeed([], firstPlan);
@@ -610,7 +610,7 @@ async function testUnitBehaviors() {
   const fixtureArticles = await queryFixtures('full', articlesQuery);
   assert.ok(!fixtureArticles.some((a) => a.slug === 'future-post'), 'article queries must exclude future content');
   const fixtureTree = buildTopicTree(fixtureTopics, fixtureArticles);
-  assert.deepEqual(fixtureTree.rootTopics.map((n) => n.topic.slug), ['system-design', 'platform-engineering', 'ai-engineering']);
+  assert.deepEqual(fixtureTree.rootTopics.map((n) => n.topic.slug), ['software-architecture', 'system-design', 'platform-engineering']);
   assert.equal(fixtureTree.slugMap.get('system-design').rollupArticleCount, 2, 'domain rollups must count nested articles once');
   assert.deepEqual(fixtureTree.excluded.map((e) => e.topic.slug), ['languages']);
   const orphanedArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'language-notes' });

@@ -32,7 +32,7 @@
     },
     {
       "_type": "reference",
-      "_ref": "topic-software-architecture",
+      "_ref": "domain-software-architecture",
       "_key": "rel-topic-sa"
     }
   ],
@@ -49,7 +49,6 @@
     "Domain-Driven Design",
     "Architecture"
   ],
-  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
     "title": "PoEAA Part I: Layering & Domain Logic Architecture — wiki.eiakoji.me",
     "description": "An advanced architectural exploration of Fowler's PoEAA patterns: Three-Layer System, Transaction Scripts vs Domain Models, Service Layer, and Value Objects in TypeScript.",
@@ -63,186 +62,33 @@
   },
   "body": [
     {
-      "_type": "block",
-      "_key": "b-000-1b528f4ef16e",
-      "style": "blockquote",
-      "markDefs": [],
-      "children": [
+      "_type": "callout",
+      "_key": "b-poeaa-series-nav",
+      "tone": "series",
+      "title": "Patterns of Enterprise Application Architecture — Series Navigation",
+      "items": [
         {
-          "_type": "span",
-          "_key": "b-000-1b528f4ef16e-s0",
-          "text": "Series Navigation",
-          "marks": [
-            "strong"
-          ]
+          "_key": "nav-part-1",
+          "title": "Part I: Layering & Domain Logic Architecture",
+          "status": "current"
         },
         {
-          "_type": "span",
-          "_key": "b-000-1b528f4ef16e-s1",
-          "text": ": Part I of IV in ",
-          "marks": []
+          "_key": "nav-part-2",
+          "title": "Part II: Data Source & Persistence Patterns",
+          "href": "/articles/poeaa-part-2-data-source-persistence/",
+          "status": "upcoming"
         },
         {
-          "_type": "span",
-          "_key": "b-000-1b528f4ef16e-s2",
-          "text": "Patterns of Enterprise Application Architecture",
-          "marks": [
-            "em"
-          ]
-        }
-      ]
-    },
-    {
-      "_type": "block",
-      "_key": "b-001-62949553b8ae",
-      "style": "blockquote",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-001-62949553b8ae-s0",
-          "text": "- ",
-          "marks": []
+          "_key": "nav-part-3",
+          "title": "Part III: Web Presentation & Distribution Strategies",
+          "href": "/articles/poeaa-part-3-web-presentation-distribution/",
+          "status": "upcoming"
         },
         {
-          "_type": "span",
-          "_key": "b-001-62949553b8ae-s1",
-          "text": "Part I: Layering & Domain Logic Architecture",
-          "marks": [
-            "strong"
-          ]
-        },
-        {
-          "_type": "span",
-          "_key": "b-001-62949553b8ae-s2",
-          "text": " (Current)",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_type": "block",
-      "_key": "b-002-1df3ac99fbfc",
-      "style": "blockquote",
-      "markDefs": [
-        {
-          "_type": "link",
-          "_key": "b-002-1df3ac99fbfc-link0",
-          "href": "/articles/poeaa-part-2-data-source-persistence/"
-        }
-      ],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-002-1df3ac99fbfc-s0",
-          "text": "- ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-002-1df3ac99fbfc-s1",
-          "text": "Part II: Data Source & Persistence Patterns",
-          "marks": [
-            "b-002-1df3ac99fbfc-link0"
-          ]
-        },
-        {
-          "_type": "span",
-          "_key": "b-002-1df3ac99fbfc-s2",
-          "text": " ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-002-1df3ac99fbfc-s3",
-          "text": "(Upcoming)",
-          "marks": [
-            "em"
-          ]
-        }
-      ]
-    },
-    {
-      "_type": "block",
-      "_key": "b-003-108d570f15b6",
-      "style": "blockquote",
-      "markDefs": [
-        {
-          "_type": "link",
-          "_key": "b-003-108d570f15b6-link0",
-          "href": "/articles/poeaa-part-3-web-presentation-distribution/"
-        }
-      ],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-003-108d570f15b6-s0",
-          "text": "- ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-003-108d570f15b6-s1",
-          "text": "Part III: Web Presentation & Distribution Strategies",
-          "marks": [
-            "b-003-108d570f15b6-link0"
-          ]
-        },
-        {
-          "_type": "span",
-          "_key": "b-003-108d570f15b6-s2",
-          "text": " ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-003-108d570f15b6-s3",
-          "text": "(Upcoming)",
-          "marks": [
-            "em"
-          ]
-        }
-      ]
-    },
-    {
-      "_type": "block",
-      "_key": "b-004-db98a10c12a8",
-      "style": "blockquote",
-      "markDefs": [
-        {
-          "_type": "link",
-          "_key": "b-004-db98a10c12a8-link0",
-          "href": "/articles/poeaa-part-4-offline-concurrency-session-state/"
-        }
-      ],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-004-db98a10c12a8-s0",
-          "text": "- ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-004-db98a10c12a8-s1",
-          "text": "Part IV: Offline Concurrency & Resilient Foundation",
-          "marks": [
-            "b-004-db98a10c12a8-link0"
-          ]
-        },
-        {
-          "_type": "span",
-          "_key": "b-004-db98a10c12a8-s2",
-          "text": " ",
-          "marks": []
-        },
-        {
-          "_type": "span",
-          "_key": "b-004-db98a10c12a8-s3",
-          "text": "(Upcoming)",
-          "marks": [
-            "em"
-          ]
+          "_key": "nav-part-4",
+          "title": "Part IV: Offline Concurrency & Resilient Foundation",
+          "href": "/articles/poeaa-part-4-offline-concurrency-session-state/",
+          "status": "upcoming"
         }
       ]
     },
