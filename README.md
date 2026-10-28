@@ -97,8 +97,10 @@ SANITY_WRITE_TOKEN=... npm run seed:taxonomy -- --dataset production --write
   next run; remove the entry from the data file instead.
 - `seed:article:aee` replaces the whole article, so run `seed:taxonomy` again
   after it.
-- A dry run without a token cannot see drafts, so warnings about drafts that
-  would hide the seeded values appear only when a token is set.
+- The seed warns when a seeded topic or article has an unpublished draft, because
+  publishing that draft would replace the seeded values. Drafts are private, so
+  these warnings appear only when `SANITY_WRITE_TOKEN` is set; a dry run without
+  a token cannot see them.
 - Nothing is ever deleted or unset, and domains are never changed. Running it
   again reports no changes.
 

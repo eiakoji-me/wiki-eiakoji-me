@@ -3,13 +3,20 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { buildNavigation, buildTopicTree } from '../src/lib/topics.ts';
 import { MAX_TOPIC_ANCESTORS } from '../src/lib/taxonomy.ts';
-import { planTaxonomySeed, taxonomyQueryParams } from './taxonomy.ts';
+import {
+  TAXONOMY_DRAFTS_QUERY,
+  TAXONOMY_STATE_QUERY,
+  fetchTaxonomyState,
+  mergeTaxonomyState,
+  planTaxonomySeed,
+  taxonomyQueryParams,
+} from './taxonomy.ts';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const allPlans = [];
 const plan = (state, seed) => {
   const result = planTaxonomySeed(state, seed);
-  allPlans.push(result);
+  allPlans.push({ result, seed });
   return result;
 };
 
@@ -71,7 +78,7 @@ const baseState = (extra = {}) => ({ topics: clone(domains), articles: [], slugO
 const summary = 'A seeded summary that is long enough.';
 const newTopic = (id, parent, extra = {}) => ({ _id: id, title: `Title ${id}`, slug: id, parent, summary, ...extra });
 
-// Snapshot of the published production dataset, read from the public API on 2026-10-28 at 07:40Z.
+// Snapshot of the published production dataset, read from the public API on 2026-10-28.
 const prodState = {
   topics: [
     ...clone(domains),
@@ -425,10 +432,49 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
   assert.deepEqual(ai.topics.topics.map((t) => t.slug), ['agentic-workflows']);
 }
 
-// 11. Safety: only createIfNotExists, or patches with set/setIfMissing; topics never use set.
+// 11. State assembly: drafts come from a separate raw-perspective query and reach the planner.
+{
+  const draftSeed = { topics: [newTopic('topic-d', 'domain-system-design', { title: 'Topic D', slug: 'd' })], articles: [{ _id: 'article-d', featured: true }] };
+  const published = {
+    topics: [...clone(domains), existingTopic('topic-d', 'd', 'domain-system-design', { title: 'Topic D', summary })],
+    articles: [{ _id: 'article-d', featured: false, primaryTopic: null }],
+    slugOwners: [],
+  };
+  const calls = [];
+  const fakeFetch = async (query, params, options) => {
+    calls.push({ query, params, options });
+    if (query === TAXONOMY_STATE_QUERY) return clone(published);
+    if (query === TAXONOMY_DRAFTS_QUERY) return options.perspective === 'raw' ? ['drafts.topic-d', 'drafts.article-d'] : [];
+    throw new Error(`unexpected query ${query}`);
+  };
+  const state = await fetchTaxonomyState(fakeFetch, draftSeed);
+  assert.deepEqual(calls.map((c) => [c.query, c.options.perspective]), [
+    [TAXONOMY_STATE_QUERY, 'published'],
+    [TAXONOMY_DRAFTS_QUERY, 'raw'],
+  ]);
+  assert.deepEqual(calls[0].params, { articleIds: ['article-d'], slugs: ['d'] });
+  assert.deepEqual(calls[1].params, { draftIds: ['drafts.topic-d', 'drafts.article-d'] });
+  assert.ok(!TAXONOMY_STATE_QUERY.includes('$draftIds'), 'the published query must not look for drafts');
+  assert.deepEqual(state.drafts, ['drafts.topic-d', 'drafts.article-d']);
+  const result = plan(state, draftSeed);
+  assert.ok(result.warnings.some((w) => w.includes('draft values for topic-d')));
+  assert.ok(result.warnings.some((w) => w.includes('draft values for article-d')));
+
+  // Without a token the raw query sees no drafts, and no draft warnings appear.
+  const anonymous = await fetchTaxonomyState(async (query) => (query === TAXONOMY_STATE_QUERY ? clone(published) : []), draftSeed);
+  assert.deepEqual(anonymous.drafts, []);
+  assert.ok(!plan(anonymous, draftSeed).warnings.some((w) => w.includes('draft values')));
+
+  // mergeTaxonomyState keeps only drafts. ids and tolerates a null result.
+  assert.deepEqual(mergeTaxonomyState(published, null).drafts, []);
+  assert.deepEqual(mergeTaxonomyState(published, ['drafts.a', 'a', 7, 'drafts.a']).drafts, ['drafts.a']);
+}
+
+// 12. Safety: only createIfNotExists, or patches with set/setIfMissing; topics never use set.
 {
   const topicIds = new Set();
-  for (const result of allPlans) {
+  for (const { result, seed: planSeed } of allPlans) {
+    const articleIds = new Set((planSeed.articles ?? []).map((a) => a?._id));
     for (const m of result.mutations) {
       if (m.createIfNotExists) {
         topicIds.add(m.createIfNotExists._id);
@@ -439,7 +485,7 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
       assert.equal(ops.length, 1, 'one operation per patch');
       assert.ok(['set', 'setIfMissing'].includes(ops[0]), `unexpected patch operation ${ops[0]}`);
       if (ops[0] === 'set') {
-        assert.ok(m.patch.id.startsWith('article-'), `only articles may use set: ${m.patch.id}`);
+        assert.ok(articleIds.has(m.patch.id), `only seeded articles may use set: ${m.patch.id}`);
         for (const key of Object.keys(m.patch.set)) assert.ok(['featured', 'primaryTopic'].includes(key), `article set may not touch ${key}`);
       }
     }

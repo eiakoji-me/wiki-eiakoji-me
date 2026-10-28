@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createClient } from '@sanity/client';
-import { TAXONOMY_STATE_QUERY, planTaxonomySeed, taxonomyQueryParams } from './taxonomy.ts';
+import { fetchTaxonomyState, planTaxonomySeed } from './taxonomy.ts';
 
 const usage = 'usage: seed-taxonomy.mjs --dataset <name> (--dry-run | --write)';
 
@@ -49,7 +49,7 @@ const client = createClient({
   token,
 });
 
-const fetchState = () => client.fetch(TAXONOMY_STATE_QUERY, taxonomyQueryParams(seed));
+const fetchState = () => fetchTaxonomyState((query, params, options) => client.fetch(query, params, options), seed);
 
 function report(plan) {
   if (plan.changes.length === 0) console.log('No changes: the taxonomy is already seeded.');
@@ -66,6 +66,10 @@ if (values.write && plan.mutations.length > 0) {
   const remaining = planTaxonomySeed(await fetchState(), seed);
   console.log(`Applied ${plan.mutations.length} mutation(s). Remaining changes: ${remaining.mutations.length}.`);
   if (remaining.mutations.length > 0) process.exit(1);
+  if (remaining.blocked.length > 0) {
+    console.error(`Blocked after the write: ${remaining.blocked.join(', ')}. Resolve the warnings and rerun.`);
+    process.exit(1);
+  }
 }
 
 if (plan.blocked.length > 0) {

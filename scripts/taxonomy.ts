@@ -55,7 +55,7 @@ export interface TaxonomyStateSlugOwner {
   slug: string;
 }
 
-/** One consistent snapshot of the published state the planner needs. */
+/** The published state the planner needs, plus the ids of drafts of seeded documents. */
 export interface TaxonomyState {
   topics: TaxonomyStateTopic[];
   articles: TaxonomyStateArticle[];
@@ -73,9 +73,19 @@ export const TAXONOMY_STATE_QUERY = `{
   "articles": *[_type == "article" && _id in $articleIds] { _id, featured, "primaryTopic": primaryTopic._ref },
   "slugOwners": *[defined(slug.current) && slug.current in $slugs && !(_id in path("drafts.**"))] {
     _id, _type, title, "slug": slug.current
-  },
-  "drafts": *[_id in $draftIds]._id
+  }
 }`;
+
+/**
+ * Ids of existing drafts of seeded documents. Must run with the `raw` perspective: from API
+ * version v2025-02-19 the default `published` perspective hides every `drafts.*` document.
+ * Without a token the dataset's drafts stay private, so this returns no ids.
+ */
+export const TAXONOMY_DRAFTS_QUERY = '*[_id in $draftIds]._id';
+
+/** Perspective each query must run with. `TAXONOMY_STATE_QUERY` stays published on purpose. */
+export const TAXONOMY_STATE_PERSPECTIVE = 'published';
+export const TAXONOMY_DRAFTS_PERSPECTIVE = 'raw';
 
 export interface TaxonomyQueryParams {
   [key: string]: string[];
@@ -88,7 +98,7 @@ function isId(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && !value.startsWith('drafts.');
 }
 
-/** Parameters for `TAXONOMY_STATE_QUERY`. Malformed entries are skipped here and blocked by the planner. */
+/** Parameters for `TAXONOMY_STATE_QUERY` and `TAXONOMY_DRAFTS_QUERY` (`draftIds`). Malformed entries are skipped here and blocked by the planner. */
 export function taxonomyQueryParams(seed: TaxonomySeed): TaxonomyQueryParams {
   const topicIds = (seed.topics ?? []).map((t) => t?._id).filter(isId);
   const articleIds = (seed.articles ?? []).map((a) => a?._id).filter(isId);
@@ -98,6 +108,35 @@ export function taxonomyQueryParams(seed: TaxonomySeed): TaxonomyQueryParams {
     slugs: [...new Set(slugs)],
     draftIds: [...new Set([...topicIds, ...articleIds])].map((id) => `drafts.${id}`),
   };
+}
+
+/** Published state from `TAXONOMY_STATE_QUERY`, before the drafts are merged in. */
+export type PublishedTaxonomyState = Omit<TaxonomyState, 'drafts'>;
+
+/** Merges the result of `TAXONOMY_DRAFTS_QUERY` into the published state. Only `drafts.` ids are kept. */
+export function mergeTaxonomyState(published: PublishedTaxonomyState, draftIds: unknown): TaxonomyState {
+  const drafts = Array.isArray(draftIds)
+    ? [...new Set(draftIds.filter((id): id is string => typeof id === 'string' && id.startsWith('drafts.')))]
+    : [];
+  return { ...published, drafts };
+}
+
+/** The subset of `SanityClient.fetch` that `fetchTaxonomyState` uses. */
+export type TaxonomyFetch = (
+  query: string,
+  params: Record<string, string[]>,
+  options: { perspective: typeof TAXONOMY_STATE_PERSPECTIVE | typeof TAXONOMY_DRAFTS_PERSPECTIVE },
+) => Promise<unknown>;
+
+/**
+ * Reads the state the planner needs: published topics, articles and slug owners, plus the ids of
+ * drafts of seeded documents, which only the `raw` perspective returns.
+ */
+export async function fetchTaxonomyState(fetch: TaxonomyFetch, seed: TaxonomySeed): Promise<TaxonomyState> {
+  const { draftIds, ...stateParams } = taxonomyQueryParams(seed);
+  const published = (await fetch(TAXONOMY_STATE_QUERY, stateParams, { perspective: TAXONOMY_STATE_PERSPECTIVE })) as PublishedTaxonomyState;
+  const drafts = await fetch(TAXONOMY_DRAFTS_QUERY, { draftIds }, { perspective: TAXONOMY_DRAFTS_PERSPECTIVE });
+  return mergeTaxonomyState(published, drafts);
 }
 
 export type TaxonomyMutation =
