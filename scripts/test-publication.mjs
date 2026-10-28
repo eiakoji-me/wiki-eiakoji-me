@@ -68,11 +68,25 @@ function assertPageMarkup(html, { path, emptyText, requiredText }) {
   const leftNav = html.match(/<aside[^>]*class="wiki-left-nav[^"]*"[\s\S]*?<\/aside>/)?.[0];
   // The homepage and 404 use BaseLayout and have no left nav; every WikiLayout page renders it.
   if (!['/', '/404.html'].includes(path)) {
-    assert.ok(leftNav, `${path} must render the domain left nav`);
+    assert.ok(leftNav, `${path} must render the left nav`);
   }
   if (leftNav) {
     for (const removed of ['Browse', 'Curated Series', 'href="/articles/"', 'href="/series/"']) {
       assert.ok(!leftNav.includes(removed), `${path} left nav must not contain ${removed}`);
+    }
+    // The top nav already links the domains; the left nav must not repeat them.
+    for (const domain of ['system-design', 'platform-engineering', 'ai-engineering']) {
+      assert.ok(!leftNav.includes(`href="/topics/${domain}/"`), `${path} left nav must not link the ${domain} domain`);
+    }
+    assert.ok(leftNav.includes('Featured &amp; Topics') || leftNav.includes('Featured & Topics'), `${path} left nav disclosure must be labelled Featured & Topics`);
+    if (['/workshops/', '/topics/', '/articles/', '/projects/'].includes(path)) {
+      assert.ok(leftNav.includes('href="/topics/"') && leftNav.includes('All topics'), `${path} left nav must show popular topics with an All topics link`);
+      assert.ok(!leftNav.includes('nav-domain-label'), `${path} left nav must not show a domain context`);
+    }
+    const domainTitle = { '/topics/system-design/': 'System Design', '/topics/platform-engineering/': 'Platform Engineering', '/topics/ai-engineering/': 'AI Engineering' }[path];
+    if (domainTitle && leftNav.includes('nav-domain-label')) {
+      assert.match(leftNav, new RegExp(`class="nav-section-title nav-domain-label"[^>]*>${domainTitle}<`), `${path} left nav must label its domain ${domainTitle}`);
+      assert.ok(!leftNav.includes('All topics'), `${path} left nav must not show the popular fallback in domain mode`);
     }
   }
   const footer = html.match(/<footer class="site-footer"[\s\S]*?<\/footer>/)?.[0] ?? '';
@@ -372,13 +386,87 @@ async function testUnitBehaviors() {
     assert.ok(domainValidation.errors.some((err) => err.includes(expected)), `validateTopicHierarchy must report ${expected}`);
   }
 
-  const nav = buildNavigation(domainTree);
-  assert.equal(nav.domains, domainTree.rootTopics, 'navigation must start from the domain tree');
-  assert.deepEqual(Object.keys(nav), ['domains'], 'navigation must contain only the domain tree');
+  // Left nav: featured articles plus the current domain's topics, never the domains themselves.
+  const nav = buildNavigation(domainTree, { currentSlug: 'write-through' });
+  assert.deepEqual(Object.keys(nav), ['featured', 'topics'], 'navigation must contain only featured articles and topics');
+  assert.deepEqual(nav.featured, [], 'no featured articles must yield an empty Featured section');
+  assert.equal(nav.topics.mode, 'domain', 'a nested topic must resolve to its domain');
+  assert.deepEqual(nav.topics.domain, { title: 'System Design', slug: 'system-design' }, 'the domain is a plain label');
+  assert.deepEqual(nav.topics.topics.map((i) => i.slug), ['batching', 'caching', 'zookeeper'], 'domain mode must list the domain children in order');
+  const cachingItem = nav.topics.topics.find((i) => i.slug === 'caching');
+  assert.deepEqual(cachingItem.children.map((i) => i.slug), ['write-through'], 'the current path must be expanded');
+  assert.equal(cachingItem.current, false, 'ancestors of the current topic must not be highlighted');
+  assert.equal(cachingItem.children[0].current, true, 'the current topic must be highlighted');
+  assert.equal(cachingItem.children[0].href, '/topics/write-through/', 'topic items must link through topicHref');
+  assert.equal(cachingItem.count, domainTree.nodeMap.get('t-c').rollupArticleCount, 'item counts must be rollup counts');
+  assert.equal(cachingItem.count, 1, 'caching must roll up its nested article');
+  for (const sibling of nav.topics.topics.filter((i) => i.slug !== 'caching')) {
+    assert.equal(sibling.children.length, 0, `${sibling.slug} is off the current path and must stay collapsed`);
+    assert.equal(sibling.current, false, `${sibling.slug} must not be highlighted`);
+    assert.equal(sibling.count, 0, `${sibling.slug} has no articles`);
+  }
+  const allItems = (items) => items.flatMap((i) => [i, ...allItems(i.children)]);
+  const domainSlugs = domainTree.rootTopics.map((n) => n.topic.slug);
+  const hubNav = buildNavigation(domainTree, { currentSlug: 'system-design' });
+  assert.equal(hubNav.topics.mode, 'domain', 'a domain hub must resolve to domain mode');
+  assert.ok(allItems(hubNav.topics.topics).every((i) => !i.current), 'nothing is highlighted on a domain hub');
+  assert.ok(hubNav.topics.topics.every((i) => i.children.length === 0), 'a domain hub shows its children collapsed');
+  for (const n of [nav, hubNav]) {
+    assert.ok(allItems(n.topics.topics).every((i) => !domainSlugs.includes(i.slug)), 'domains must never be nav items');
+  }
+  for (const slug of ['legacy-root', 'not-a-topic', 'articles', undefined]) {
+    const fallback = buildNavigation(domainTree, { currentSlug: slug });
+    assert.equal(fallback.topics.mode, 'popular', `currentSlug ${slug} must fall back to popular topics`);
+    assert.equal(fallback.topics.allTopicsHref, '/topics/', 'popular mode must link All topics');
+    assert.deepEqual(fallback.topics.topics.map((i) => i.slug), ['caching', 'write-through'], 'popular mode lists only non-domain topics with articles');
+  }
+  assert.equal(buildNavigation(domainTree, { currentSlug: 'ai-engineering' }).topics.mode, 'popular', 'a domain with no topics must fall back to popular topics');
+
+  // Popular ordering: featured first, then rollup count, then order and title; capped at 8.
+  const popularTaxonomy = [
+    { _id: 'pd', _type: 'topic', kind: 'domain', title: 'Domain', slug: 'domain' },
+    ...Array.from({ length: 10 }, (_, i) => ({
+      _id: `p${i}`, _type: 'topic', kind: 'topic', title: `Topic ${String.fromCharCode(74 - i)}`, slug: `p${i}`, parent: ref('pd'),
+      ...(i === 9 ? { featured: true } : {}),
+      ...(i === 4 ? { order: 1 } : {}),
+    })),
+    { _id: 'p-empty', _type: 'topic', kind: 'topic', title: 'Empty', slug: 'p-empty', parent: ref('pd'), featured: true },
+  ];
+  const counts = { p0: 5, p1: 4, p2: 3, p3: 3, p4: 3, p5: 2, p6: 2, p7: 2, p8: 1, p9: 1 };
+  const popularArticles = Object.entries(counts).flatMap(([topic, n]) =>
+    Array.from({ length: n }, (_, i) => ({ _id: `${topic}-a${i}`, _type: 'article', title: 't', slug: `${topic}-a${i}`, summary: 's', primaryTopic: ref(topic) })),
+  );
+  const popular = buildNavigation(buildTopicTree(popularTaxonomy, popularArticles)).topics;
+  assert.equal(popular.mode, 'popular', 'no currentSlug must yield popular mode');
+  assert.deepEqual(
+    popular.topics.map((i) => i.slug),
+    ['p9', 'p0', 'p1', 'p4', 'p3', 'p2', 'p7', 'p6'],
+    'popular topics must order featured, count desc, then order, then title, capped at 8',
+  );
+  assert.ok(popular.topics.every((i) => i.count > 0 && i.children.length === 0), 'popular topics have counts and no children');
+
+  // Featured articles: up to 5, newest first, current article highlighted.
+  const featuredFixture = [
+    ...Array.from({ length: 7 }, (_, i) => ({
+      _id: `f${i}`, _type: 'article', title: `Featured ${i}`, slug: `featured-${i}`, summary: 's',
+      featured: true, publishedAt: `2026-0${i + 1}-01T00:00:00Z`,
+    })),
+    { _id: 'f-undated', _type: 'article', title: 'Undated', slug: 'undated', summary: 's', featured: true },
+    { _id: 'n1', _type: 'article', title: 'Plain', slug: 'plain', summary: 's', featured: false, publishedAt: '2026-12-01T00:00:00Z' },
+  ];
+  const featuredNav = buildNavigation(domainTree, { articles: featuredFixture, currentArticleSlug: 'featured-5' });
+  assert.deepEqual(
+    featuredNav.featured.map((i) => i.slug),
+    ['featured-6', 'featured-5', 'featured-4', 'featured-3', 'featured-2'],
+    'Featured must show the 5 newest featured articles',
+  );
+  assert.equal(featuredNav.featured[0].href, '/articles/featured-6/', 'featured items must link their article');
+  assert.deepEqual(featuredNav.featured.map((i) => i.current), [false, true, false, false, false], 'the current article must be highlighted');
+
+  assert.deepEqual(buildNavigation(buildTopicTree([])), { featured: [], topics: null }, 'an empty site must yield an empty navigation');
   assert.ok(!('BROWSE_LINKS' in topicsModule), 'BROWSE_LINKS must no longer be exported');
   assert.ok(!wikiNavQuery.includes('"series"'), 'wikiNavQuery must not project series');
   assert.ok(!wikiNavQuery.includes('_type == "series"'), 'wikiNavQuery must not query series');
-  assert.equal(buildNavigation(buildTopicTree([])).domains.length, 0, 'an empty taxonomy must yield no domains');
   assert.equal(topicHref(domainTree, 'write-through'), '/topics/write-through/', 'topics in the tree link to their hub');
   for (const missing of ['legacy-root', 'orphan', 'nested-domain', undefined]) {
     assert.equal(topicHref(domainTree, missing), undefined, `excluded topic ${missing} must not get a hub link`);
@@ -531,6 +619,22 @@ async function testUnitBehaviors() {
   const fixtureHome = await queryFixtures('full', homepageQuery);
   assert.equal(fixtureHome.platformTopic?.slug, 'platform-engineering', 'homepage must find domains by kind');
   assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
+  const fixtureNavData = await queryFixtures('full', wikiNavQuery);
+  const fixtureNav = buildNavigation(buildTopicTree(fixtureNavData.topics, fixtureNavData.articles), {
+    articles: fixtureNavData.articles,
+    currentSlug: 'raft',
+    currentArticleSlug: 'lsm-trees',
+  });
+  assert.deepEqual(
+    fixtureNav.featured.map((i) => [i.slug, i.title, i.href, i.current]),
+    [
+      ['golden-paths', 'Golden Paths', '/articles/golden-paths/', false],
+      ['lsm-trees', 'LSM Trees', '/articles/lsm-trees/', true],
+    ],
+    'wikiNavQuery must project article title, slug, publishedAt, and featured, excluding scheduled posts',
+  );
+  assert.equal(fixtureNav.topics?.mode, 'domain', 'a nested fixture topic must resolve its domain');
+  assert.equal(fixtureNav.topics.domain.slug, 'system-design');
   await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
 
   const fixtureArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'raft-log-replication' });
@@ -661,16 +765,27 @@ async function testConfiguration() {
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
   }
-  assert.ok(leftNavComponent.includes('buildNavigation(tree)'), 'LeftNav must render from buildNavigation');
+  assert.ok(leftNavComponent.includes('buildNavigation(tree, {'), 'LeftNav must render from buildNavigation');
   assert.ok(!leftNavComponent.includes('Sections') && !leftNavComponent.includes('/projects/'), 'LeftNav must not keep the Sections block or a Projects link');
   for (const removed of ['Browse', 'Curated Series', '/articles/', '/series/', 'series', 'Series']) {
-    assert.ok(!leftNavComponent.includes(removed), `LeftNav must be domains-only and not contain ${removed}`);
+    assert.ok(!leftNavComponent.includes(removed), `LeftNav must not repeat the top nav or contain ${removed}`);
   }
   assert.match(
     leftNavComponent,
-    /\{nav\.domains\.length > 0 && \(\s*<aside class="wiki-left-nav"/,
-    'LeftNav must omit the whole aside when there are no domains',
+    /\{\(nav\.featured\.length > 0 \|\| topics\) && \(\s*<aside class="wiki-left-nav"/,
+    'LeftNav must omit the whole aside when there is nothing to show',
   );
+  assert.ok(leftNavComponent.includes('Featured & Topics'), 'LeftNav disclosure must be labelled Featured & Topics');
+  assert.ok(!leftNavComponent.includes('Navigation & Topics'), 'LeftNav must drop the old disclosure label');
+  assert.ok(wikiLayout.includes('currentArticleSlug={currentArticleSlug}'), 'WikiLayout must pass the current article to LeftNav');
+  assert.ok(wikiLayout.includes('articles={navData?.articles ?? []}'), 'WikiLayout must pass nav articles to LeftNav');
+  const articlePageSource = await readFile('src/pages/articles/[slug].astro', 'utf8');
+  assert.ok(articlePageSource.includes('currentArticleSlug={article.slug}'), 'article pages must pass currentArticleSlug');
+  assert.ok(!articlePageSource.includes("?? 'articles'"), 'article pages must not pass a fake topic slug');
+  const navArticles = wikiNavQuery.slice(wikiNavQuery.indexOf('"articles"'));
+  for (const field of ['featured', 'publishedAt', 'title', '"slug": slug.current']) {
+    assert.ok(navArticles.includes(field), `wikiNavQuery articles must project ${field}`);
+  }
   assert.ok(styles.includes('.wiki-shell:not(:has(.wiki-left-nav))'), 'styles must lay out the shell without a left nav');
   assert.ok(!wikiLayout.includes('series='), 'WikiLayout must not pass series to LeftNav');
   const navDataType = wikiLayout.match(/fetchContent<([^>]*)>\(wikiNavQuery\)/)?.[1] ?? '';

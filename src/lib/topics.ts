@@ -274,12 +274,120 @@ export function topicHref(tree: TopicTree, slug: string | undefined): string | u
   return slug && tree.slugMap.has(slug) ? `/topics/${slug}/` : undefined;
 }
 
-export interface Navigation {
-  domains: TopicNode[];
+export const FEATURED_NAV_LIMIT = 5;
+export const POPULAR_TOPICS_LIMIT = 8;
+export const ALL_TOPICS_HREF = '/topics/';
+
+export interface NavigationOptions {
+  /** Published articles; those with `featured === true` fill the Featured section. */
+  articles?: ContentSummary[];
+  /** Topic slug of the page: a domain, a topic, or an article's primary topic. */
+  currentSlug?: string;
+  /** Slug of the article being read, on article pages only. */
+  currentArticleSlug?: string;
 }
 
-export function buildNavigation(tree: TopicTree): Navigation {
-  return { domains: tree.rootTopics };
+export interface NavFeaturedItem {
+  title: string;
+  slug: string;
+  href: string;
+  current: boolean;
+}
+
+export interface NavTopicItem {
+  title: string;
+  slug: string;
+  /** Hub URL from `topicHref`; undefined means the topic is rendered as text, not a link. */
+  href?: string;
+  /** Rollup article count, including subtopics. Hidden when 0. */
+  count: number;
+  current: boolean;
+  /** Populated only for topics on the path to the current topic. */
+  children: NavTopicItem[];
+}
+
+export type NavTopicContext =
+  | { mode: 'domain'; domain: { title: string; slug: string }; topics: NavTopicItem[] }
+  | { mode: 'popular'; topics: NavTopicItem[]; allTopicsHref: typeof ALL_TOPICS_HREF };
+
+export interface Navigation {
+  featured: NavFeaturedItem[];
+  /** Null only when the taxonomy is empty. */
+  topics: NavTopicContext | null;
+}
+
+function featuredArticles(articles: ContentSummary[], currentArticleSlug?: string): NavFeaturedItem[] {
+  return articles
+    .filter((a) => a.featured === true && Boolean(a.slug) && Boolean(a.title))
+    .sort((a, b) => {
+      const at = a.publishedAt ? Date.parse(a.publishedAt) : Number.NaN;
+      const bt = b.publishedAt ? Date.parse(b.publishedAt) : Number.NaN;
+      const aHas = !Number.isNaN(at);
+      const bHas = !Number.isNaN(bt);
+      if (aHas !== bHas) return aHas ? -1 : 1;
+      return (aHas && bHas ? bt - at : 0) || a.title.localeCompare(b.title) || a.slug.localeCompare(b.slug);
+    })
+    .slice(0, FEATURED_NAV_LIMIT)
+    .map((a) => ({ title: a.title, slug: a.slug, href: `/articles/${a.slug}/`, current: a.slug === currentArticleSlug }));
+}
+
+function topicItem(tree: TopicTree, node: TopicNode, currentId?: string, path?: Set<string>): NavTopicItem {
+  const id = node.topic._id;
+  return {
+    title: node.topic.title,
+    slug: node.topic.slug,
+    href: topicHref(tree, node.topic.slug),
+    count: node.rollupArticleCount,
+    current: id === currentId,
+    children: path?.has(id) ? node.children.map((child) => topicItem(tree, child, currentId, path)) : [],
+  };
+}
+
+function popularTopics(tree: TopicTree): NavTopicItem[] {
+  return [...tree.nodeMap.values()]
+    .filter((node) => node.topic.kind === 'topic' && node.rollupArticleCount > 0)
+    .sort(
+      (a, b) =>
+        Number(b.topic.featured === true) - Number(a.topic.featured === true) ||
+        b.rollupArticleCount - a.rollupArticleCount ||
+        compareTopics(a.topic, b.topic)
+    )
+    .slice(0, POPULAR_TOPICS_LIMIT)
+    .map((node) => topicItem(tree, node));
+}
+
+/**
+ * Builds the left-nav view model. The top nav already lists the domains, so the left
+ * nav shows featured articles plus either the current domain's topic tree (only the
+ * path to the current topic expanded) or, off-taxonomy, the most popular topics.
+ */
+export function buildNavigation(tree: TopicTree, options: NavigationOptions = {}): Navigation {
+  const { articles = [], currentSlug, currentArticleSlug } = options;
+  const featured = featuredArticles(articles, currentArticleSlug);
+  if (tree.rootTopics.length === 0) return { featured, topics: null };
+
+  const node = currentSlug ? tree.slugMap.get(currentSlug) : undefined;
+  if (node) {
+    const path = new Set<string>();
+    let domain: TopicNode = node;
+    path.add(domain.topic._id);
+    while (domain.parent) {
+      domain = domain.parent;
+      path.add(domain.topic._id);
+    }
+    if (domain.children.length > 0) {
+      return {
+        featured,
+        topics: {
+          mode: 'domain',
+          domain: { title: domain.topic.title, slug: domain.topic.slug },
+          topics: domain.children.map((child) => topicItem(tree, child, node.topic._id, path)),
+        },
+      };
+    }
+  }
+
+  return { featured, topics: { mode: 'popular', topics: popularTopics(tree), allTopicsHref: ALL_TOPICS_HREF } };
 }
 
 export function getTopicBreadcrumbs(

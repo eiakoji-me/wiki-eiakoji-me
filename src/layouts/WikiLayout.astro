@@ -13,6 +13,8 @@ interface Props {
   description?: string;
   image?: string;
   currentSlug?: string;
+  /** Slug of the article being read; highlights it in the Featured section. */
+  currentArticleSlug?: string;
 }
 
 const {
@@ -20,6 +22,7 @@ const {
   description = 'Technical knowledge base, architecture patterns, and engineering notes on wiki.eiakoji.me.',
   image,
   currentSlug,
+  currentArticleSlug,
 } = Astro.props;
 
 const pageTitle = formatPageTitle(title);
@@ -50,7 +53,12 @@ logExcludedTopics(navTree);
     <a class="skip-link" href="#main-content">Skip to content</a>
     <SiteHeader />
     <div class="wiki-shell">
-      <LeftNav tree={navTree} currentSlug={currentSlug} />
+      <LeftNav
+        tree={navTree}
+        articles={navData?.articles ?? []}
+        currentSlug={currentSlug}
+        currentArticleSlug={currentArticleSlug}
+      />
       <main id="main-content">
         <div class="wiki-main">
           <slot />

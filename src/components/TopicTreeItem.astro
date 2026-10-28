@@ -1,28 +1,31 @@
 ---
-import type { TopicNode } from '../lib/topics';
+import type { NavTopicItem } from '../lib/topics';
 
 interface Props {
-  node: TopicNode;
-  currentSlug?: string;
+  item: NavTopicItem;
   depth?: number;
 }
 
-const { node, currentSlug, depth = 1 } = Astro.props;
-const isCurrent = currentSlug === node.topic.slug;
+const { item, depth = 1 } = Astro.props;
+const linkClass = `topic-link depth-${depth}${item.current ? ' active' : ''}`;
 ---
 
 <li class={`topic-node depth-${depth}`}>
-  <a
-    href={`/topics/${node.topic.slug}/`}
-    class={`topic-link depth-${depth} ${isCurrent ? 'active' : ''}`}
-    aria-current={isCurrent ? 'page' : undefined}
-  >
-    <span class="topic-title">{node.topic.title}</span>
-  </a>
-  {node.children.length > 0 && (
+  {item.href ? (
+    <a href={item.href} class={linkClass} aria-current={item.current ? 'page' : undefined}>
+      <span class="topic-title">{item.title}</span>
+      {item.count > 0 && <span class="topic-count">{item.count}<span class="visually-hidden"> articles</span></span>}
+    </a>
+  ) : (
+    <span class={linkClass}>
+      <span class="topic-title">{item.title}</span>
+      {item.count > 0 && <span class="topic-count">{item.count}<span class="visually-hidden"> articles</span></span>}
+    </span>
+  )}
+  {item.children.length > 0 && (
     <ul class={`subtopic-tree depth-${depth}`}>
-      {node.children.map((child: TopicNode) => (
-        <Astro.self node={child} currentSlug={currentSlug} depth={depth + 1} />
+      {item.children.map((child: NavTopicItem) => (
+        <Astro.self item={child} depth={depth + 1} />
       ))}
     </ul>
   )}
@@ -45,6 +48,7 @@ const isCurrent = currentSlug === node.topic.slug;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     padding: 4px 8px;
     border-left: 2px solid transparent;
     border-radius: 0 4px 4px 0;
@@ -62,11 +66,11 @@ const isCurrent = currentSlug === node.topic.slug;
   .topic-link.depth-4 {
     font-size: var(--text-sm);
   }
-  .topic-link:hover {
+  a.topic-link:hover {
     background: var(--background-subtle);
     color: var(--text);
   }
-  .topic-link:hover .topic-title {
+  a.topic-link:hover .topic-title {
     text-decoration: underline;
   }
   .topic-link.active {
@@ -79,5 +83,11 @@ const isCurrent = currentSlug === node.topic.slug;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .topic-count {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: 400;
   }
 </style>
