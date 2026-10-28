@@ -40,7 +40,7 @@
   ],
   "articles": [
     {
-      "_id": "article-patterns-of-enterprise-application-architecture",
+      "_id": "article-poeaa-part-1-layering-and-domain-logic",
       "featured": true
     },
     {

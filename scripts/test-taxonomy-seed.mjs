@@ -71,7 +71,7 @@ const baseState = (extra = {}) => ({ topics: clone(domains), articles: [], slugO
 const summary = 'A seeded summary that is long enough.';
 const newTopic = (id, parent, extra = {}) => ({ _id: id, title: `Title ${id}`, slug: id, parent, summary, ...extra });
 
-// Snapshot of the published production dataset, read from the public API on 2026-10-28.
+// Snapshot of the published production dataset, read from the public API on 2026-10-28 at 07:40Z.
 const prodState = {
   topics: [
     ...clone(domains),
@@ -81,7 +81,7 @@ const prodState = {
   ],
   articles: [
     { _id: 'article-ai-execution-environment-architecture', featured: null, primaryTopic: 'domain-platform-engineering' },
-    { _id: 'article-patterns-of-enterprise-application-architecture', featured: false, primaryTopic: 'topic-architectural-patterns' },
+    { _id: 'article-poeaa-part-1-layering-and-domain-logic', featured: false, primaryTopic: 'topic-architectural-patterns' },
   ],
   slugOwners: [
     { _id: 'topic-software-architecture', _type: 'topic', title: 'Software Architecture', slug: 'software-architecture' },
@@ -95,11 +95,6 @@ const prodArticles = [
     _id: 'article-ai-execution-environment-architecture', slug: 'ai-execution-environment-architecture',
     title: 'Architecture of an Issue-Driven AI Execution Environment', publishedAt: '2026-10-27T17:03:11.012Z',
     related: ['domain-ai-engineering', 'domain-system-design'],
-  },
-  {
-    _id: 'article-patterns-of-enterprise-application-architecture', slug: 'patterns-of-enterprise-application-architecture',
-    title: 'Patterns of Enterprise Application Architecture', publishedAt: '2024-04-29T00:05:33Z',
-    related: ['topic-domain-driven-design'],
   },
   {
     _id: 'article-poeaa-part-1-layering-and-domain-logic', slug: 'poeaa-part-1-layering-and-domain-logic',
@@ -358,12 +353,12 @@ for (const [label, state, seed] of [
 const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.meta.url), 'utf8'));
 {
   assert.deepEqual(taxonomyQueryParams(seed), {
-    articleIds: ['article-patterns-of-enterprise-application-architecture', 'article-ai-execution-environment-architecture'],
+    articleIds: ['article-poeaa-part-1-layering-and-domain-logic', 'article-ai-execution-environment-architecture'],
     slugs: ['software-architecture', 'architectural-patterns', 'domain-driven-design', 'execution-environments', 'agentic-workflows'],
     draftIds: [
       'drafts.topic-software-architecture', 'drafts.topic-architectural-patterns', 'drafts.topic-domain-driven-design',
       'drafts.topic-execution-environments', 'drafts.topic-agentic-workflows',
-      'drafts.article-patterns-of-enterprise-application-architecture', 'drafts.article-ai-execution-environment-architecture',
+      'drafts.article-poeaa-part-1-layering-and-domain-logic', 'drafts.article-ai-execution-environment-architecture',
     ],
   });
   const result = plan(prodState, seed);
@@ -373,7 +368,7 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
     'create topic-agentic-workflows (Agentic Workflows)',
     'update topic-architectural-patterns: kind',
     'update topic-domain-driven-design: kind',
-    'update article-patterns-of-enterprise-application-architecture: featured',
+    'update article-poeaa-part-1-layering-and-domain-logic: featured',
     'update article-ai-execution-environment-architecture: featured, primaryTopic',
   ]);
   assert.deepEqual(result.warnings, []);
@@ -407,7 +402,7 @@ const seed = JSON.parse(await readFile(new URL('./data/taxonomy.json', import.me
   assert.deepEqual(tree.excluded.map((e) => `${e.topic._id}: ${e.reason}`), [], 'the seeded taxonomy must exclude nothing');
 
   const popular = buildNavigation(tree, { articles });
-  assert.deepEqual(popular.featured.map((f) => f.slug), ['ai-execution-environment-architecture', 'patterns-of-enterprise-application-architecture']);
+  assert.deepEqual(popular.featured.map((f) => f.slug), ['poeaa-part-1-layering-and-domain-logic', 'ai-execution-environment-architecture']);
   assert.equal(popular.topics.mode, 'popular');
   const popularSlugs = popular.topics.topics.map((t) => t.slug);
   assert.ok(popularSlugs.includes('architectural-patterns'), 'Popular topics must list architectural-patterns');
