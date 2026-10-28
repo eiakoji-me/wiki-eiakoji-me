@@ -1,6 +1,7 @@
 ---
 import { PortableText } from '@portabletext/astro';
 import type { PortableTextBlock } from '@portabletext/types';
+import Callout from './Callout.astro';
 import CodeBlock from './CodeBlock.astro';
 import Heading2 from './Heading2.astro';
 import Heading3 from './Heading3.astro';
@@ -19,6 +20,7 @@ const components = {
   type: {
     imageWithAlt: SanityImage,
     codeBlock: CodeBlock,
+    callout: Callout,
   },
   block: {
     h2: Heading2,

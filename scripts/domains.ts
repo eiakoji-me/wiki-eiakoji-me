@@ -8,24 +8,24 @@ export interface DomainSeed {
 
 export const DOMAIN_SEEDS: DomainSeed[] = [
   {
+    _id: 'domain-software-architecture',
+    title: 'Software Architecture',
+    slug: 'software-architecture',
+    summary: 'Internal system structure, domain logic patterns, Domain-Driven Design, boundary isolation, and agentic workflows.',
+    order: 1,
+  },
+  {
     _id: 'domain-system-design',
     title: 'System Design',
     slug: 'system-design',
-    summary: 'Architecture patterns, distributed systems foundations, and real-world system case studies.',
-    order: 1,
+    summary: 'Distributed systems foundations, storage engines, data pipelines, consensus, and scale.',
+    order: 2,
   },
   {
     _id: 'domain-platform-engineering',
     title: 'Platform Engineering',
     slug: 'platform-engineering',
     summary: 'Internal developer platforms, infrastructure as code, runtime environments, and developer experience.',
-    order: 2,
-  },
-  {
-    _id: 'domain-ai-engineering',
-    title: 'AI Engineering',
-    slug: 'ai-engineering',
-    summary: 'Machine learning systems, generative AI architectures, agentic workflows, and LLM application engineering.',
     order: 3,
   },
 ];

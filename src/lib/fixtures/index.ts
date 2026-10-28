@@ -45,7 +45,9 @@ function article(
   return doc;
 }
 
-const systemDesign = topic('domain-system-design', 'domain', 'System Design', undefined, 1);
+const softwareArchitecture = topic('domain-software-architecture', 'domain', 'Software Architecture', undefined, 1);
+const systemDesign = topic('domain-system-design', 'domain', 'System Design', undefined, 2);
+const platformEngineering = topic('domain-platform-engineering', 'domain', 'Platform Engineering', undefined, 3);
 
 const partial: Doc[] = [
   systemDesign,
@@ -55,9 +57,10 @@ const partial: Doc[] = [
 ];
 
 const full: Doc[] = [
-  topic('domain-ai-engineering', 'domain', 'AI Engineering', undefined, 3),
-  topic('domain-platform-engineering', 'domain', 'Platform Engineering', undefined, 2),
+  softwareArchitecture,
   systemDesign,
+  platformEngineering,
+  topic('topic-architectural-patterns', 'topic', 'Architectural Patterns', 'domain-software-architecture', 1),
   topic('topic-reliability', 'topic', 'Reliability and Scale', 'domain-system-design', 2),
   topic('topic-distributed-systems', 'topic', 'Distributed Systems', 'domain-system-design', 1),
   topic('topic-consensus', 'topic', 'Consensus', 'topic-distributed-systems'),
@@ -65,7 +68,7 @@ const full: Doc[] = [
   topic('topic-storage-engines', 'topic', 'Storage Engines', 'topic-distributed-systems'),
   topic('topic-internal-platforms', 'topic', 'Internal Developer Platforms', 'domain-platform-engineering'),
   topic('topic-infrastructure-as-code', 'topic', 'Infrastructure as Code', 'domain-platform-engineering'),
-  topic('topic-agentic-workflows', 'topic', 'Agentic Workflows', 'domain-ai-engineering'),
+  topic('topic-agentic-workflows', 'topic', 'Agentic Workflows', 'domain-software-architecture'),
   topic('topic-languages', undefined, 'Languages'),
   topic('drafts.topic-draft-only', 'topic', 'Draft Only', 'domain-system-design'),
   article('article-raft-log-replication', 'Raft Log Replication', '2026-09-01T00:00:00Z', 'topic-raft', ['topic-consensus']),

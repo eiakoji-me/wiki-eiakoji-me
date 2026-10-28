@@ -1,25 +1,36 @@
 {
   "topics": [
     {
-      "_id": "topic-software-architecture",
-      "title": "Software Architecture",
-      "slug": "software-architecture",
-      "parent": "domain-system-design",
-      "order": 10
-    },
-    {
       "_id": "topic-architectural-patterns",
       "title": "Architectural Patterns",
       "slug": "architectural-patterns",
-      "parent": "topic-software-architecture",
-      "order": 10
+      "parent": "domain-software-architecture",
+      "order": 10,
+      "summary": "Enterprise application patterns, domain logic structuring, layering invariants, and object-relational mapping."
     },
     {
       "_id": "topic-domain-driven-design",
       "title": "Domain-Driven Design",
       "slug": "domain-driven-design",
-      "parent": "topic-software-architecture",
-      "order": 20
+      "parent": "domain-software-architecture",
+      "order": 20,
+      "summary": "Domain modeling principles, ubiquitous language, aggregate boundaries, value objects, and bounded contexts."
+    },
+    {
+      "_id": "topic-agentic-workflows",
+      "title": "Agentic Workflows",
+      "slug": "agentic-workflows",
+      "parent": "domain-software-architecture",
+      "order": 30,
+      "summary": "Multi-step agent pipelines, tool use, durable state, and human-in-the-loop control for LLM-driven work."
+    },
+    {
+      "_id": "topic-distributed-systems",
+      "title": "Distributed Systems",
+      "slug": "distributed-systems",
+      "parent": "domain-system-design",
+      "order": 10,
+      "summary": "Foundational consensus algorithms, replication strategies, partitioning, and high-availability systems."
     },
     {
       "_id": "topic-execution-environments",
@@ -28,20 +39,13 @@
       "parent": "domain-platform-engineering",
       "order": 10,
       "summary": "Workspace control planes, isolated runtimes, and the boundaries that let agents and developers execute work safely."
-    },
-    {
-      "_id": "topic-agentic-workflows",
-      "title": "Agentic Workflows",
-      "slug": "agentic-workflows",
-      "parent": "domain-ai-engineering",
-      "order": 10,
-      "summary": "Multi-step agent pipelines, tool use, durable state, and human-in-the-loop control for LLM-driven work."
     }
   ],
   "articles": [
     {
       "_id": "article-poeaa-part-1-layering-and-domain-logic",
-      "featured": true
+      "featured": false,
+      "primaryTopic": "topic-architectural-patterns"
     },
     {
       "_id": "article-ai-execution-environment-architecture",

@@ -1,14 +1,58 @@
 ---
+import { Code } from 'astro:components';
 import type { Props as PortableTextProps } from '@portabletext/astro/types';
 import type { CodeBlock } from '../lib/sanity/types';
 
 type Props = PortableTextProps<CodeBlock>;
 const { node } = Astro.props;
+const lang = (node.language || 'plaintext') as any;
+const displayLabel = node.filename ?? node.language;
 ---
 
 <div class="code-block">
-  {(node.filename || node.language) && (
-    <div class="code-label"><span>{node.filename ?? node.language}</span>{node.filename && node.language && <span>{node.language}</span>}</div>
-  )}
-  <pre><code class={node.language ? `language-${node.language}` : undefined}>{node.code}</code></pre>
+  <div class="code-header">
+    <div class="code-meta">
+      {displayLabel && <span class="code-filename">{displayLabel}</span>}
+      {node.filename && node.language && <span class="code-lang-tag">{node.language}</span>}
+    </div>
+    <button type="button" class="copy-btn" aria-label="Copy code to clipboard">
+      <svg class="copy-icon" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path>
+        <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path>
+      </svg>
+      <span class="copy-text">Copy</span>
+    </button>
+  </div>
+  <Code code={node.code} lang={lang} theme="github-light" />
 </div>
+
+<script>
+  function setupCodeCopy() {
+    document.querySelectorAll<HTMLButtonElement>('.code-block .copy-btn').forEach((btn) => {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', async () => {
+        const block = btn.closest('.code-block');
+        const code = block?.querySelector('code')?.innerText;
+        if (!code) return;
+        try {
+          await navigator.clipboard.writeText(code);
+          const text = btn.querySelector<HTMLSpanElement>('.copy-text');
+          if (text) {
+            const original = text.textContent;
+            text.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              text.textContent = original;
+              btn.classList.remove('copied');
+            }, 2000);
+          }
+        } catch {
+          // Fallback if clipboard API is unavailable
+        }
+      });
+    });
+  }
+  setupCodeCopy();
+  document.addEventListener('astro:after-swap', setupCodeCopy);
+</script>
