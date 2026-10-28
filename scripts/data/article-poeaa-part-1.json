@@ -13,10 +13,10 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+      "_ref": "image-a50e70635fc4554f0af3409e8d9be1fce072bc29-1600x900-png"
     },
-    "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Continuum showing Three-Layer System, Service Layer, and Rich Domain Model vs Transaction Script.",
-    "caption": "Three-Layer System architecture, Domain Logic Continuum, and self-validating Value Objects."
+    "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Architecture showing Three-Layer System, Service Layer, and Value Objects.",
+    "caption": "Three-Layer Architecture, Domain Logic Continuum, and self-validating Value Objects."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "How enterprise systems organize domain logic and protect business invariants: comparing Transaction Scripts, Table Modules, and Domain Models, coordinating workflows via the Service Layer, and eliminating Primitive Obsession with Value Objects.",
@@ -57,7 +57,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+        "_ref": "image-a50e70635fc4554f0af3409e8d9be1fce072bc29-1600x900-png"
       }
     }
   },
@@ -411,10 +411,14 @@
       "level": 1
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-13-2336396fc199",
-      "code": "┌─────────────────────────────────────────────────────────────┐\n│                     Presentation Layer                      │\n│            (HTTP Controllers, GraphQL Resolvers)            │\n└──────────────────────────────┬──────────────────────────────┘\n                               │ depends on\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│                        Domain Layer                         │\n│         (Entities, Value Objects, Domain Services)          │\n│              ★ Zero infrastructural dependencies ★          │\n└──────────────────────────────┬──────────────────────────────┘\n                               │ depends on\n                               ▼\n┌─────────────────────────────────────────────────────────────┐\n│                      Data Source Layer                      │\n│        (Repositories, ORM Mappings, Gateway Clients)        │\n└─────────────────────────────────────────────────────────────┘",
-      "language": "typescript"
+      "_type": "imageWithAlt",
+      "_key": "img-13-71c9ead27265",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-807f988a07f2643e019a9598dcf7bb3cfc0b47c1-1200x700-png"
+      },
+      "alt": "The Three-Layer Architecture showing Presentation Layer, Domain Layer, and Data Source Layer with strict unidirectional dependency flow.",
+      "caption": "The Three-Layer System: strict unidirectional dependency flow with zero inward coupling."
     },
     {
       "_type": "block",
@@ -909,10 +913,14 @@
       ]
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-41-d365c160b3a1",
-      "code": "[ HTTP Controller / GraphQL ]\n            │\n            ▼\n┌────────────────────────────────────────────────────────┐\n│                     Service Layer                      │\n│            SubscriptionBillingService                  │\n│                                                        │\n│  1. Begin Unit of Work / Transaction                   │\n│  2. Load Aggregate from Repository                     │\n│  3. Invoke Domain Operation: sub.changePlan(...)       │\n│  4. Charge Payment Gateway                             │\n│  5. Persist Aggregate to Repository                    │\n│  6. Commit Transaction & Publish Domain Events         │\n└───────────────────────────┬────────────────────────────┘\n                            │\n               ┌────────────┴────────────┐\n               ▼                         ▼\n      [ Domain Entities ]       [ Repositories & Gateways ]",
-      "language": "typescript"
+      "_type": "imageWithAlt",
+      "_key": "img-41-65af61ff46b8",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-e2732056a2bfe6a6a179a32f3a1602394123bda4-1200x750-png"
+      },
+      "alt": "The Service Layer as Workflow Coordinator establishing transaction boundaries and coordinating domain entities with infrastructure.",
+      "caption": "The Service Layer coordinates transactions and infrastructure without bleeding domain calculations into procedural scripts."
     },
     {
       "_type": "block",
@@ -1431,20 +1439,30 @@
       ]
     },
     {
+      "_type": "imageWithAlt",
+      "_key": "img-61-f18388f43009",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-6157b0ad3fe0fd0cf0e1537fd34578a07fb2276f-1400x850-png"
+      },
+      "alt": "Hands-On Architecture: Enterprise SaaS Subscription & Proration Engine sequence and component interactions.",
+      "caption": "Hands-on workflow: Service Layer orchestrates I/O while Value Objects and Entities enforce pure domain invariants in memory."
+    },
+    {
       "_type": "block",
-      "_key": "b-061-469de7b0acbf",
+      "_key": "b-062-469de7b0acbf",
       "style": "h3",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-061-469de7b0acbf-s0",
+          "_key": "b-062-469de7b0acbf-s0",
           "text": "Step 1: The ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-061-469de7b0acbf-s1",
+          "_key": "b-062-469de7b0acbf-s1",
           "text": "Money",
           "marks": [
             "code"
@@ -1452,7 +1470,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-061-469de7b0acbf-s2",
+          "_key": "b-062-469de7b0acbf-s2",
           "text": " Value Object",
           "marks": []
         }
@@ -1460,25 +1478,25 @@
     },
     {
       "_type": "codeBlock",
-      "_key": "code-62-363bb909099f",
+      "_key": "code-63-363bb909099f",
       "code": "export type CurrencyCode = 'USD' | 'EUR' | 'GBP';\n\nexport class Money {\n  readonly amountCents: number;\n  readonly currency: CurrencyCode;\n\n  private constructor(amountCents: number, currency: CurrencyCode) {\n    if (!Number.isInteger(amountCents)) {\n      throw new Error(`Money amount must be an integer (in cents). Received: ${amountCents}`);\n    }\n    this.amountCents = amountCents;\n    this.currency = currency;\n  }\n\n  static fromCents(cents: number, currency: CurrencyCode): Money {\n    return new Money(cents, currency);\n  }\n\n  static fromDollars(dollars: number, currency: CurrencyCode): Money {\n    return new Money(Math.round(dollars * 100), currency);\n  }\n\n  static zero(currency: CurrencyCode): Money {\n    return new Money(0, currency);\n  }\n\n  add(other: Money): Money {\n    this.assertMatchingCurrency(other);\n    return new Money(this.amountCents + other.amountCents, this.currency);\n  }\n\n  subtract(other: Money): Money {\n    this.assertMatchingCurrency(other);\n    return new Money(this.amountCents - other.amountCents, this.currency);\n  }\n\n  multiply(factor: number): Money {\n    return new Money(Math.round(this.amountCents * factor), this.currency);\n  }\n\n  isGreaterThan(other: Money): boolean {\n    this.assertMatchingCurrency(other);\n    return this.amountCents > other.amountCents;\n  }\n\n  equals(other: Money): boolean {\n    return this.amountCents === other.amountCents && this.currency === other.currency;\n  }\n\n  private assertMatchingCurrency(other: Money): void {\n    if (this.currency !== other.currency) {\n      throw new Error(`Currency mismatch: cannot operate between ${this.currency} and ${other.currency}`);\n    }\n  }\n}",
       "language": "typescript"
     },
     {
       "_type": "block",
-      "_key": "b-063-f1bd8beb2d3b",
+      "_key": "b-064-f1bd8beb2d3b",
       "style": "h3",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-063-f1bd8beb2d3b-s0",
+          "_key": "b-064-f1bd8beb2d3b-s0",
           "text": "Step 2: The ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-063-f1bd8beb2d3b-s1",
+          "_key": "b-064-f1bd8beb2d3b-s1",
           "text": "BillingPeriod",
           "marks": [
             "code"
@@ -1486,7 +1504,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-063-f1bd8beb2d3b-s2",
+          "_key": "b-064-f1bd8beb2d3b-s2",
           "text": " Value Object",
           "marks": []
         }
@@ -1494,25 +1512,25 @@
     },
     {
       "_type": "codeBlock",
-      "_key": "code-64-71000ba34389",
+      "_key": "code-65-71000ba34389",
       "code": "export class BillingPeriod {\n  readonly start: Date;\n  readonly end: Date;\n\n  constructor(start: Date, end: Date) {\n    if (start >= end) {\n      throw new Error(`Invalid billing period: start (${start.toISOString()}) must precede end (${end.toISOString()})`);\n    }\n    this.start = new Date(start.getTime());\n    this.end = new Date(end.getTime());\n  }\n\n  totalDurationDays(): number {\n    const diffMs = this.end.getTime() - this.start.getTime();\n    return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));\n  }\n\n  remainingDurationDays(asOf: Date): number {\n    if (asOf < this.start) return this.totalDurationDays();\n    if (asOf >= this.end) return 0;\n    const diffMs = this.end.getTime() - asOf.getTime();\n    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));\n  }\n\n  remainingFraction(asOf: Date): number {\n    const total = this.totalDurationDays();\n    const remaining = this.remainingDurationDays(asOf);\n    return remaining / total;\n  }\n}",
       "language": "typescript"
     },
     {
       "_type": "block",
-      "_key": "b-065-8b58d40ff9dd",
+      "_key": "b-066-8b58d40ff9dd",
       "style": "h3",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-065-8b58d40ff9dd-s0",
+          "_key": "b-066-8b58d40ff9dd-s0",
           "text": "Step 3: The ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-065-8b58d40ff9dd-s1",
+          "_key": "b-066-8b58d40ff9dd-s1",
           "text": "Subscription",
           "marks": [
             "code"
@@ -1520,7 +1538,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-065-8b58d40ff9dd-s2",
+          "_key": "b-066-8b58d40ff9dd-s2",
           "text": " Aggregate Entity",
           "marks": []
         }
@@ -1528,13 +1546,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-066-b32710d106d0",
+      "_key": "b-067-b32710d106d0",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-066-b32710d106d0-s0",
+          "_key": "b-067-b32710d106d0-s0",
           "text": "The aggregate root protects state invariants. Notice how the calculation of proration credit and plan assignment is performed entirely by domain methods, keeping business rules inside the domain layer.",
           "marks": []
         }
@@ -1542,25 +1560,25 @@
     },
     {
       "_type": "codeBlock",
-      "_key": "code-67-eb96e15ec573",
+      "_key": "code-68-eb96e15ec573",
       "code": "export interface BillingPlan {\n  readonly id: string;\n  readonly name: string;\n  readonly price: Money;\n}\n\nexport interface ProrationCalculation {\n  readonly unusedCredit: Money;\n  readonly newPlanProratedCost: Money;\n  readonly netAmountDue: Money;\n}\n\nexport type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';\n\nexport class Subscription {\n  readonly id: string;\n  readonly customerId: string;\n  private _status: SubscriptionStatus;\n  private _currentPlan: BillingPlan;\n  private _currentPeriod: BillingPeriod;\n\n  constructor(\n    id: string,\n    customerId: string,\n    initialPlan: BillingPlan,\n    period: BillingPeriod,\n    status: SubscriptionStatus = 'ACTIVE'\n  ) {\n    this.id = id;\n    this.customerId = customerId;\n    this._currentPlan = initialPlan;\n    this._currentPeriod = period;\n    this._status = status;\n  }\n\n  get status(): SubscriptionStatus { return this._status; }\n  get currentPlan(): BillingPlan { return this._currentPlan; }\n  get currentPeriod(): BillingPeriod { return this._currentPeriod; }\n\n  calculateUpgradeProration(newPlan: BillingPlan, effectiveDate: Date): ProrationCalculation {\n    if (this._status !== 'ACTIVE') {\n      throw new Error(`Cannot upgrade subscription in status: ${this._status}`);\n    }\n    if (this._currentPlan.id === newPlan.id) {\n      throw new Error(`Customer is already subscribed to plan: ${newPlan.name}`);\n    }\n\n    const remainingFraction = this._currentPeriod.remainingFraction(effectiveDate);\n    \n    // 1. Calculate credit for unspent portion of the current plan\n    const unusedCredit = this._currentPlan.price.multiply(remainingFraction);\n    \n    // 2. Calculate prorated cost of the new plan for the remainder of the cycle\n    const newPlanProratedCost = newPlan.price.multiply(remainingFraction);\n    \n    // 3. Determine net balance due (zero if credit exceeds new cost)\n    const netCents = Math.max(0, newPlanProratedCost.amountCents - unusedCredit.amountCents);\n    const netAmountDue = Money.fromCents(netCents, newPlan.price.currency);\n\n    return { unusedCredit, newPlanProratedCost, netAmountDue };\n  }\n\n  applyPlanUpgrade(newPlan: BillingPlan, effectiveDate: Date): ProrationCalculation {\n    const proration = this.calculateUpgradeProration(newPlan, effectiveDate);\n    this._currentPlan = newPlan;\n    return proration;\n  }\n}",
       "language": "typescript"
     },
     {
       "_type": "block",
-      "_key": "b-068-3f25759f0538",
+      "_key": "b-069-3f25759f0538",
       "style": "h3",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-068-3f25759f0538-s0",
+          "_key": "b-069-3f25759f0538-s0",
           "text": "Step 4: The ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-068-3f25759f0538-s1",
+          "_key": "b-069-3f25759f0538-s1",
           "text": "SubscriptionBillingService",
           "marks": [
             "code"
@@ -1568,7 +1586,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-068-3f25759f0538-s2",
+          "_key": "b-069-3f25759f0538-s2",
           "text": " (Service Layer Coordinator)",
           "marks": []
         }
@@ -1576,13 +1594,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-069-12ad94ada658",
+      "_key": "b-070-12ad94ada658",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-069-12ad94ada658-s0",
+          "_key": "b-070-12ad94ada658-s0",
           "text": "The service layer coordinates between the repositories, payment gateways, and domain entities. It does not calculate proration math itself; it delegates to the entity and handles side-effects.",
           "marks": []
         }
@@ -1590,19 +1608,19 @@
     },
     {
       "_type": "codeBlock",
-      "_key": "code-70-8e894bfb0275",
+      "_key": "code-71-8e894bfb0275",
       "code": "export interface SubscriptionRepository {\n  findById(id: string): Promise<Subscription | null>;\n  save(subscription: Subscription): Promise<void>;\n}\n\nexport interface PaymentGateway {\n  charge(customerId: string, amount: Money, description: string): Promise<{ transactionId: string }>;\n}\n\nexport interface NotificationService {\n  sendReceipt(customerId: string, amount: Money, planName: string): Promise<void>;\n}\n\nexport class SubscriptionBillingService {\n  constructor(\n    private readonly subRepo: SubscriptionRepository,\n    private readonly paymentGateway: PaymentGateway,\n    private readonly notifications: NotificationService\n  ) {}\n\n  async upgradePlan(\n    subscriptionId: string,\n    newPlan: BillingPlan,\n    effectiveDate: Date = new Date()\n  ): Promise<{ transactionId: string | null; proration: ProrationCalculation }> {\n    // 1. Load Aggregate\n    const subscription = await this.subRepo.findById(subscriptionId);\n    if (!subscription) {\n      throw new Error(`Subscription not found: ${subscriptionId}`);\n    }\n\n    // 2. Execute Domain Operation (Invariants protected inside entity)\n    const proration = subscription.applyPlanUpgrade(newPlan, effectiveDate);\n\n    // 3. Infrastructure Side Effect: Payment processing\n    let transactionId: string | null = null;\n    if (proration.netAmountDue.amountCents > 0) {\n      const chargeResult = await this.paymentGateway.charge(\n        subscription.customerId,\n        proration.netAmountDue,\n        `Prorated upgrade to ${newPlan.name}`\n      );\n      transactionId = chargeResult.transactionId;\n    }\n\n    // 4. Persistence\n    await this.subRepo.save(subscription);\n\n    // 5. Asynchronous notification\n    if (transactionId) {\n      await this.notifications.sendReceipt(\n        subscription.customerId,\n        proration.netAmountDue,\n        newPlan.name\n      );\n    }\n\n    return { transactionId, proration };\n  }\n}",
       "language": "typescript"
     },
     {
       "_type": "block",
-      "_key": "b-071-b307c6cfb19c",
+      "_key": "b-072-b307c6cfb19c",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-071-b307c6cfb19c-s0",
+          "_key": "b-072-b307c6cfb19c-s0",
           "text": "6. Key Architectural Takeaways",
           "marks": []
         }
@@ -1610,13 +1628,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-072-d969f29fcd52",
+      "_key": "b-073-d969f29fcd52",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-072-d969f29fcd52-s0",
+          "_key": "b-073-d969f29fcd52-s0",
           "text": "Unidirectional Layering is Non-Negotiable",
           "marks": [
             "strong"
@@ -1624,7 +1642,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-072-d969f29fcd52-s1",
+          "_key": "b-073-d969f29fcd52-s1",
           "text": ": Keep domain entities isolated from frameworks, databases, and HTTP transports to ensure high velocity and testability.",
           "marks": []
         }
@@ -1634,13 +1652,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-073-c7a68c112b83",
+      "_key": "b-074-c7a68c112b83",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-073-c7a68c112b83-s0",
+          "_key": "b-074-c7a68c112b83-s0",
           "text": "Match Complexity to the Domain Continuum",
           "marks": [
             "strong"
@@ -1648,7 +1666,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-073-c7a68c112b83-s1",
+          "_key": "b-074-c7a68c112b83-s1",
           "text": ": Use Transaction Scripts for simple tabular pipelines; transition to a Rich Domain Model when business rules, lifecycle state, and calculations become non-trivial.",
           "marks": []
         }
@@ -1658,13 +1676,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-074-35f330b7a936",
+      "_key": "b-075-35f330b7a936",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-074-35f330b7a936-s0",
+          "_key": "b-075-35f330b7a936-s0",
           "text": "Guard Against the Anemic Model",
           "marks": [
             "strong"
@@ -1672,7 +1690,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-074-35f330b7a936-s1",
+          "_key": "b-075-35f330b7a936-s1",
           "text": ": Keep the Service Layer thin. It coordinates transactions, external I/O, and persistence, but delegates core calculations and state transitions to the aggregate entities.",
           "marks": []
         }
@@ -1682,13 +1700,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-075-65934af80531",
+      "_key": "b-076-65934af80531",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s0",
+          "_key": "b-076-65934af80531-s0",
           "text": "Eradicate Primitive Obsession",
           "marks": [
             "strong"
@@ -1696,13 +1714,13 @@
         },
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s1",
+          "_key": "b-076-65934af80531-s1",
           "text": ": Wrap domain primitives in immutable, self-validating Value Objects like ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s2",
+          "_key": "b-076-65934af80531-s2",
           "text": "Money",
           "marks": [
             "code"
@@ -1710,13 +1728,13 @@
         },
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s3",
+          "_key": "b-076-65934af80531-s3",
           "text": " and ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s4",
+          "_key": "b-076-65934af80531-s4",
           "text": "BillingPeriod",
           "marks": [
             "code"
@@ -1724,7 +1742,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-075-65934af80531-s5",
+          "_key": "b-076-65934af80531-s5",
           "text": ".",
           "marks": []
         }
@@ -1734,13 +1752,13 @@
     },
     {
       "_type": "block",
-      "_key": "b-076-b31727b2e8e9",
+      "_key": "b-077-b31727b2e8e9",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-076-b31727b2e8e9-s0",
+          "_key": "b-077-b31727b2e8e9-s0",
           "text": "Series Continuity & What's Next",
           "marks": []
         }
@@ -1748,19 +1766,19 @@
     },
     {
       "_type": "block",
-      "_key": "b-077-549377379acf",
+      "_key": "b-078-549377379acf",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-077-549377379acf-s0",
+          "_key": "b-078-549377379acf-s0",
           "text": "This concludes Part I of our ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-077-549377379acf-s1",
+          "_key": "b-078-549377379acf-s1",
           "text": "Patterns of Enterprise Application Architecture",
           "marks": [
             "em"
@@ -1768,7 +1786,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-077-549377379acf-s2",
+          "_key": "b-078-549377379acf-s2",
           "text": " series.",
           "marks": []
         }
@@ -1776,19 +1794,19 @@
     },
     {
       "_type": "block",
-      "_key": "b-078-9c1bae688e64",
+      "_key": "b-079-9c1bae688e64",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
           "_type": "span",
-          "_key": "b-078-9c1bae688e64-s0",
+          "_key": "b-079-9c1bae688e64-s0",
           "text": "In ",
           "marks": []
         },
         {
           "_type": "span",
-          "_key": "b-078-9c1bae688e64-s1",
+          "_key": "b-079-9c1bae688e64-s1",
           "text": "[Part II: Data Source & Object-Relational Persistence Patterns](/articles/poeaa-part-2-data-source-persistence/)",
           "marks": [
             "strong"
@@ -1796,7 +1814,7 @@
         },
         {
           "_type": "span",
-          "_key": "b-078-9c1bae688e64-s2",
+          "_key": "b-079-9c1bae688e64-s2",
           "text": ", we address the infamous Object-Relational Impedance Mismatch, analyzing Table Data Gateways, Row Data Gateways, Active Record, and Data Mappers, alongside behavioral mechanisms like the Unit of Work and Identity Map.",
           "marks": []
         }
