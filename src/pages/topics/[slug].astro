@@ -37,7 +37,7 @@ const breadcrumbs = getTopicBreadcrumbs(slug!, tree);
 const currentNode = tree.slugMap.get(slug!);
 const topic: TopicDetail = fetchedTopic ?? currentNode!.topic;
 
-// Align published entries with the topic and its descendant tree rollups
+// Align listed entries with the topic and its descendant tree rollups
 const topicArticles = allArticles.filter((article) =>
   currentNode?.rollupArticleIds.has(article._id)
 );
@@ -52,9 +52,6 @@ const topicArticles = allArticles.filter((article) =>
         <span class="badge">{topic.kind === 'domain' ? 'Domain' : 'Topic'}</span>
         {topic.parent && (
           <span>Part of <a href={`/topics/${topic.parent.slug}/`}>{topic.parent.title}</a></span>
-        )}
-        {currentNode && currentNode.rollupArticleCount > 0 && (
-          <span>{currentNode.rollupArticleCount} {currentNode.rollupArticleCount === 1 ? 'total entry' : 'total entries'}</span>
         )}
       </div>
       <h1>{topic.title}</h1>
@@ -84,9 +81,6 @@ const topicArticles = allArticles.filter((article) =>
     )}
 
     <section class="section articles-section" aria-label="Entries under this topic">
-      <div class="section-header">
-        <h2>Published Entries</h2>
-      </div>
       {topicArticles.length > 0 ? (
         <div class="card-grid">
           {topicArticles.map((item) => (
@@ -104,6 +98,10 @@ const topicArticles = allArticles.filter((article) =>
 </WikiLayout>
 
 <style>
+  /* Keep the entry list attached to the intro or subtopics above it */
+  .section + .articles-section {
+    padding-top: 0;
+  }
   .subtopics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
