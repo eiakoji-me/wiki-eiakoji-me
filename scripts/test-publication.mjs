@@ -691,9 +691,55 @@ async function testConfiguration() {
   assert.ok(imageSchema.includes('rule.required()'), 'image alternative text must be required');
 }
 
+// Issue #33: listings render as compact list rows rather than boxed cards.
+async function testListingRows() {
+  const card = await readFile('src/components/ContentCard.astro', 'utf8');
+  assert.ok(!card.includes('card-placeholder'), 'ContentCard must not emit a placeholder block');
+  assert.ok(!card.includes('card-action'), 'ContentCard rows must not emit an Explore action');
+  assert.match(card, /\{item\.featuredImage\?\.asset && \(/, 'ContentCard must render a thumbnail only when a featured image exists');
+  assert.match(card, /imageUrl\(item\.featuredImage\.asset, 320\)/, 'ContentCard thumbnails must request a small image');
+  const order = ['<h2>', '<p>{item.summary}</p>', 'class="card-meta"', 'class="card-image"'].map((needle) => card.indexOf(needle));
+  assert.ok(order.every((index, i) => index >= 0 && (i === 0 || index > order[i - 1])), 'ContentCard rows must order title, summary, meta, then thumbnail');
+
+  const css = await readFile('src/styles/global.css', 'utf8');
+  const rule = (selector) => css.match(new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`, 'm'))?.[1] ?? '';
+  assert.match(rule('.card-grid'), /grid-template-columns: minmax\(0, 1fr\); gap: 0;/, 'card-grid must be a single column of rows');
+  assert.match(rule('.content-card + .content-card'), /border-top: 1px solid var\(--border\)/, 'rows must be separated by dividers');
+  assert.doesNotMatch(rule('.content-card'), /overflow: hidden/, 'rows must not clip the focus ring');
+  assert.match(rule('.card-link:focus-visible'), /outline-offset: 2px/, 'row links must keep a visible outer focus ring');
+  assert.match(rule('.card-body p'), /-webkit-line-clamp: 2; line-clamp: 2;/, 'row summaries must clamp to two lines');
+  assert.match(rule('.card-image'), /width: 160px;.*aspect-ratio: 16 \/ 9/, 'row thumbnails must be 160px wide at 16:9');
+  assert.match(rule('.card-grid .card-placeholder'), /display: none/, 'hand-written placeholders must be hidden in rows');
+  assert.match(rule('.card-grid .card-action'), /display: none/, 'Explore actions must be hidden in rows');
+  assert.match(rule('.card-grid .card-topics'), /display: none/, 'related-topic chips must be hidden in rows');
+  assert.match(rule('.card-grid .card-link'), /padding: 10px 0;/, 'rows must use tight vertical padding');
+  assert.match(rule('.card-grid .card-meta'), /order: 1;/, 'row meta must stay visible after the summary');
+  assert.doesNotMatch(rule('.card-grid .card-meta'), /display: none/, 'row meta must stay visible');
+  const listing = ':is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page)';
+  assert.match(rule(`${listing} .page-heading`), /padding: 0 0 12px;/, 'listing pages must use a compact heading');
+  assert.match(rule(`${listing} .page-heading .eyebrow`), /display: none/, 'listing headings must drop the eyebrow');
+  assert.match(rule('.page-heading'), /padding: 40px 0 24px;/, 'non-listing page headings must keep their spacing');
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.card-image \{ width: 96px; \}/, 'row thumbnails must shrink to 96px on narrow screens');
+
+  for (const file of ['dist/index.html', 'dist/articles/index.html', 'dist/topics/system-design/index.html']) {
+    const html = await readFile(file, 'utf8');
+    const cards = html.match(/<article class="content-card">[\s\S]*?<\/article>/g) ?? [];
+    for (const markup of cards) {
+      assert.ok(!markup.includes('card-placeholder'), `${file} rows must not render a placeholder`);
+      const image = markup.match(/<img class="card-image"[^>]*>/)?.[0];
+      if (image) {
+        assert.match(image, /[?&](amp;)?w=320/, `${file} row thumbnails must request width 320`);
+        assert.match(image, /alt="[^"]+"/, `${file} row thumbnails must keep alt text`);
+        assert.match(image, /width="160" height="90"/, `${file} row thumbnails must declare 160x90`);
+      }
+    }
+  }
+}
+
 await testUnitBehaviors();
 await testConfiguration();
 await testSanityQueries();
 await testBuiltSite();
+await testListingRows();
 console.log('publication integration checks passed');
 process.exit(0);

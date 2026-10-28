@@ -15,27 +15,15 @@ const href = contentHref(item._type, item.slug);
 
 <article class="content-card">
   <a class="card-link" href={href} aria-label={`Read ${item.title}`}>
-    {item.featuredImage?.asset ? (
-      <img
-        class="card-image"
-        src={imageUrl(item.featuredImage.asset, 900)}
-        alt={item.featuredImage.alt}
-        loading="lazy"
-        width="900"
-        height="506"
-      />
-    ) : (
-      <div class="card-placeholder" aria-hidden="true"><span>{item.primaryTopic?.title ?? label}</span></div>
-    )}
     <div class="card-body">
+      <h2>{item.title}</h2>
+      <p>{item.summary}</p>
       <div class="card-meta">
         {item.primaryTopic && <span class="card-domain">{item.primaryTopic.title}</span>}
         <span class="card-format">{label}</span>
         {item.publishedAt && <time datetime={item.publishedAt}>{formatDate(item.publishedAt)}</time>}
         {typeof articleCount === 'number' && <span>{articleCount} {articleCount === 1 ? 'article' : 'articles'}</span>}
       </div>
-      <h2>{item.title}</h2>
-      <p>{item.summary}</p>
       {item.relatedTopics && item.relatedTopics.length > 0 && (
         <ul class="card-topics" aria-label="Topics">
           {item.relatedTopics.slice(0, 3).map((topic) => (
@@ -43,7 +31,16 @@ const href = contentHref(item._type, item.slug);
           ))}
         </ul>
       )}
-      <span class="card-action">Explore <span aria-hidden="true">→</span></span>
     </div>
+    {item.featuredImage?.asset && (
+      <img
+        class="card-image"
+        src={imageUrl(item.featuredImage.asset, 320)}
+        alt={item.featuredImage.alt}
+        loading="lazy"
+        width="160"
+        height="90"
+      />
+    )}
   </a>
 </article>
