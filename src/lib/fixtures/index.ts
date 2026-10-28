@@ -22,8 +22,15 @@ function topic(_id: string, kind: 'domain' | 'topic' | undefined, title: string,
   return doc;
 }
 
-function article(_id: string, title: string, publishedAt: string, primaryTopic: string, relatedTopics: string[] = []): Doc {
-  return {
+function article(
+  _id: string,
+  title: string,
+  publishedAt: string,
+  primaryTopic: string,
+  relatedTopics: string[] = [],
+  featured = false,
+): Doc {
+  const doc: Doc = {
     _id,
     _type: 'article',
     title,
@@ -34,6 +41,8 @@ function article(_id: string, title: string, publishedAt: string, primaryTopic: 
     primaryTopic: ref(primaryTopic),
     relatedTopics: relatedTopics.map(ref),
   };
+  if (featured) doc.featured = true;
+  return doc;
 }
 
 const systemDesign = topic('domain-system-design', 'domain', 'System Design', undefined, 1);
@@ -60,10 +69,11 @@ const full: Doc[] = [
   topic('topic-languages', undefined, 'Languages'),
   topic('drafts.topic-draft-only', 'topic', 'Draft Only', 'domain-system-design'),
   article('article-raft-log-replication', 'Raft Log Replication', '2026-09-01T00:00:00Z', 'topic-raft', ['topic-consensus']),
-  article('article-lsm-trees', 'LSM Trees', '2026-09-15T00:00:00Z', 'topic-storage-engines'),
-  article('article-golden-paths', 'Golden Paths', '2026-10-01T00:00:00Z', 'topic-internal-platforms'),
+  article('article-lsm-trees', 'LSM Trees', '2026-09-15T00:00:00Z', 'topic-storage-engines', [], true),
+  article('article-golden-paths', 'Golden Paths', '2026-10-01T00:00:00Z', 'topic-internal-platforms', [], true),
   article('article-ai-execution-environment-architecture', 'Architecture of an Issue-Driven AI Execution Environment', '2026-10-27T17:03:11.012Z', 'domain-platform-engineering', ['topic-agentic-workflows', 'topic-internal-platforms']),
-  article('article-future-post', 'Scheduled Post', '2099-01-01T00:00:00Z', 'topic-agentic-workflows'),
+  // Featured but scheduled: the left nav's Featured section must not list it.
+  article('article-future-post', 'Scheduled Post', '2099-01-01T00:00:00Z', 'topic-agentic-workflows', [], true),
   // Its primary topic is unclassified, so the article must not link to a topic page.
   article('article-language-notes', 'Language Notes', '2026-08-01T00:00:00Z', 'topic-languages'),
 ];

@@ -619,6 +619,22 @@ async function testUnitBehaviors() {
   const fixtureHome = await queryFixtures('full', homepageQuery);
   assert.equal(fixtureHome.platformTopic?.slug, 'platform-engineering', 'homepage must find domains by kind');
   assert.equal((await queryFixtures('empty', wikiNavQuery)).topics.length, 0);
+  const fixtureNavData = await queryFixtures('full', wikiNavQuery);
+  const fixtureNav = buildNavigation(buildTopicTree(fixtureNavData.topics, fixtureNavData.articles), {
+    articles: fixtureNavData.articles,
+    currentSlug: 'raft',
+    currentArticleSlug: 'lsm-trees',
+  });
+  assert.deepEqual(
+    fixtureNav.featured.map((i) => [i.slug, i.title, i.href, i.current]),
+    [
+      ['golden-paths', 'Golden Paths', '/articles/golden-paths/', false],
+      ['lsm-trees', 'LSM Trees', '/articles/lsm-trees/', true],
+    ],
+    'wikiNavQuery must project article title, slug, publishedAt, and featured, excluding scheduled posts',
+  );
+  assert.equal(fixtureNav.topics?.mode, 'domain', 'a nested fixture topic must resolve its domain');
+  assert.equal(fixtureNav.topics.domain.slug, 'system-design');
   await assert.rejects(queryFixtures('staging', topicsListQuery), /Unknown WIKI_FIXTURES/);
 
   const fixtureArticle = await queryFixtures('full', articleBySlugQuery, { slug: 'raft-log-replication' });
