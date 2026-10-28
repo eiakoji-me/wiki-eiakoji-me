@@ -48,12 +48,6 @@ const topicArticles = allArticles.filter((article) =>
     <Breadcrumbs items={breadcrumbs} />
 
     <header class="entry-header">
-      <div class="entry-meta">
-        <span class="badge">{topic.kind === 'domain' ? 'Domain' : 'Topic'}</span>
-        {topic.parent && (
-          <span>Part of <a href={`/topics/${topic.parent.slug}/`}>{topic.parent.title}</a></span>
-        )}
-      </div>
       <h1>{topic.title}</h1>
       <p class="entry-summary">{topic.summary}</p>
     </header>

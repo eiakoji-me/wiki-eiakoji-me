@@ -28,7 +28,7 @@ const articles = await fetchContent<ContentSummary[]>(articlesQuery);
       ) : (
         <EmptyState
           title="No published articles yet"
-          message="The first article will appear here after it is published in Sanity and the site rebuilds."
+          message="The first article will appear here once it is published."
         />
       )}
     </section>

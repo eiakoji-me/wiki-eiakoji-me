@@ -1,5 +1,5 @@
 ---
-import { contentHref, formatDate, formatContentLabel } from '../lib/content';
+import { contentHref, formatDate } from '../lib/content';
 import { imageUrl } from '../lib/sanity/image';
 import type { ContentSummary } from '../lib/sanity/types';
 
@@ -8,7 +8,6 @@ interface Props {
 }
 
 const { item } = Astro.props;
-const label = formatContentLabel(item.format || item.kind, item._type);
 const href = contentHref(item._type, item.slug);
 ---
 
@@ -18,17 +17,8 @@ const href = contentHref(item._type, item.slug);
       <h2>{item.title}</h2>
       <p>{item.summary}</p>
       <div class="card-meta">
-        {item.primaryTopic && <span class="card-domain">{item.primaryTopic.title}</span>}
-        <span class="card-format">{label}</span>
         {item.publishedAt && <time datetime={item.publishedAt}>{formatDate(item.publishedAt)}</time>}
       </div>
-      {item.relatedTopics && item.relatedTopics.length > 0 && (
-        <ul class="card-topics" aria-label="Topics">
-          {item.relatedTopics.slice(0, 3).map((topic) => (
-            <li>{topic.title}</li>
-          ))}
-        </ul>
-      )}
     </div>
     {item.featuredImage?.asset && (
       <img

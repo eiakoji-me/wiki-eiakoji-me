@@ -36,29 +36,7 @@ export function formatPageTitle(title?: string): string {
   return title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
 }
 
-export const FORMAT_LABELS: Record<string, string> = {
-  article: 'Article',
-  'deep-dive': 'Deep Dive',
-  tutorial: 'Tutorial',
-  workshop: 'Workshop',
-  'case-study': 'Case Study',
-  showcase: 'Showcase',
-  'reading-note': 'Reading Note',
-  'reading-notes': 'Reading Note',
-  reference: 'Reference',
-};
-
-export function formatContentLabel(
-  formatOrKind?: string,
-  type?: string
-): string {
-  if (type === 'project') return 'Case Study';
-  if (!formatOrKind) return 'Article';
-  return (
-    FORMAT_LABELS[formatOrKind] ??
-    formatOrKind
-      .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ')
-  );
+/** Repository links are public only for workshops; no repository is named here. */
+export function showRepositoryLink(item?: { repositoryUrl?: string; format?: string; kind?: string }): boolean {
+  return Boolean(item?.repositoryUrl && (item.format === 'workshop' || item.kind === 'workshop'));
 }

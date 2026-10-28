@@ -19,11 +19,10 @@ const tree = buildTopicTree(topics, articles);
 const rootTopics = tree.rootTopics;
 ---
 
-<WikiLayout title="Topics" description="Knowledge taxonomy across distributed systems, DSA, cloud platforms, and software engineering by Eiakoji." currentSlug="topics">
+<WikiLayout title="Topics" description="Topics on wiki.eiakoji.me: system design, software architecture, and platform engineering." currentSlug="topics">
   <div class="topic-index-page">
     <Breadcrumbs items={[{ label: 'Topics' }]} />
     <header class="page-heading">
-      <p class="eyebrow">Taxonomy & Knowledge Domains</p>
       <h1>Topics</h1>
       <p>Structured technical knowledge base across systems architecture, programming languages, cloud platforms, and engineering craft.</p>
     </header>
@@ -42,46 +41,21 @@ const rootTopics = tree.rootTopics;
                 </div>
               </div>
 
-              <div class="card-grid">
-                <article class="content-card domain-main-card">
-                  <a href={`/topics/${rootNode.topic.slug}/`} class="card-link" aria-label={`Explore ${rootNode.topic.title}`}>
-                    <div class="card-placeholder" aria-hidden="true">
-                      <span>{rootNode.topic.title}</span>
-                    </div>
-                    <div class="card-body">
-                      <div class="card-meta">
-                        <span>Domain Overview</span>
-                      </div>
-                      <h3>{rootNode.topic.title} Overview</h3>
-                      <p>{rootNode.topic.summary}</p>
-                      <span class="card-action">Explore Domain →</span>
-                    </div>
-                  </a>
-                </article>
-
-                {rootNode.children.map((childNode: TopicNode) => (
-                  <article class="content-card subtopic-card">
-                    <a href={`/topics/${childNode.topic.slug}/`} class="card-link" aria-label={`Explore ${childNode.topic.title}`}>
-                      <div class="card-placeholder" aria-hidden="true">
-                        <span>{childNode.topic.title}</span>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-meta">
-                          <span>Subtopic</span>
-                        </div>
-                        <h3>{childNode.topic.title}</h3>
-                        <p>{childNode.topic.summary}</p>
-                        <span class="card-action">View Topic Hub →</span>
-                      </div>
-                    </a>
-                  </article>
-                ))}
-              </div>
+              {rootNode.children.length > 0 && (
+                <ul class="domain-topics" role="list">
+                  {rootNode.children.map((childNode: TopicNode) => (
+                    <li>
+                      <a href={`/topics/${childNode.topic.slug}/`}>{childNode.topic.title}</a>
+                      {childNode.topic.summary && <p>{childNode.topic.summary}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <EmptyState title="No published topics yet" message="Topics and knowledge catalogs will appear here once they are published in Sanity." />
+        <EmptyState title="No published topics yet" message="Topics will appear here as they are published." />
       )}
     </section>
   </div>
@@ -119,6 +93,29 @@ const rootTopics = tree.rootTopics;
     margin: 0;
     color: var(--text-muted);
     font-size: var(--text-base);
+    max-width: 70ch;
+  }
+  .domain-topics {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .domain-topics a {
+    font-weight: 600;
+    color: var(--link);
+    text-decoration: none;
+  }
+  .domain-topics a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+  .domain-topics p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
     max-width: 70ch;
   }
 </style>

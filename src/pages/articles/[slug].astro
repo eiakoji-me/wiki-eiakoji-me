@@ -9,7 +9,7 @@ import { imageUrl } from '../../lib/sanity/image';
 import { articleBySlugQuery, articleSlugsQuery, topicsListQuery } from '../../lib/sanity/queries';
 import type { Article, Topic } from '../../lib/sanity/types';
 import { extractHeadings } from '../../lib/slugify';
-import { buildTopicTree, getTopicBreadcrumbs, topicHref } from '../../lib/topics';
+import { buildTopicTree, getTopicBreadcrumbs } from '../../lib/topics';
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const slugs = await fetchContent<string[]>(articleSlugsQuery);
@@ -29,20 +29,6 @@ const socialImage = article.seo?.image?.asset
     : undefined;
 
 const headings = extractHeadings(article.body);
-
-const formatLabels: Record<string, string> = {
-  article: 'Deep Dive',
-  'deep-dive': 'Deep Dive',
-  tutorial: 'Tutorial',
-  workshop: 'Workshop',
-  'case-study': 'Case Study',
-  showcase: 'Showcase',
-  'reading-note': 'Reading Note',
-  'reading-notes': 'Reading Note',
-  reference: 'Reference',
-};
-const activeFormat = article.format || article.kind || 'article';
-const formatLabel = formatLabels[activeFormat] || 'Article';
 
 const tree = buildTopicTree(allTopics);
 let breadcrumbs = [{ label: 'Articles', href: '/articles/' }, { label: article.title }];
@@ -65,65 +51,12 @@ if (article.primaryTopic?.slug) {
 
     <header class="entry-header">
       <div class="entry-meta">
-        <span class="badge">{formatLabel}</span>
         {article.difficulty && <span class="badge-neutral">{article.difficulty}</span>}
         <time datetime={article.publishedAt}>{formatDate(article.publishedAt!)}</time>
       </div>
 
       <h1>{article.title}</h1>
       <p class="entry-summary">{article.summary}</p>
-
-      {article.primaryTopic && (
-        <div class="entry-taxonomy">
-          <span class="tax-label">Topic:</span>
-          {topicHref(tree, article.primaryTopic.slug) ? (
-            <a href={topicHref(tree, article.primaryTopic.slug)} class="primary-topic-link">
-              {article.primaryTopic.title}
-            </a>
-          ) : (
-            <span class="primary-topic-text">{article.primaryTopic.title}</span>
-          )}
-          {article.relatedTopics && article.relatedTopics.length > 0 && (
-            <>
-              <span class="tax-separator">·</span>
-              <span class="tax-label">Related:</span>
-              {article.relatedTopics.map((rel) =>
-                topicHref(tree, rel.slug) ? (
-                  <a href={topicHref(tree, rel.slug)} class="related-topic-link">
-                    {rel.title}
-                  </a>
-                ) : (
-                  <span class="related-topic-text">{rel.title}</span>
-                )
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {((article.repositoryUrl && (article.format === 'workshop' || article.kind === 'workshop') && !article.repositoryUrl.includes('wiki-eiakoji-me')) || article.demoUrl || (article.technologies && article.technologies.length > 0)) && (
-        <div class="workshop-callout">
-          <div class="workshop-links">
-            {article.repositoryUrl && (article.format === 'workshop' || article.kind === 'workshop') && !article.repositoryUrl.includes('wiki-eiakoji-me') && (
-              <a href={article.repositoryUrl} target="_blank" rel="noopener noreferrer" class="button secondary">
-                GitHub Repository ↗
-              </a>
-            )}
-            {article.demoUrl && (
-              <a href={article.demoUrl} target="_blank" rel="noopener noreferrer" class="button primary">
-                Live Showcase ↗
-              </a>
-            )}
-          </div>
-          {article.technologies && article.technologies.length > 0 && (
-            <ul class="tech-tags">
-              {article.technologies.map((tech) => (
-                <li>{tech}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
 
       {article.bookAuthor && (
         <div class="book-callout">
@@ -134,14 +67,6 @@ if (article.primaryTopic?.slug) {
             )}
           </p>
         </div>
-      )}
-
-      {article.topics && article.topics.length > 0 && (
-        <ul class="tags">
-          {article.topics.map((topic) => (
-            <li>{topic}</li>
-          ))}
-        </ul>
       )}
     </header>
 
@@ -169,75 +94,6 @@ if (article.primaryTopic?.slug) {
   .wiki-article {
     width: 100%;
     max-width: 820px;
-  }
-  .entry-taxonomy {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    font-size: var(--text-nav);
-  }
-  .tax-label {
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-  }
-  .primary-topic-link {
-    font-weight: 500;
-    color: var(--link);
-    text-decoration: none;
-  }
-  .related-topic-link {
-    color: var(--link);
-    text-decoration: none;
-  }
-  /* Topics without a hub page are named but not linked. */
-  .primary-topic-text {
-    font-weight: 500;
-    color: var(--text);
-  }
-  .related-topic-text {
-    color: var(--text);
-  }
-  .primary-topic-link:hover, .related-topic-link:hover {
-    color: var(--link-hover);
-    text-decoration: underline;
-  }
-  .tax-separator {
-    color: var(--border-strong);
-  }
-  .workshop-callout {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px 20px;
-    margin-top: 24px;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--selected-indicator);
-    border-radius: 4px;
-  }
-  .workshop-links {
-    display: flex;
-    gap: 10px;
-  }
-  .tech-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .tech-tags li {
-    font-size: var(--text-xs);
-    padding: 2px 6px;
-    background: var(--badge-neutral-bg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    color: var(--badge-neutral-text);
   }
   .book-callout {
     padding: 12px 16px;
