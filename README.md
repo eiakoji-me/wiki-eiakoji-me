@@ -73,6 +73,37 @@ SANITY_WRITE_TOKEN=... npm run seed:domains -- --dataset production --write
 The seed creates or corrects the three domains, never deletes, and never
 replaces a summary written in Studio. Running it again reports no changes.
 
+### Seeding topics and featured articles
+
+`scripts/data/taxonomy.json` lists the topics under each domain and the articles
+the left navigation features. Run `seed:domains` first, then:
+
+```sh
+npm run seed:taxonomy -- --dataset production --dry-run
+SANITY_WRITE_TOKEN=... npm run seed:taxonomy -- --dataset production --write
+```
+
+- Topics are created, or classified as topics, and their placement is checked
+  with the same rule the site uses. A topic with a missing parent, a cycle, a
+  chain that does not end at a domain, a chain that is too deep, or a slug that
+  is already taken is not seeded, and neither are its children. The command
+  then exits 1.
+- Topic fields are only filled in where they are missing. A value written in
+  Studio is never overwritten; when it differs from the data file, the seed
+  warns and keeps it. The titles, slugs, and summaries in the data file are
+  defaults for new topics, so change an existing topic in Studio.
+- The seed owns article `featured` and `primaryTopic`. Every run sets them to the
+  values in the data file, so unfeaturing an article in Studio is undone by the
+  next run; remove the entry from the data file instead.
+- `seed:article:aee` and `seed:article:poeaa-part-1` replace the whole article,
+  so run `seed:taxonomy` again after either of them.
+- The seed warns when a seeded topic or article has an unpublished draft, because
+  publishing that draft would replace the seeded values. Drafts are private, so
+  these warnings appear only when `SANITY_WRITE_TOKEN` is set; a dry run without
+  a token cannot see them.
+- Nothing is ever deleted or unset, and domains are never changed. Running it
+  again reports no changes.
+
 ## Commands
 
 | Command | Purpose |
@@ -84,7 +115,8 @@ replaces a summary written in Studio. Running it again reports no changes.
 | `npm run studio` | Start Sanity Studio locally |
 | `npm run studio:build` | Validate and build Studio without deploying |
 | `npm run test:publication` | Exercise built routes, metadata, configuration, and live GROQ queries |
-| `npm run verify` | Run checks, both production builds, and publication integration tests |
+| `npm run test:taxonomy` | Check the taxonomy seed planner and its effect on the navigation |
+| `npm run verify` | Run checks, both production builds, publication integration tests, and taxonomy seed tests |
 
 ## Netlify preparation
 

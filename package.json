@@ -12,10 +12,12 @@
     "studio:build": "sanity build .sanity-dist",
     "test:publication": "node scripts/test-publication.mjs",
     "test:styles": "node scripts/test-styles.mjs",
+    "test:taxonomy": "node scripts/test-taxonomy-seed.mjs",
     "seed:domains": "node scripts/seed-domains.mjs",
     "seed:article:aee": "node scripts/seed-article-aee.mjs",
     "seed:article:poeaa-part-1": "node scripts/seed-article-poeaa-part-1.mjs",
-    "verify": "npm run test:styles && npm run check && npm run studio:build && npm run build && npm run test:publication"
+    "seed:taxonomy": "node scripts/seed-taxonomy.mjs",
+    "verify": "npm run test:styles && npm run check && npm run studio:build && npm run build && npm run test:publication && npm run test:taxonomy"
   },
   "dependencies": {
     "@portabletext/astro": "^0.2.0",
