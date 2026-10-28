@@ -14,6 +14,7 @@
     "test:styles": "node scripts/test-styles.mjs",
     "seed:domains": "node scripts/seed-domains.mjs",
     "seed:article:aee": "node scripts/seed-article-aee.mjs",
+    "seed:article:poeaa-part-1": "node scripts/seed-article-poeaa-part-1.mjs",
     "verify": "npm run test:styles && npm run check && npm run studio:build && npm run build && npm run test:publication"
   },
   "dependencies": {
