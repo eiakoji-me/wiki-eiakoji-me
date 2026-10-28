@@ -958,11 +958,54 @@ async function listFiles(dir, extension) {
 }
 
 // Public templates show content only: no type labels, internal jargon, CMS names or source links (issue #49).
+// Returns the outer HTML of every element whose class list contains `cls`,
+// matching nested tags of the same name so the closing tag is the right one.
+function findElements(html, cls) {
+  const elements = [];
+  const opening = new RegExp(`<([a-z][a-z0-9]*)\\b[^>]*\\bclass="[^"]*\\b${cls}\\b[^"]*"[^>]*>`, 'g');
+  let match;
+  while ((match = opening.exec(html))) {
+    const tag = match[1];
+    const tags = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'g');
+    tags.lastIndex = match.index + match[0].length;
+    let depth = 1;
+    let end = html.length;
+    let next;
+    while (depth > 0 && (next = tags.exec(html))) {
+      depth += next[1] ? -1 : 1;
+      if (depth === 0) end = next.index + next[0].length;
+    }
+    elements.push(html.slice(match.index, end));
+    opening.lastIndex = end;
+  }
+  return elements;
+}
+
+// Empties every element carrying one of `classes`, keeping its tags. Used to
+// drop content-owned text (titles and summaries from Sanity) so text checks
+// only see template-owned markup.
+function blankElements(html, classes) {
+  let result = html;
+  for (const cls of classes) {
+    for (const element of findElements(result, cls)) {
+      const openEnd = element.indexOf('>') + 1;
+      const closeStart = element.lastIndexOf('</');
+      const blanked = closeStart >= openEnd ? element.slice(0, openEnd) + element.slice(closeStart) : element;
+      result = result.replace(element, blanked);
+    }
+  }
+  return result;
+}
+
 async function testNoInternalMetadata() {
-  const forbiddenText = ['Domain Overview', 'Topic Hub', 'ARCHETYPES', 'WORKSHOPS', 'Sequence', 'Read complete entry', 'Sanity', 'Layering Invariants', 'knowledge hubs'];
+  // Strings scanned across whole built pages. They do not occur naturally in
+  // content. "Sequence", "Sanity", "Part of" and "Part n:" can, so they are
+  // checked below against template-owned elements only.
+  const forbiddenText = ['Domain Overview', 'Topic Hub', 'ARCHETYPES', 'WORKSHOPS', 'Read complete entry', 'Layering Invariants', 'knowledge hubs'];
   const forbiddenClasses = ['card-format', 'card-domain', 'card-topics', 'card-placeholder', 'archetypes-badge', 'workshops-badge', 'discipline-tag', 'callout-badge', 'callout-item-prefix', 'entry-taxonomy', 'workshop-callout', 'tech-tags'];
   const htmlFiles = await listFiles('dist', '.html');
   assert.ok(htmlFiles.length > 0, 'dist must contain built HTML');
+  let calloutCount = 0;
   for (const file of htmlFiles) {
     const html = await readFile(file, 'utf8');
     for (const text of forbiddenText) {
@@ -972,16 +1015,30 @@ async function testNoInternalMetadata() {
     for (const cls of forbiddenClasses) {
       assert.ok(!new RegExp(`class="[^"]*\\b${cls}\\b`).test(html), `${file} must not render .${cls}`);
     }
-    assert.ok(!/Part \d+:/.test(html), `${file} must not render a generated "Part n:" prefix`);
+    // Series callouts: the item titles and the callout title come from
+    // content, so blank them; whatever remains is Callout.astro markup.
+    for (const callout of findElements(html, 'article-callout')) {
+      calloutCount += 1;
+      const template = blankElements(callout, ['callout-title', 'callout-item-link', 'callout-item-text']);
+      assert.ok(!template.includes('Sequence'), `${file} callout must not render a "Sequence" badge`);
+      assert.ok(!/Part \d+:/.test(template), `${file} callout must not render a generated "Part n:" prefix`);
+    }
+    for (const emptyState of findElements(html, 'empty-state')) {
+      assert.ok(!emptyState.includes('Sanity'), `${file} empty state must not mention Sanity`);
+    }
   }
+  assert.ok(calloutCount > 0, 'built articles must contain at least one series callout to check');
 
   const topicPages = htmlFiles.filter((file) => /^dist\/topics\/[^/]+\/index\.html$/.test(file));
   assert.ok(topicPages.length > 0, 'topic pages must be built');
   for (const file of topicPages) {
     const html = await readFile(file, 'utf8');
     const header = html.match(/<header class="entry-header"[^>]*>[\s\S]*?<\/header>/)?.[0] ?? '';
+    assert.ok(header, `${file} must render an entry header`);
     assert.ok(!header.includes('class="badge"'), `${file} must not render a Domain/Topic badge`);
-    assert.ok(!html.includes('Part of'), `${file} must not render a "Part of" parent line`);
+    // The title and summary are content; the rest of the header is template.
+    const headerTemplate = blankElements(header.replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/, '<h1></h1>'), ['entry-summary']);
+    assert.ok(!headerTemplate.includes('Part of'), `${file} must not render a "Part of" parent line`);
   }
 
   const topicsIndex = await readFile('dist/topics/index.html', 'utf8');
@@ -1011,6 +1068,12 @@ async function testNoInternalMetadata() {
     const source = await readFile(file, 'utf8');
     assert.ok(!source.includes("includes('wiki-eiakoji-me')"), `${file} must not hard-code a repository in a link guard`);
     assert.ok(!source.includes('Series Navigation'), `${file} must not contain "Series Navigation"`);
+    if (file.endsWith('.astro')) {
+      // Empty states only render without content, so check the template text
+      // directly: everything after the frontmatter, minus the SanityImage tag.
+      const markup = source.replace(/^---[\s\S]*?\n---/, '').replace(/<\/?SanityImage\b/g, '');
+      assert.ok(!markup.includes('Sanity'), `${file} template must not mention Sanity`);
+    }
   }
   for (const file of await listFiles('scripts/data')) {
     assert.ok(!(await readFile(file, 'utf8')).includes('Series Navigation'), `${file} must not contain "Series Navigation"`);
@@ -1021,6 +1084,8 @@ async function testNoInternalMetadata() {
   assert.ok((await readFile('src/components/RightRail.astro', 'utf8')).includes('showRepositoryLink(article)'), 'RightRail must gate repository links with showRepositoryLink');
   const callout = await readFile('src/components/Callout.astro', 'utf8');
   assert.ok(callout.includes("item.status === 'completed' && item.href"), 'series callouts must link only completed items');
+  assert.ok(!callout.includes('Sequence'), 'Callout.astro must not render a "Sequence" badge');
+  assert.ok(!/Part \{/.test(callout), 'Callout.astro must not generate a "Part n:" prefix');
   const seed = JSON.parse(await readFile('scripts/data/article-poeaa-part-1.json', 'utf8'));
   const seedCallouts = JSON.stringify(seed).match(/"title":"Patterns of Enterprise Application Architecture[^"]*"/g) ?? [];
   assert.ok(seedCallouts.includes('"title":"Patterns of Enterprise Application Architecture"'), 'the PoEAA seed callout title must be "Patterns of Enterprise Application Architecture"');

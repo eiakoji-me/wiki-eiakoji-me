@@ -42,7 +42,7 @@ const rootTopics = tree.rootTopics;
               </div>
 
               {rootNode.children.length > 0 && (
-                <ul class="domain-topics">
+                <ul class="domain-topics" role="list">
                   {rootNode.children.map((childNode: TopicNode) => (
                     <li>
                       <a href={`/topics/${childNode.topic.slug}/`}>{childNode.topic.title}</a>

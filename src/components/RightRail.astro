@@ -57,7 +57,7 @@ const hasActions = Boolean(repositoryLink || article?.demoUrl);
   {topicLinks.length > 0 && (
     <nav class="rail-card topic-card" aria-label="Related topics">
       <div class="rail-header">Related topics</div>
-      <ul class="rail-topic-list">
+      <ul class="rail-topic-list" role="list">
         {topicLinks.map((t) => (
           <li><a href={t.href}>{t.title}</a></li>
         ))}
