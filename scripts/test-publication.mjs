@@ -903,10 +903,54 @@ async function testListingRows() {
   }
 }
 
+// Public templates must not render article or entry counts (issue #41).
+async function testNoPublicCounts() {
+  const [treeItem, card, topicHub, topicIndex] = await Promise.all([
+    readFile('src/components/TopicTreeItem.astro', 'utf8'),
+    readFile('src/components/ContentCard.astro', 'utf8'),
+    readFile('src/pages/topics/[slug].astro', 'utf8'),
+    readFile('src/pages/topics/index.astro', 'utf8'),
+  ]);
+
+  assert.ok(!treeItem.includes('topic-count'), 'TopicTreeItem must not render a topic count');
+  assert.ok(!/> articles<|" articles"/.test(treeItem), 'TopicTreeItem must not render hidden "articles" count text');
+  assert.ok(!card.includes('articleCount'), 'ContentCard must not accept or render an article count');
+  for (const [file, source] of [['src/pages/topics/[slug].astro', topicHub], ['src/pages/topics/index.astro', topicIndex]]) {
+    assert.ok(!/\b\w+ArticleCount\b/.test(source), `${file} must not render article counts`);
+  }
+  assert.ok(!topicHub.includes('Published Entries'), 'topic hubs must not render a Published Entries header');
+  assert.ok(topicHub.includes('aria-label="Entries under this topic"'), 'topic hubs must keep the labelled entries section');
+  assert.match(topicHub, /\.section \+ \.articles-section\s*\{\s*padding-top: 0;/, 'topic hubs must keep the entry list attached to the section above it');
+  assert.ok(!topicIndex.includes('domain-meta'), 'the topics index must not render the domain count wrapper');
+  assert.ok(!topicIndex.includes('rollup-badge'), 'the topics index must not keep the rollup badge');
+
+  const domainPages = [
+    'dist/topics/software-architecture/index.html',
+    'dist/topics/system-design/index.html',
+    'dist/topics/platform-engineering/index.html',
+  ];
+  for (const file of ['dist/topics/index.html', ...domainPages]) {
+    const html = await readFile(file, 'utf8');
+    assert.ok(!html.includes('Published Entries'), `${file} must not render a Published Entries header`);
+    assert.ok(!/\d+ (total )?entr(y|ies)\b/.test(html), `${file} must not render entry counts`);
+    assert.ok(!/\d+ direct\b/.test(html), `${file} must not render direct entry counts`);
+  }
+  for (const file of domainPages) {
+    const html = await readFile(file, 'utf8');
+    assert.ok(html.includes('aria-label="Entries under this topic"'), `${file} must keep the labelled entries section`);
+  }
+  for (const page of expectedPages) {
+    const html = await readFile(page.file, 'utf8');
+    assert.ok(!html.includes('topic-count'), `${page.path} navigation must not render topic counts`);
+    assert.ok(!html.includes('visually-hidden"> articles'), `${page.path} navigation must not render hidden article counts`);
+  }
+}
+
 await testUnitBehaviors();
 await testConfiguration();
 await testSanityQueries();
 await testBuiltSite();
+await testNoPublicCounts();
 await testListingRows();
 console.log('publication integration checks passed');
 process.exit(0);
