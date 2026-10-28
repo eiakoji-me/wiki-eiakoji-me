@@ -9,6 +9,15 @@
   "format": "article",
   "difficulty": "Advanced",
   "featured": false,
+  "featuredImage": {
+    "_type": "imageWithAlt",
+    "asset": {
+      "_type": "reference",
+      "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+    },
+    "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Continuum showing Three-Layer System, Service Layer, and Rich Domain Model vs Transaction Script.",
+    "caption": "Three-Layer System architecture, Domain Logic Continuum, and self-validating Value Objects."
+  },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "How enterprise systems organize domain logic and protect business invariants: comparing Transaction Scripts, Table Modules, and Domain Models, coordinating workflows via the Service Layer, and eliminating Primitive Obsession with Value Objects.",
   "primaryTopic": {
@@ -43,7 +52,14 @@
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
     "title": "PoEAA Part I: Layering & Domain Logic Architecture — wiki.eiakoji.me",
-    "description": "An advanced architectural exploration of Fowler's PoEAA patterns: Three-Layer System, Transaction Scripts vs Domain Models, Service Layer, and Value Objects in TypeScript."
+    "description": "An advanced architectural exploration of Fowler's PoEAA patterns: Three-Layer System, Transaction Scripts vs Domain Models, Service Layer, and Value Objects in TypeScript.",
+    "image": {
+      "_type": "image",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-532fde3a47fac2d86123d967a74db89ef2c91d91-1600x900-png"
+      }
+    }
   },
   "body": [
     {
