@@ -57,7 +57,8 @@ if (article.primaryTopic?.slug) {
   title={article.seo?.title ?? article.title}
   description={article.seo?.description ?? article.summary}
   image={socialImage}
-  currentSlug={article.primaryTopic?.slug ?? 'articles'}
+  currentSlug={article.primaryTopic?.slug}
+  currentArticleSlug={article.slug}
 >
   <article class="wiki-article">
     <Breadcrumbs items={breadcrumbs} />

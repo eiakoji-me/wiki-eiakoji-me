@@ -124,6 +124,10 @@ export const wikiNavQuery = `{
   },
   "articles": *[_type == "article" && ${publishedDocument}] {
     _id,
+    title,
+    "slug": slug.current,
+    publishedAt,
+    featured,
     primaryTopic->{_id, title, "slug": slug.current},
     "relatedTopics": relatedTopics[]->{_id, title, "slug": slug.current}
   }

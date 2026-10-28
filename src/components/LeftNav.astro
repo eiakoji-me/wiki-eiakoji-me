@@ -1,34 +1,74 @@
 ---
-import { buildNavigation, type TopicNode, type TopicTree } from '../lib/topics';
+import { buildNavigation, type NavFeaturedItem, type NavTopicItem, type TopicTree } from '../lib/topics';
+import type { ContentSummary } from '../lib/sanity/types';
 import TopicTreeItem from './TopicTreeItem.astro';
 
 interface Props {
   tree: TopicTree;
+  articles?: ContentSummary[];
   currentSlug?: string;
+  currentArticleSlug?: string;
 }
 
-const { tree, currentSlug } = Astro.props;
+const { tree, articles, currentSlug, currentArticleSlug } = Astro.props;
 
-const nav = buildNavigation(tree);
+// The top nav already lists the domains; this nav complements it.
+const nav = buildNavigation(tree, { articles, currentSlug, currentArticleSlug });
+const topics = nav.topics;
 ---
 
-{nav.domains.length > 0 && (
+{(nav.featured.length > 0 || topics) && (
   <aside class="wiki-left-nav" aria-label="Knowledge navigation">
     <details class="wiki-nav-disclosure" open>
       <summary class="wiki-nav-summary">
-        <span>Navigation & Topics</span>
+        <span>Featured & Topics</span>
         <span class="disclosure-arrow" aria-hidden="true">▾</span>
       </summary>
 
       <div class="wiki-nav-content">
-        <div class="nav-section">
-          <div class="nav-section-title">Domains</div>
-          <ul class="topic-tree">
-            {nav.domains.map((domainNode: TopicNode) => (
-              <TopicTreeItem node={domainNode} currentSlug={currentSlug} depth={1} />
-            ))}
-          </ul>
-        </div>
+        {nav.featured.length > 0 && (
+          <div class="nav-section">
+            <div class="nav-section-title">Featured</div>
+            <ul class="featured-list">
+              {nav.featured.map((item: NavFeaturedItem) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class={`featured-link${item.current ? ' active' : ''}`}
+                    aria-current={item.current ? 'page' : undefined}
+                  >
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {topics?.mode === 'domain' && (
+          <div class="nav-section">
+            <div class="nav-section-title nav-domain-label">{topics.domain.title}</div>
+            <ul class="topic-tree">
+              {topics.topics.map((item: NavTopicItem) => (
+                <TopicTreeItem item={item} depth={1} />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {topics?.mode === 'popular' && (
+          <div class="nav-section">
+            <div class="nav-section-title">Popular topics</div>
+            <ul class="topic-tree">
+              {topics.topics.map((item: NavTopicItem) => (
+                <TopicTreeItem item={item} depth={1} />
+              ))}
+              <li class="topic-node">
+                <a href={topics.allTopicsHref} class="all-topics-link">All topics →</a>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </details>
   </aside>
@@ -80,19 +120,14 @@ const nav = buildNavigation(tree);
     letter-spacing: .04em;
     color: var(--text-muted);
   }
-  .topic-tree, .subtopic-tree, .nested-subtopic-tree {
+  .topic-tree, .featured-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  .topic-node, .subtopic-node {
-    margin-bottom: 2px;
-  }
-  .topic-link, .subtopic-link, .nested-subtopic-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 10px;
+  .featured-link, .all-topics-link {
+    display: block;
+    padding: 4px 8px;
     color: var(--text);
     text-decoration: none;
     border-left: 2px solid transparent;
@@ -100,35 +135,21 @@ const nav = buildNavigation(tree);
     line-height: 1.35;
     transition: background 120ms ease, color 120ms ease;
   }
-  .topic-link:hover, .subtopic-link:hover, .nested-subtopic-link:hover {
+  .all-topics-link {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+  .featured-link:hover, .all-topics-link:hover {
     background: var(--background-subtle);
+    color: var(--text);
     text-decoration: underline;
   }
-  .topic-link.active, .subtopic-link.active, .nested-subtopic-link.active {
+  .featured-link.active {
     background: var(--selected-bg);
     color: var(--selected-text);
     border-left-color: var(--selected-indicator);
     font-weight: 600;
-  }
-  .subtopic-tree {
-    margin: 4px 0 6px 14px;
-    border-left: 1px solid var(--border);
-    padding-left: 6px;
-  }
-  .nested-subtopic-tree {
-    margin: 4px 0 6px 12px;
-    border-left: 1px dashed var(--border);
-    padding-left: 6px;
-  }
-  .subtopic-link {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    padding: 4px 8px;
-  }
-  .nested-subtopic-link {
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-    padding: 3px 6px;
   }
 
   @media (max-width: 960px) {
