@@ -691,6 +691,34 @@ async function testConfiguration() {
   assert.ok(imageSchema.includes('rule.required()'), 'image alternative text must be required');
 }
 
+// Reads flat CSS rules plus one level of @media so assertions ignore formatting and declaration order.
+const normalizeCss = (text) => text.replace(/\s+/g, ' ').replace(/\s*([,()>+~/])\s*/g, '$1').replace(/:\s+/g, ':').trim();
+
+function parseCss(text) {
+  const rules = [];
+  const open = [];
+  for (const [, chunk, brace] of text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]*)([{}])/g)) {
+    if (brace === '{') {
+      open.push(normalizeCss(chunk));
+      continue;
+    }
+    const selector = open.pop();
+    const media = open.length === 1 && open[0].startsWith('@media') ? open[0].slice('@media'.length) : null;
+    if (selector.startsWith('@') || (open.length && !media)) continue;
+    const decls = new Map();
+    for (const declaration of chunk.split(';')) {
+      const colon = declaration.indexOf(':');
+      if (colon > 0) decls.set(declaration.slice(0, colon).trim().toLowerCase(), normalizeCss(declaration.slice(colon + 1)));
+    }
+    rules.push({ media, selector, decls });
+  }
+  const matching = (selector, media) => rules.filter((rule) => rule.selector === normalizeCss(selector) && rule.media === (media && normalizeCss(media)));
+  return {
+    decl: (selector, prop, { media = null } = {}) => matching(selector, media).findLast((rule) => rule.decls.has(prop))?.decls.get(prop),
+    hasRule: (selector, { media = null } = {}) => matching(selector, media).length > 0,
+  };
+}
+
 // Issue #33: listings render as compact list rows rather than boxed cards.
 async function testListingRows() {
   const card = await readFile('src/components/ContentCard.astro', 'utf8');
@@ -701,25 +729,49 @@ async function testListingRows() {
   const order = ['<h2>', '<p>{item.summary}</p>', 'class="card-meta"', 'class="card-image"'].map((needle) => card.indexOf(needle));
   assert.ok(order.every((index, i) => index >= 0 && (i === 0 || index > order[i - 1])), 'ContentCard rows must order title, summary, meta, then thumbnail');
 
-  const css = await readFile('src/styles/global.css', 'utf8');
-  const rule = (selector) => css.match(new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`, 'm'))?.[1] ?? '';
-  assert.match(rule('.card-grid'), /grid-template-columns: minmax\(0, 1fr\); gap: 0;/, 'card-grid must be a single column of rows');
-  assert.match(rule('.content-card + .content-card'), /border-top: 1px solid var\(--border\)/, 'rows must be separated by dividers');
-  assert.doesNotMatch(rule('.content-card'), /overflow: hidden/, 'rows must not clip the focus ring');
-  assert.match(rule('.card-link:focus-visible'), /outline-offset: 2px/, 'row links must keep a visible outer focus ring');
-  assert.match(rule('.card-body p'), /-webkit-line-clamp: 2; line-clamp: 2;/, 'row summaries must clamp to two lines');
-  assert.match(rule('.card-image'), /width: 160px;.*aspect-ratio: 16 \/ 9/, 'row thumbnails must be 160px wide at 16:9');
-  assert.match(rule('.card-grid .card-placeholder'), /display: none/, 'hand-written placeholders must be hidden in rows');
-  assert.match(rule('.card-grid .card-action'), /display: none/, 'Explore actions must be hidden in rows');
-  assert.match(rule('.card-grid .card-topics'), /display: none/, 'related-topic chips must be hidden in rows');
-  assert.match(rule('.card-grid .card-link'), /padding: 10px 0;/, 'rows must use tight vertical padding');
-  assert.match(rule('.card-grid .card-meta'), /order: 1;/, 'row meta must stay visible after the summary');
-  assert.doesNotMatch(rule('.card-grid .card-meta'), /display: none/, 'row meta must stay visible');
+  const fixture = parseCss(`/* fixture */
+.card-grid{gap:0;
+   grid-template-columns : minmax( 0,1fr ) }
+.content-card  +  .content-card { border-top:1px  solid var(--border) }
+@media (max-width:720px){ .card-image{ width : 96px } }`);
+  assert.equal(fixture.decl('.card-grid', 'grid-template-columns'), normalizeCss('minmax(0, 1fr)'), 'CSS reader must ignore spacing and declaration order');
+  assert.equal(fixture.decl('.content-card + .content-card', 'border-top'), '1px solid var(--border)', 'CSS reader must normalize combinators');
+  assert.equal(fixture.decl('.card-image', 'width', { media: '(max-width: 720px)' }), '96px', 'CSS reader must read @media rules');
+
+  const { decl, hasRule } = parseCss(await readFile('src/styles/global.css', 'utf8'));
+  const expectDecl = (selector, prop, value, message, options) => assert.equal(decl(selector, prop, options), normalizeCss(value), message);
+  expectDecl('.card-grid', 'grid-template-columns', 'minmax(0, 1fr)', 'card-grid must be a single column of rows');
+  expectDecl('.card-grid', 'gap', '0', 'card-grid rows must not be spaced apart');
+  expectDecl('.content-card + .content-card', 'border-top', '1px solid var(--border)', 'rows must be separated by dividers');
+  assert.notEqual(decl('.content-card', 'overflow'), 'hidden', 'rows must not clip the focus ring');
+  expectDecl('.card-link:focus-visible', 'outline-offset', '2px', 'row links must keep a visible outer focus ring');
+  expectDecl('.card-body p', '-webkit-line-clamp', '2', 'row summaries must clamp to two lines');
+  expectDecl('.card-body p', 'line-clamp', '2', 'row summaries must clamp to two lines');
+  expectDecl('.card-image', 'width', '160px', 'row thumbnails must be 160px wide');
+  expectDecl('.card-image', 'aspect-ratio', '16 / 9', 'row thumbnails must be 16:9');
+  expectDecl('.card-grid .card-placeholder', 'display', 'none', 'hand-written placeholders must be hidden in rows');
+  expectDecl('.card-grid .card-action', 'display', 'none', 'Explore actions must be hidden in rows');
+  expectDecl('.card-grid .card-topics', 'display', 'none', 'related-topic chips must be hidden in rows');
+  expectDecl('.card-grid .card-link', 'padding', '10px 0', 'rows must use tight vertical padding');
+  expectDecl('.card-grid .card-meta', 'order', '1', 'row meta must stay visible after the summary');
+  assert.notEqual(decl('.card-grid .card-meta', 'display'), 'none', 'row meta must stay visible');
+  expectDecl('.card-grid .card-body :is(h2, h3)', 'margin', '0 0 2px', 'row titles must keep tight spacing');
+  expectDecl('.card-grid .card-body :is(h2, h3)', 'font-size', 'var(--text-row-title)', 'row titles must use the row title size');
+  assert.equal(decl('.card-link', 'padding'), undefined, 'base card links must not declare padding that rows override');
+  assert.ok(!hasRule('.card-body :is(h2, h3)'), 'base card titles must not declare sizing that rows override');
+  expectDecl('.card-link', 'gap', '14px', 'row links must tighten their gap on narrow screens', { media: '(max-width: 720px)' });
+  expectDecl('.card-image', 'width', '96px', 'row thumbnails must shrink to 96px on narrow screens', { media: '(max-width: 720px)' });
+
   const listing = ':is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page)';
-  assert.match(rule(`${listing} .page-heading`), /padding: 0 0 12px;/, 'listing pages must use a compact heading');
-  assert.match(rule(`${listing} .page-heading .eyebrow`), /display: none/, 'listing headings must drop the eyebrow');
-  assert.match(rule('.page-heading'), /padding: 40px 0 24px;/, 'non-listing page headings must keep their spacing');
-  assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.card-image \{ width: 96px; \}/, 'row thumbnails must shrink to 96px on narrow screens');
+  expectDecl(`${listing} .page-heading`, 'padding', '0 0 12px', 'listing pages must use a compact heading');
+  expectDecl(`${listing} .page-heading .eyebrow`, 'display', 'none', 'listing headings must drop the eyebrow');
+  expectDecl(`${listing} h1`, 'font-size', 'var(--title-listing)', 'listing page titles must use the listing size');
+  assert.ok(!hasRule(':is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page, .topic-hub-page) h1'), 'topic hub titles must not rely on the lower-specificity listing rule');
+  expectDecl('.topic-hub-page .entry-header h1', 'font-size', 'var(--title-listing)', 'topic hub titles must use the listing size');
+  expectDecl('.page-heading', 'padding', '40px 0 24px', 'non-listing page headings must keep their spacing');
+  expectDecl('.page-heading h1', 'font-size', 'var(--title-page)', 'page headings must keep the page title size');
+  expectDecl('.entry-header h1', 'font-size', 'var(--title-article)', 'article and project titles must keep the article size');
+  expectDecl('.entry-header h1', 'margin', '10px 0 0', 'article and project titles must keep their spacing');
 
   for (const file of ['dist/index.html', 'dist/articles/index.html', 'dist/topics/system-design/index.html']) {
     const html = await readFile(file, 'utf8');
