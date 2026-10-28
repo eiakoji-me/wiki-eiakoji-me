@@ -40,11 +40,6 @@ const rootTopics = tree.rootTopics;
                   </h2>
                   <p class="domain-summary">{rootNode.topic.summary}</p>
                 </div>
-                <div class="domain-meta">
-                  <span class="badge-neutral rollup-badge">
-                    {rootNode.rollupArticleCount} {rootNode.rollupArticleCount === 1 ? 'entry' : 'entries'}
-                  </span>
-                </div>
               </div>
 
               <div class="card-grid">
@@ -56,7 +51,6 @@ const rootTopics = tree.rootTopics;
                     <div class="card-body">
                       <div class="card-meta">
                         <span>Domain Overview</span>
-                        <span>{rootNode.directArticleCount} direct</span>
                       </div>
                       <h3>{rootNode.topic.title} Overview</h3>
                       <p>{rootNode.topic.summary}</p>
@@ -74,7 +68,6 @@ const rootTopics = tree.rootTopics;
                       <div class="card-body">
                         <div class="card-meta">
                           <span>Subtopic</span>
-                          <span>{childNode.rollupArticleCount} {childNode.rollupArticleCount === 1 ? 'entry' : 'entries'}</span>
                         </div>
                         <h3>{childNode.topic.title}</h3>
                         <p>{childNode.topic.summary}</p>
@@ -127,9 +120,5 @@ const rootTopics = tree.rootTopics;
     color: var(--text-muted);
     font-size: var(--text-base);
     max-width: 70ch;
-  }
-  .rollup-badge {
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
   }
 </style>
