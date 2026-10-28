@@ -19,7 +19,7 @@ import {
   workshopsQuery,
 } from '../src/lib/sanity/queries.ts';
 import * as queriesModule from '../src/lib/sanity/queries.ts';
-import { contentHref, formatContentLabel, formatPageTitle, SITE_TITLE } from '../src/lib/content.ts';
+import { contentHref, formatPageTitle, showRepositoryLink, SITE_TITLE } from '../src/lib/content.ts';
 import { extractHeadings } from '../src/lib/slugify.ts';
 import * as topicsModule from '../src/lib/topics.ts';
 import { buildNavigation, buildTopicTree, getTopicBreadcrumbs, topicHref, validateTopicHierarchy } from '../src/lib/topics.ts';
@@ -648,18 +648,14 @@ async function testUnitBehaviors() {
   assert.equal(aeeFixture.title, 'Architecture of an Issue-Driven AI Execution Environment');
   assert.equal(aeeFixture.primaryTopic?.slug, 'platform-engineering');
 
-  // 7. Test formatContentLabel formatting
-  assert.equal(formatContentLabel('case-study'), 'Case Study');
-  assert.equal(formatContentLabel('reading-note'), 'Reading Note');
-  assert.equal(formatContentLabel('reading-notes'), 'Reading Note');
-  assert.equal(formatContentLabel('deep-dive'), 'Deep Dive');
-  assert.equal(formatContentLabel('tutorial'), 'Tutorial');
-  assert.equal(formatContentLabel('workshop'), 'Workshop');
-  assert.equal(formatContentLabel('showcase'), 'Showcase');
-  assert.equal(formatContentLabel('reference'), 'Reference');
-  assert.equal(formatContentLabel(undefined, 'project'), 'Case Study');
-  assert.equal(formatContentLabel(undefined, 'article'), 'Article');
-  assert.equal(formatContentLabel('custom-type'), 'Custom Type');
+  // 7. Test showRepositoryLink: repository links are public only for workshops
+  const repo = 'https://github.com/eiakoji-me/example';
+  assert.equal(showRepositoryLink({ repositoryUrl: repo, format: 'workshop' }), true, 'workshop format must show its repository');
+  assert.equal(showRepositoryLink({ repositoryUrl: repo, kind: 'workshop' }), true, 'workshop kind must show its repository');
+  assert.equal(showRepositoryLink({ repositoryUrl: 'https://github.com/eiakoji-me/wiki-eiakoji-me', format: 'workshop' }), true, 'no repository is excluded by name');
+  assert.equal(showRepositoryLink({ repositoryUrl: repo, format: 'article' }), false, 'articles must not show a repository link');
+  assert.equal(showRepositoryLink({ format: 'workshop' }), false, 'a workshop without a URL must not show a repository link');
+  assert.equal(showRepositoryLink(undefined), false, 'a missing item must not show a repository link');
   assert.equal(contentHref('topic', 'raft'), '/topics/raft/');
   assert.equal(contentHref('project', 'aee'), '/projects/aee/');
   assert.equal(contentHref('article', 'raft'), '/articles/raft/');
@@ -755,13 +751,12 @@ async function testConfiguration() {
   for (const file of ['netlify.toml', '.env.example', '.github/workflows/ci.yml', 'package.json']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('WIKI_FIXTURES'), `${file} must not enable fixture content`);
   }
-  for (const file of ['src/pages/articles/[slug].astro', 'src/components/RightRail.astro']) {
-    const source = await readFile(file, 'utf8');
-    assert.ok(!source.includes('/topics/${'), `${file} must build topic links with topicHref so excluded topics are not linked`);
-    assert.ok(source.includes('topicHref('), `${file} must use topicHref`);
-  }
+  const rightRail = await readFile('src/components/RightRail.astro', 'utf8');
+  assert.ok(!rightRail.includes('/topics/${'), 'RightRail must build topic links with topicHref so excluded topics are not linked');
+  assert.ok(rightRail.includes('topicHref('), 'RightRail must use topicHref');
   const articlePage = await readFile('src/pages/articles/[slug].astro', 'utf8');
-  assert.ok(!/<span class="(primary|related)-topic-link"/.test(articlePage), 'unlinked topics must not use link styling');
+  assert.ok(!articlePage.includes('topicHref'), 'the article page must not build topic links; related topics live in the right rail');
+  assert.ok(!/href=\{?[`'"]\/topics\//.test(articlePage), 'the article page must not link to /topics/');
   for (const file of ['src/lib/content.ts', 'src/pages/topics/index.astro', 'src/pages/topics/[slug].astro']) {
     assert.ok(!(await readFile(file, 'utf8')).includes('CORE_DOMAIN_TOPICS'), `${file} must not keep reader-side domain fallbacks`);
   }
@@ -801,7 +796,8 @@ async function testConfiguration() {
   for (const file of ['src/pages/articles/[slug].astro', 'src/components/RightRail.astro', 'src/lib/sanity/types.ts', 'src/lib/content.ts', 'src/layouts/BaseLayout.astro', 'README.md']) {
     assert.ok(!/series|learning path/i.test(await readFile(file, 'utf8')), `${file} must not reference series or learning paths`);
   }
-  assert.ok((await readFile('src/components/RightRail.astro', 'utf8')).includes('relatedTopicLinks'), 'RightRail must keep related topics');
+  const railSource = await readFile('src/components/RightRail.astro', 'utf8');
+  assert.ok(railSource.includes('article?.relatedTopics') && railSource.includes('Related topics'), 'RightRail must keep related topics in a "Related topics" card');
   assert.ok(imageSchema.includes("name: 'alt'"), 'images must define alternative text');
   assert.ok(imageSchema.includes('rule.required()'), 'image alternative text must be required');
 }
@@ -864,9 +860,14 @@ async function testListingRows() {
   expectDecl('.card-body p', 'line-clamp', '2', 'row summaries must clamp to two lines');
   expectDecl('.card-image', 'width', '160px', 'row thumbnails must be 160px wide');
   expectDecl('.card-image', 'aspect-ratio', '16 / 9', 'row thumbnails must be 16:9');
-  expectDecl('.card-grid .card-placeholder', 'display', 'none', 'hand-written placeholders must be hidden in rows');
-  expectDecl('.card-grid .card-action', 'display', 'none', 'Explore actions must be hidden in rows');
-  expectDecl('.card-grid .card-topics', 'display', 'none', 'related-topic chips must be hidden in rows');
+  for (const selector of ['.card-grid .card-placeholder', '.card-grid .card-action', '.card-grid .card-topics', '.card-topics', '.card-domain', '.card-format']) {
+    assert.ok(!hasRule(selector), `global.css must not keep the unused ${selector} rule`);
+  }
+  for (const [file, source] of [['src/components/ContentCard.astro', card], ['src/pages/topics/index.astro', await readFile('src/pages/topics/index.astro', 'utf8')]]) {
+    for (const removed of ['card-placeholder', 'card-topics', 'card-format']) {
+      assert.ok(!source.includes(removed), `${file} must not render ${removed}`);
+    }
+  }
   expectDecl('.card-grid .card-link', 'padding', '10px 0', 'rows must use tight vertical padding');
   expectDecl('.card-grid .card-meta', 'order', '1', 'row meta must stay visible after the summary');
   assert.notEqual(decl('.card-grid .card-meta', 'display'), 'none', 'row meta must stay visible');
@@ -946,11 +947,97 @@ async function testNoPublicCounts() {
   }
 }
 
+async function listFiles(dir, extension) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const nested = await Promise.all(entries.map((entry) => {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return listFiles(path, extension);
+    return !extension || entry.name.endsWith(extension) ? [path] : [];
+  }));
+  return nested.flat();
+}
+
+// Public templates show content only: no type labels, internal jargon, CMS names or source links (issue #49).
+async function testNoInternalMetadata() {
+  const forbiddenText = ['Domain Overview', 'Topic Hub', 'ARCHETYPES', 'WORKSHOPS', 'Sequence', 'Read complete entry', 'Sanity', 'Layering Invariants', 'knowledge hubs'];
+  const forbiddenClasses = ['card-format', 'card-domain', 'card-topics', 'card-placeholder', 'archetypes-badge', 'workshops-badge', 'discipline-tag', 'callout-badge', 'callout-item-prefix', 'entry-taxonomy', 'workshop-callout', 'tech-tags'];
+  const htmlFiles = await listFiles('dist', '.html');
+  assert.ok(htmlFiles.length > 0, 'dist must contain built HTML');
+  for (const file of htmlFiles) {
+    const html = await readFile(file, 'utf8');
+    for (const text of forbiddenText) {
+      assert.ok(!html.includes(text), `${file} must not contain "${text}"`);
+    }
+    assert.ok(!/\bSubtopic\b/.test(html), `${file} must not label topics as "Subtopic"`);
+    for (const cls of forbiddenClasses) {
+      assert.ok(!new RegExp(`class="[^"]*\\b${cls}\\b`).test(html), `${file} must not render .${cls}`);
+    }
+    assert.ok(!/Part \d+:/.test(html), `${file} must not render a generated "Part n:" prefix`);
+  }
+
+  const topicPages = htmlFiles.filter((file) => /^dist\/topics\/[^/]+\/index\.html$/.test(file));
+  assert.ok(topicPages.length > 0, 'topic pages must be built');
+  for (const file of topicPages) {
+    const html = await readFile(file, 'utf8');
+    const header = html.match(/<header class="entry-header"[^>]*>[\s\S]*?<\/header>/)?.[0] ?? '';
+    assert.ok(!header.includes('class="badge"'), `${file} must not render a Domain/Topic badge`);
+    assert.ok(!html.includes('Part of'), `${file} must not render a "Part of" parent line`);
+  }
+
+  const topicsIndex = await readFile('dist/topics/index.html', 'utf8');
+  assert.ok(topicsIndex.includes('class="domain-topics'), 'the topics index must list child topics as plain links');
+  for (const cls of ['domain-main-card', 'subtopic-card', 'card-action']) {
+    assert.ok(!topicsIndex.includes(cls), `the topics index must not render .${cls}`);
+  }
+
+  const articlePages = htmlFiles.filter((file) => /^dist\/articles\/[^/]+\/index\.html$/.test(file));
+  assert.ok(articlePages.length > 0, 'article pages must be built');
+  for (const file of articlePages) {
+    const html = await readFile(file, 'utf8');
+    assert.ok(!html.includes('href="https://github.com/'), `${file} must not link to GitHub source`);
+    assert.ok(!/<ul class="tags[" ]/.test(html), `${file} must not render the free-text topics list`);
+    const rail = html.match(/<aside class="wiki-right-rail"[\s\S]*?<\/aside>/)?.[0];
+    if (rail?.includes('topic-card')) {
+      assert.ok(rail.includes('Related topics'), `${file} right rail topic card must be headed "Related topics"`);
+      assert.ok(!/class="(topic-link|related-tag|related-label)/.test(rail), `${file} right rail must use plain topic links`);
+    }
+    if (file.includes('poeaa-part-1')) {
+      assert.ok(!/href="[^"]*poeaa-part-[234]/.test(html), `${file} must not link unpublished series parts`);
+    }
+  }
+
+  const srcFiles = await listFiles('src');
+  for (const file of srcFiles) {
+    const source = await readFile(file, 'utf8');
+    assert.ok(!source.includes("includes('wiki-eiakoji-me')"), `${file} must not hard-code a repository in a link guard`);
+    assert.ok(!source.includes('Series Navigation'), `${file} must not contain "Series Navigation"`);
+  }
+  for (const file of await listFiles('scripts/data')) {
+    assert.ok(!(await readFile(file, 'utf8')).includes('Series Navigation'), `${file} must not contain "Series Navigation"`);
+  }
+  const content = await readFile('src/lib/content.ts', 'utf8');
+  assert.ok(content.includes('export function showRepositoryLink'), 'content.ts must export showRepositoryLink');
+  assert.ok(!content.includes('formatContentLabel') && !content.includes('FORMAT_LABELS'), 'content.ts must not keep format labels');
+  assert.ok((await readFile('src/components/RightRail.astro', 'utf8')).includes('showRepositoryLink(article)'), 'RightRail must gate repository links with showRepositoryLink');
+  const callout = await readFile('src/components/Callout.astro', 'utf8');
+  assert.ok(callout.includes("item.status === 'completed' && item.href"), 'series callouts must link only completed items');
+  const seed = JSON.parse(await readFile('scripts/data/article-poeaa-part-1.json', 'utf8'));
+  const seedCallouts = JSON.stringify(seed).match(/"title":"Patterns of Enterprise Application Architecture[^"]*"/g) ?? [];
+  assert.ok(seedCallouts.includes('"title":"Patterns of Enterprise Application Architecture"'), 'the PoEAA seed callout title must be "Patterns of Enterprise Application Architecture"');
+  const home = await readFile('src/pages/index.astro', 'utf8');
+  for (const removed of ['archetypes-badge', 'workshops-badge', 'discipline-tag', 'formatContentLabel']) {
+    assert.ok(!home.includes(removed), `src/pages/index.astro must not contain ${removed}`);
+  }
+  const project = await readFile('src/pages/projects/[slug].astro', 'utf8');
+  assert.ok(!project.includes('Case Study'), 'project pages must not render a Case Study badge');
+}
+
 await testUnitBehaviors();
 await testConfiguration();
 await testSanityQueries();
 await testBuiltSite();
 await testNoPublicCounts();
+await testNoInternalMetadata();
 await testListingRows();
 console.log('publication integration checks passed');
 process.exit(0);

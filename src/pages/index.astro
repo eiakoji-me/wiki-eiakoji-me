@@ -2,7 +2,7 @@
 import ContentCard from '../components/ContentCard.astro';
 import EmptyState from '../components/EmptyState.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { contentHref, formatDate, formatContentLabel } from '../lib/content';
+import { contentHref, formatDate } from '../lib/content';
 import { fetchContent } from '../lib/content';
 import { homepageQuery } from '../lib/sanity/queries';
 import type { ContentSummary } from '../lib/sanity/types';
@@ -75,20 +75,11 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
         <article class="lead-feature-card">
           <a class="lead-link" href={contentHref(leadFeature._type, leadFeature.slug)} aria-label={`Read ${leadFeature.title}`}>
             <div class="card-meta">
-              {leadFeature.primaryTopic && <span class="card-domain">{leadFeature.primaryTopic.title}</span>}
-              <span class="card-format">{formatContentLabel(leadFeature.format || leadFeature.kind, leadFeature._type)}</span>
               {leadFeature.publishedAt && <time datetime={leadFeature.publishedAt}>{formatDate(leadFeature.publishedAt)}</time>}
             </div>
             <h2 class="lead-title">{leadFeature.title}</h2>
             <p class="lead-summary">{leadFeature.summary}</p>
-            {leadFeature.relatedTopics && leadFeature.relatedTopics.length > 0 && (
-              <ul class="card-topics" aria-label="Topics">
-                {leadFeature.relatedTopics.slice(0, 3).map((topic) => (
-                  <li>{topic.title}</li>
-                ))}
-              </ul>
-            )}
-            <span class="card-action">Read complete entry <span aria-hidden="true">→</span></span>
+            <span class="card-action">Read article <span aria-hidden="true">→</span></span>
           </a>
         </article>
 
@@ -98,10 +89,6 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
             secondaryFeatures.map((item) => (
               <article class="secondary-card">
                 <a class="secondary-link" href={contentHref(item._type, item.slug)} aria-label={`Read ${item.title}`}>
-                  <div class="card-meta">
-                    {item.primaryTopic && <span class="card-domain">{item.primaryTopic.title}</span>}
-                    <span class="card-format">{formatContentLabel(item.format || item.kind, item._type)}</span>
-                  </div>
                   <h3 class="secondary-title">{item.title}</h3>
                   <p class="secondary-summary">{item.summary}</p>
                   <span class="card-action">Explore <span aria-hidden="true">→</span></span>
@@ -138,14 +125,13 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     <!-- Archetypes Spotlight Module -->
     <div class="archetypes-banner">
       <div class="archetypes-header">
-        <span class="badge archetypes-badge">ARCHETYPES</span>
         <h3>Reusable Architectural Blueprints</h3>
         <p class="archetypes-copy">
           Mapping recurring system-design archetypes (write-ahead logs, event loops, replicated state machines, CQRS) to production systems.
         </p>
       </div>
       <div class="archetypes-footer">
-        <a class="button primary" href="/topics/system-design/">Explore System Design Hub →</a>
+        <a class="button primary" href="/topics/system-design/">Explore System Design →</a>
       </div>
     </div>
 
@@ -186,7 +172,6 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
   <section class="section shell workshops-section" aria-labelledby="workshops-heading">
     <div class="workshops-banner">
       <div class="workshops-content">
-        <span class="badge workshops-badge">WORKSHOPS</span>
         <h2 id="workshops-heading">Hands-on Engineering Labs & Guided Builds</h2>
         <p>Explore complete runnable code repositories, step-by-step implementations, and guided architectural walkthroughs.</p>
       </div>
@@ -209,21 +194,19 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     <div class="section-header">
       <div>
         <h2 id="disciplines-heading">Specialized Disciplines</h2>
-        <p class="section-subheading">Dedicated knowledge hubs for internal software architecture and cloud platform infrastructure.</p>
+        <p class="section-subheading">Software architecture and cloud platform engineering in depth.</p>
       </div>
     </div>
 
     <div class="disciplines-grid">
       <article class="discipline-card">
-        <span class="discipline-tag">DOMAIN</span>
         <h3>Software Architecture</h3>
-        <p class="discipline-topics">Architectural Patterns · Domain-Driven Design · Agentic Workflows · Layering Invariants</p>
+        <p class="discipline-topics">Architectural Patterns · Domain-Driven Design · Agentic Workflows</p>
         <p class="discipline-desc">Structural patterns, domain logic organization, modular decomposition, and boundary management in complex software systems.</p>
         <a class="discipline-link" href="/topics/software-architecture/">Explore Software Architecture →</a>
       </article>
 
       <article class="discipline-card">
-        <span class="discipline-tag">DOMAIN</span>
         <h3>Platform Engineering</h3>
         <p class="discipline-topics">Cloud Native · Infrastructure as Code · Delivery & Observability · Automation</p>
         <p class="discipline-desc">Foundational architectures for dependable internal developer platforms, container orchestration, and declarative infrastructure.</p>
@@ -357,9 +340,6 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     align-items: center;
     gap: 24px;
   }
-  .archetypes-badge {
-    margin-bottom: 8px;
-  }
   .archetypes-banner h3 {
     margin: 0 0 6px;
     font-size: var(--text-xl);
@@ -380,9 +360,6 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-  }
-  .workshops-badge {
-    margin-bottom: 8px;
   }
   .workshops-content h2 {
     margin: 0 0 6px;
@@ -411,14 +388,6 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-  .discipline-tag {
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: .04em;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
   }
   .discipline-card h3 {
     margin: 0 0 6px;
