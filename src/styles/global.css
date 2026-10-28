@@ -54,6 +54,9 @@
   --text-2xl: 2rem;
   --text-3xl: 2.25rem;
   --title-page: clamp(1.75rem, 3vw, 2.25rem);
+  --title-listing: clamp(1.5rem, 2.4vw, 1.75rem);
+  --text-row-title: 1.125rem;
+  --text-row-summary: 0.9375rem;
   --title-article: clamp(1.625rem, 2.75vw, 2rem);
   --title-section: clamp(1.25rem, 2vw, 1.5rem);
 
@@ -143,9 +146,22 @@ a.badge:hover, a.badge-neutral:hover { text-decoration: underline; }
 .card-body :is(h2, h3) { margin: 0 0 4px; font-size: var(--text-lg); }
 .card-body p { color: var(--text-muted); margin: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .card-action { color: var(--link); font-size: var(--text-nav); font-weight: 500; }
-.card-grid .card-meta { order: 1; margin-top: 8px; }
-.card-grid .card-topics { order: 2; margin: 8px 0 0; }
+.card-grid .card-link { padding: 10px 0; }
+.card-grid .card-body :is(h2, h3) { margin: 0 0 2px; font-size: var(--text-row-title); }
+.card-grid .card-body p { font-size: var(--text-row-summary); line-height: 1.4; }
+.card-grid .card-meta { order: 1; margin-top: 4px; line-height: 1.4; }
+.card-grid .card-topics { display: none; }
 .card-grid .card-action { display: none; }
+
+/* Listing pages: compact heading so rows start near the top */
+:is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page) .page-heading { padding: 0 0 12px; }
+:is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page) .page-heading .eyebrow { display: none; }
+:is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page, .topic-hub-page) h1 { font-size: var(--title-listing); }
+:is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page) .page-heading > p:last-child { margin-top: 4px; font-size: var(--text-sm); line-height: 1.5; }
+:is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page) .page-heading + .section { padding-top: 8px; }
+.topic-hub-page .entry-header { padding: 0 0 12px; }
+.topic-hub-page .entry-header h1 { margin-top: 4px; }
+.topic-hub-page .entry-summary { margin-top: 4px; font-size: var(--text-base); }
 
 /* Empty state */
 .empty-state { padding: 32px 24px; border: 1px dashed var(--border); border-radius: 4px; text-align: center; background: transparent; }

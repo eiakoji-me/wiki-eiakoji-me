@@ -711,6 +711,14 @@ async function testListingRows() {
   assert.match(rule('.card-image'), /width: 160px;.*aspect-ratio: 16 \/ 9/, 'row thumbnails must be 160px wide at 16:9');
   assert.match(rule('.card-grid .card-placeholder'), /display: none/, 'hand-written placeholders must be hidden in rows');
   assert.match(rule('.card-grid .card-action'), /display: none/, 'Explore actions must be hidden in rows');
+  assert.match(rule('.card-grid .card-topics'), /display: none/, 'related-topic chips must be hidden in rows');
+  assert.match(rule('.card-grid .card-link'), /padding: 10px 0;/, 'rows must use tight vertical padding');
+  assert.match(rule('.card-grid .card-meta'), /order: 1;/, 'row meta must stay visible after the summary');
+  assert.doesNotMatch(rule('.card-grid .card-meta'), /display: none/, 'row meta must stay visible');
+  const listing = ':is(.articles-index-page, .projects-index-page, .workshops-index-page, .topic-index-page)';
+  assert.match(rule(`${listing} .page-heading`), /padding: 0 0 12px;/, 'listing pages must use a compact heading');
+  assert.match(rule(`${listing} .page-heading .eyebrow`), /display: none/, 'listing headings must drop the eyebrow');
+  assert.match(rule('.page-heading'), /padding: 40px 0 24px;/, 'non-listing page headings must keep their spacing');
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*?\.card-image \{ width: 96px; \}/, 'row thumbnails must shrink to 96px on narrow screens');
 
   for (const file of ['dist/index.html', 'dist/articles/index.html', 'dist/topics/system-design/index.html']) {
