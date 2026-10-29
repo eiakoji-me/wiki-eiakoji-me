@@ -1,10 +1,27 @@
 {
-  "_createdAt": "2026-10-27T18:50:45Z",
   "_id": "article-ai-execution-environment-architecture",
-  "_rev": "Ns7ZvAYVcpx9l8P5XJaTx0",
+  "_system": {
+    "base": {
+      "id": "article-ai-execution-environment-architecture",
+      "rev": "nMJTMD6pYgec3cpPGaTjhR"
+    }
+  },
   "_type": "article",
-  "_updatedAt": "2026-10-27T20:46:00Z",
   "body": [
+    {
+      "_key": "b-83ydx176",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-83ydx176-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "AI agents may generate code within a session, but engineering work must endure beyond it. This distinction underpins the design of AEE, an execution platform I built to coordinate bounded agent workloads across isolated runtimes. Durable state, explicit contracts, and automated verification preserve continuity across sessions and agent handoffs, while enforcing strict repository isolation."
+        }
+      ]
+    },
     {
       "_key": "b-000-e01ac9154687",
       "_type": "block",
@@ -41,7 +58,63 @@
           "_key": "b-002-485c25f47ae6-s0",
           "_type": "span",
           "marks": [],
-          "text": "The AI Execution Environment (AEE) is an architecture to make those boundaries explicit. It is a workspace control plane for issue-driven work across independent projects. Agents remain replaceable interfaces. Repositories, work-item state, runtimes, and identities receive durable contracts."
+          "text": "The "
+        },
+        {
+          "_key": "55263e29c466",
+          "_type": "span",
+          "marks": [
+            "strong"
+          ],
+          "text": "AI Execution Environment (AEE) "
+        },
+        {
+          "_key": "b12609bcf9c4",
+          "_type": "span",
+          "marks": [],
+          "text": "is an architecture to make those boundaries explicit. It is a workspace control plane for issue-driven work across independent projects. Agents remain replaceable interfaces. Repositories, work-item state, runtimes, and identities receive durable contracts."
+        }
+      ],
+      "markDefs": [],
+      "style": "normal"
+    },
+    {
+      "_key": "0fa4795acda7",
+      "_type": "block",
+      "children": [
+        {
+          "_key": "3aae6c94d836",
+          "_type": "span",
+          "marks": [],
+          "text": "The objective is to support concurrent, recoverable, and verifiable engineering work without making any individual agent session the system of record."
+        }
+      ],
+      "markDefs": [],
+      "style": "normal"
+    },
+    {
+      "_key": "8df9fed55e1d",
+      "_type": "block",
+      "children": [
+        {
+          "_key": "dd9fd77e19ab",
+          "_type": "span",
+          "marks": [],
+          "text": "AEE addresses this through isolated Git worktrees, dedicated development containers, durable workflow state, explicit identity boundaries, and bounded execution pipelines."
+        }
+      ],
+      "markDefs": [],
+      "style": "normal"
+    },
+    {
+      "_key": "affe5705b066",
+      "_type": "block",
+      "children": [
+        {
+          "_key": "bddbc12e7d7e",
+          "_type": "span",
+          "marks": [],
+          "text": "This article examines the architectural decisions behind the platform, their implementation mechanisms, and the trade-offs involved in coordinating AI-assisted software development across independent projects."
         }
       ],
       "markDefs": [],
@@ -890,6 +963,125 @@
       "style": "normal"
     },
     {
+      "_key": "b-rrqq9yxb",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-rrqq9yxb-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "LLM Wrappers & Headless Execution"
+        }
+      ]
+    },
+    {
+      "_key": "b-c3di4t5a",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-c3di4t5a-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Interactive chat sessions are well-suited for exploratory spikes, but they make poor execution engines for production software engineering. An open-ended conversational agent drifts, forgets earlier constraints, and lacks hard operational boundaries. In AEE, LLM execution is encapsulated inside dedicated headless wrappers orchestrated by the aee exec command."
+        }
+      ]
+    },
+    {
+      "_key": "b-qt8hqy4b",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-qt8hqy4b-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Instead of allowing agents to execute arbitrary prompts, the platform wraps model invocations in structured, typed input/output contracts. Each pipeline stage—whether issue refinement, architectural design, implementation, or verification—is executed as a discrete compilation step. The agent receives an immutable specification on stdin and emits structured JSON artifacts on stdout."
+        }
+      ]
+    },
+    {
+      "_key": "code-nc8to513",
+      "_type": "codeBlock",
+      "language": "bash",
+      "filename": "headless-execution.sh",
+      "code": "# Executing a bounded implementation stage via the headless wrapper\naee exec --project wiki-eiakoji-me \\\n  --stage implementation \\\n  --model claude-3-7-sonnet \\\n  --max-tokens 8192 \\\n  --timeout 15m \\\n  --input workspaces/TASK-20/context/task-spec.json \\\n  --output workspaces/TASK-20/artifacts/patch.diff"
+    },
+    {
+      "_key": "b-fq1pwdcy",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-fq1pwdcy-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "This headless execution model enforces three critical constraints: deterministic step budgeting to prevent infinite tool-call recursion, hard wall-clock timeouts to terminate hung processes, and intelligent model routing. Low-complexity tasks such as syntax validation and issue taxonomy classification are routed to fast, cost-efficient models, while complex cross-layer refactorings are reserved for frontier reasoning models."
+        }
+      ]
+    },
+    {
+      "_key": "b-qugd6ob1",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-qugd6ob1-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Token Economics & Partitioned Context"
+        }
+      ]
+    },
+    {
+      "_key": "b-qkzsjszo",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-qkzsjszo-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "A widespread anti-pattern in AI tooling is \"prompt stuffing\"—dumping entire directory trees and historical conversations into the context window. Beyond the obvious financial cost, massive context windows degrade model attention, increase latency, and introduce subtle hallucination vectors where obsolete code fragments pollute fresh generations."
+        }
+      ]
+    },
+    {
+      "_key": "b-7xvq4l0i",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-7xvq4l0i-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "AEE optimizes token economics through a tiered context hierarchy modeled after modern storage engines: an active sliding window (L0), an in-memory task memtable (L1), indexed local SSTable artifacts (L2), and an append-only historical archive (L3). Rather than reading the whole repository, the agent is seeded only with the scoped partition relevant to its active work item."
+        }
+      ]
+    },
+    {
+      "_key": "b-xp1jmf5w",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-xp1jmf5w-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Furthermore, slot management in the container pool decoupling runtime persistence from execution costs. A container runtime assigned to a work item can be suspended and resumed without tearing down its underlying worktree. This enables instant developer re-entry while eliminating the idle token and compute overhead of always-on server processes."
+        }
+      ]
+    },
+    {
       "_key": "b-048-90c4ef84af0d",
       "_type": "block",
       "children": [
@@ -1154,6 +1346,62 @@
       "style": "normal"
     },
     {
+      "_key": "b-7f6fx4ze",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-7f6fx4ze-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Sandboxed Security & Credential Isolation"
+        }
+      ]
+    },
+    {
+      "_key": "b-10glv9vs",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-10glv9vs-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Granting autonomous agents unconstrained shell access on a developer workstation is an unacceptable security hazard. A rogue tool call or hallucinated script can delete uncommitted files, leak environment tokens, or alter upstream Git remotes. AEE establishes strict defense-in-depth isolation across three distinct layers."
+        }
+      ]
+    },
+    {
+      "_key": "b-rt3xxxkf",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-rt3xxxkf-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "First, credentials never enter the agent runtime. The platform maintains host-local identity profiles under .local/state/identities/, executed strictly through platform/identity/run.sh. The agent never sees provider API tokens or private SSH keys; Git operations and external provider calls are mediated on the identity boundary."
+        }
+      ]
+    },
+    {
+      "_key": "b-dj884faf",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-dj884faf-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Second, all file mutations occur inside hermetic Devcontainers or Docker sandboxes running as unprivileged, non-root users. The canonical checkout remains completely untouched below repos/. If an agent destroys its working environment, only a disposable worktree below worktrees/ is damaged, preserving the integrity of the host machine."
+        }
+      ]
+    },
+    {
       "_key": "b-063-0c8a9f6e3b33",
       "_type": "block",
       "children": [
@@ -1194,6 +1442,62 @@
       ],
       "markDefs": [],
       "style": "normal"
+    },
+    {
+      "_key": "b-pk9ozvcp",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-pk9ozvcp-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Enforcing Engineering Culture as Architecture"
+        }
+      ]
+    },
+    {
+      "_key": "b-0g708myi",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-0g708myi-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "AI agents do not inherently possess engineering discipline; they generate whatever plausible code minimizes next-token prediction loss. High-performing engineering teams maintain quality not through good intentions, but through automated, non-negotiable verification gates. AEE codifies this culture directly into the platform pipeline."
+        }
+      ]
+    },
+    {
+      "_key": "b-4zjiyiyh",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-4zjiyiyh-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Before any stage can advance to a pull request, the platform triggers deterministic verification suites: shell scripts must pass bash -n and ShellCheck, schemas must validate against static type systems, and project suites must execute full verification (e.g., npm run verify or ./platform/validate.sh). An agent cannot bypass a failing test by declaring victory in conversation memory."
+        }
+      ]
+    },
+    {
+      "_key": "b-bghj8dcq",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-bghj8dcq-s0",
+          "_type": "span",
+          "marks": [],
+          "text": "Finally, the durable state triad—meta.json, session-state.md, and history.log—acts as an auditable, human-inspectable engineering record. Every design decision, rejected alternative, and command output survives runtime disposal. When a human reviewer evaluates the final pull request, they review not only the code diff, but the complete, verifiable lineage of the engineering task."
+        }
+      ]
     },
     {
       "_key": "b-065-597030ecf9f7",
@@ -1448,28 +1752,28 @@
   "featuredImage": {
     "_type": "imageWithAlt",
     "alt": "Schematic architecture of the AI Execution Environment across intake, control plane, isolated runtime pool, and storage boundaries.",
-    "caption": "System topology: from issue intake to verified delivery across isolated runtimes and durable storage boundaries.",
     "asset": {
-      "_type": "reference",
-      "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png"
-    }
+      "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png",
+      "_type": "reference"
+    },
+    "caption": "System topology: from issue intake to verified delivery across isolated runtimes and durable storage boundaries."
   },
   "format": "article",
   "primaryTopic": {
-    "_ref": "domain-platform-engineering",
-    "_type": "reference"
+    "_type": "reference",
+    "_ref": "topic-execution-environments"
   },
   "publishedAt": "2026-10-27T17:03:11.012Z",
   "relatedTopics": [
     {
-      "_key": "related-software-architecture",
-      "_ref": "domain-software-architecture",
-      "_type": "reference"
+      "_key": "rel-sa",
+      "_type": "reference",
+      "_ref": "domain-software-architecture"
     },
     {
-      "_key": "related-system-design",
-      "_ref": "domain-system-design",
-      "_type": "reference"
+      "_key": "rel-sd",
+      "_type": "reference",
+      "_ref": "domain-system-design"
     }
   ],
   "seo": {
@@ -1477,10 +1781,12 @@
     "description": "A practical architecture for isolated agent runtimes, durable workflow state, credential boundaries, and bounded issue-to-PR automation.",
     "image": {
       "_type": "image",
+      "alt": "AEE: An Execution Platform for High-Throughput AI-Assisted Development",
       "asset": {
-        "_type": "reference",
-        "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png"
-      }
+        "_ref": "image-0aa48d9944cc49156881b5d9f32f8a6f329fe565-1600x900-png",
+        "_type": "reference"
+      },
+      "caption": "AEE: An Execution Platform for AI-Assisted Development"
     },
     "title": "Issue-Driven AI Execution Environment Architecture"
   },
@@ -1488,7 +1794,7 @@
     "_type": "slug",
     "current": "ai-execution-environment-architecture"
   },
-  "summary": "How isolated runtimes, durable work-item state, identity boundaries, and bounded agent workflows turn external issues into reviewed changes across independent repositories.",
+  "summary": "AI agents may generate code within a session, but engineering work must endure beyond it. I built AEE to coordinate bounded agent workloads across isolated runtimes, using durable state, explicit contracts, and automated verification to preserve continuity across sessions.",
   "technologies": [
     "Docker",
     "Dev Containers",
@@ -1498,5 +1804,6 @@
     "Astro",
     "Sanity"
   ],
-  "title": "Architecture of an Issue-Driven AI Execution Environment"
+  "title": "AEE: An Execution Platform for High-Throughput AI-Assisted Development",
+  "featured": true
 }
