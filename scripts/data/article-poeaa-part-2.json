@@ -13,10 +13,10 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-55346e21d6e659aac48255a419482038be0789b3-1598x900-png"
+      "_ref": "image-a2f93e7ec6c868459b3e0a38163e78ddf32f2206-1598x900-png"
     },
-    "alt": "Three-pillar architecture of enterprise persistence: The O/R Impedance Mismatch, The Persistence Continuum, and Behavioral Coordination.",
-    "caption": "Figure 1: Architectural continuum across the object-relational divide: from the impedance chasm to data mapping and session-level behavioral coordination."
+    "alt": "Architectural lifecycle of object-relational persistence: Read/Query phase with Identity Map, Commit/Flush phase with Unit of Work, and Data Mapper foundation.",
+    "caption": "Figure 1: Two-phase persistence lifecycle across the object-relational divide: identity resolution during reads, atomic dependency batching during commit, and data mapper isolation."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "Relational databases model tabular schemas, while domain models traverse object graphs. Grounded in Martin Fowler’s patterns, this analysis evaluates how Data Mappers, Units of Work, and Identity Maps resolve the O/R impedance mismatch without leaking schema details.",
@@ -60,7 +60,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-55346e21d6e659aac48255a419482038be0789b3-1598x900-png"
+        "_ref": "image-a2f93e7ec6c868459b3e0a38163e78ddf32f2206-1598x900-png"
       }
     }
   },
