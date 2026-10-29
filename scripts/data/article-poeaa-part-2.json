@@ -13,7 +13,7 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-a2f93e7ec6c868459b3e0a38163e78ddf32f2206-1598x900-png"
+      "_ref": "image-0046e72def8db2acbd2b9e725c388f87b3f54bdb-1598x900-png"
     },
     "alt": "Architectural lifecycle of object-relational persistence: Read/Query phase with Identity Map, Commit/Flush phase with Unit of Work, and Data Mapper foundation.",
     "caption": "Figure 1: Two-phase persistence lifecycle across the object-relational divide: identity resolution during reads, atomic dependency batching during commit, and data mapper isolation."
@@ -60,7 +60,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-a2f93e7ec6c868459b3e0a38163e78ddf32f2206-1598x900-png"
+        "_ref": "image-0046e72def8db2acbd2b9e725c388f87b3f54bdb-1598x900-png"
       }
     }
   },
