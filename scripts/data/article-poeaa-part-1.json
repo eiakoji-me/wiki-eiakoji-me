@@ -1642,7 +1642,13 @@
       "_type": "block",
       "_key": "b-079-9c1bae688e64",
       "style": "normal",
-      "markDefs": [],
+      "markDefs": [
+        {
+          "_key": "link-part-2",
+          "_type": "link",
+          "href": "/articles/poeaa-part-2-data-source-persistence/"
+        }
+      ],
       "children": [
         {
           "_type": "span",
@@ -1653,15 +1659,16 @@
         {
           "_type": "span",
           "_key": "b-079-9c1bae688e64-s1",
-          "text": "[Part II: Data Source & Object-Relational Persistence Patterns](/articles/poeaa-part-2-data-source-persistence/)",
+          "text": "Part II: Data Source & Persistence Patterns",
           "marks": [
-            "strong"
+            "strong",
+            "link-part-2"
           ]
         },
         {
           "_type": "span",
           "_key": "b-079-9c1bae688e64-s2",
-          "text": ", we address the infamous Object-Relational Impedance Mismatch, analyzing Table Data Gateways, Row Data Gateways, Active Record, and Data Mappers, alongside behavioral mechanisms like the Unit of Work and Identity Map.",
+          "text": ", we address the Object-Relational Impedance Mismatch, analyzing Table Data Gateways, Active Record, and Data Mappers alongside behavioral mechanisms like the Unit of Work and Identity Map.",
           "marks": []
         }
       ]
