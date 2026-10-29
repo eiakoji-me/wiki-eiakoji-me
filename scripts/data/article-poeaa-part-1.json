@@ -13,10 +13,10 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-fe745ec7570cac19f7092a9654d4016afc7b7791-1600x900-png"
+      "_ref": "image-c98faa135ee10b7e25adb87dcdce5c56d4554737-1600x908-png"
     },
-    "alt": "Patterns of Enterprise Application Architecture Part I: Layering and Domain Logic Architecture showing Three-Layer System, Service Layer, and Value Objects.",
-    "caption": "Three-Layer Architecture, Domain Logic Continuum, and self-validating Value Objects."
+    "alt": "Architectural schematic illustrating structural boundaries and routing paths between Transaction Scripts, Table Modules, and Rich Domain Models behind an explicit Service Layer coordinator.",
+    "caption": "Figure 1: Structural boundaries and routing paths between Transaction Scripts, Table Modules, and Rich Domain Models behind an explicit Service Layer coordinator."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "Complex systems fail when business logic leaks into database queries and UI controllers. Grounded in Martin Fowler’s patterns, this analysis evaluates how Transaction Scripts, Table Modules, and Domain Models isolate business rules behind an explicit service layer.",
@@ -56,7 +56,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-fe745ec7570cac19f7092a9654d4016afc7b7791-1600x900-png"
+        "_ref": "image-c98faa135ee10b7e25adb87dcdce5c56d4554737-1600x908-png"
       }
     }
   },
