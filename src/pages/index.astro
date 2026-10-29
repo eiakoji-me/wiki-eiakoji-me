@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { contentHref, formatDate } from '../lib/content';
 import { fetchContent } from '../lib/content';
+import { imageUrl } from '../lib/sanity/image';
 import { homepageQuery } from '../lib/sanity/queries';
 import type { ContentSummary } from '../lib/sanity/types';
 
@@ -74,6 +75,15 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
         <!-- Lead Feature -->
         <article class="lead-feature-card">
           <a class="lead-link" href={contentHref(leadFeature._type, leadFeature.slug)} aria-label={`Read ${leadFeature.title}`}>
+            {leadFeature.featuredImage?.asset && (
+              <img
+                class="lead-image"
+                src={imageUrl(leadFeature.featuredImage.asset, 1200)}
+                alt={leadFeature.featuredImage.alt}
+                loading="eager"
+                decoding="async"
+              />
+            )}
             <div class="card-meta">
               {leadFeature.publishedAt && <time datetime={leadFeature.publishedAt}>{formatDate(leadFeature.publishedAt)}</time>}
             </div>
@@ -270,17 +280,25 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
   .secondary-card:hover {
     border-color: var(--border-strong);
   }
-  .lead-feature-card:hover .lead-title,
-  .secondary-card:hover .secondary-title {
-    text-decoration: underline;
-  }
   .lead-link {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     height: 100%;
     padding: clamp(24px, 3vw, 32px);
     text-decoration: none;
+  }
+  .lead-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  .lead-link .card-action {
+    margin-top: auto;
   }
   .lead-title {
     margin: 12px 0 8px;
