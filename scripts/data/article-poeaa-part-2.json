@@ -13,10 +13,10 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-7ce6350b1952baa18ccdb266b1e188cd73b2ce46-1602x902-png"
+      "_ref": "image-55346e21d6e659aac48255a419482038be0789b3-1598x900-png"
     },
-    "alt": "Patterns of Enterprise Application Architecture Part II: Data Source and Persistence Patterns showing O/R Chasm, Active Record vs Data Mapper, and Unit of Work lifecycle.",
-    "caption": "The O/R Impedance Mismatch, Persistence Continuum, and Unit of Work transaction coordination."
+    "alt": "Three-pillar architecture of enterprise persistence: The O/R Impedance Mismatch, The Persistence Continuum, and Behavioral Coordination.",
+    "caption": "Figure 1: Architectural continuum across the object-relational divide: from the impedance chasm to data mapping and session-level behavioral coordination."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "Relational databases model tabular schemas, while domain models traverse object graphs. Grounded in Martin Fowler’s patterns, this analysis evaluates how Data Mappers, Units of Work, and Identity Maps resolve the O/R impedance mismatch without leaking schema details.",
@@ -60,7 +60,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-7ce6350b1952baa18ccdb266b1e188cd73b2ce46-1602x902-png"
+        "_ref": "image-55346e21d6e659aac48255a419482038be0789b3-1598x900-png"
       }
     }
   },
