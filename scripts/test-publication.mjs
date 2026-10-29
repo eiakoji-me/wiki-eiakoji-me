@@ -1060,11 +1060,18 @@ async function testNoInternalMetadata() {
     }
     if (file.includes('poeaa-part-1')) {
       assert.ok(html.includes('href="/articles/poeaa-part-2-data-source-persistence/"'), `${file} must link published Part 2`);
-      assert.ok(!/href="[^"]*poeaa-part-[34]/.test(html), `${file} must not link unpublished series parts`);
+      assert.ok(html.includes('href="/articles/poeaa-part-3-web-presentation-distribution/"'), `${file} must link published Part 3`);
+      assert.ok(!/href="[^"]*poeaa-part-4/.test(html), `${file} must not link unpublished series parts`);
     }
     if (file.includes('poeaa-part-2')) {
       assert.ok(html.includes('href="/articles/poeaa-part-1-layering-and-domain-logic/"'), `${file} must link published Part 1`);
-      assert.ok(!/href="[^"]*poeaa-part-[34]/.test(html), `${file} must not link unpublished series parts`);
+      assert.ok(html.includes('href="/articles/poeaa-part-3-web-presentation-distribution/"'), `${file} must link published Part 3`);
+      assert.ok(!/href="[^"]*poeaa-part-4/.test(html), `${file} must not link unpublished series parts`);
+    }
+    if (file.includes('poeaa-part-3')) {
+      assert.ok(html.includes('href="/articles/poeaa-part-1-layering-and-domain-logic/"'), `${file} must link published Part 1`);
+      assert.ok(html.includes('href="/articles/poeaa-part-2-data-source-persistence/"'), `${file} must link published Part 2`);
+      assert.ok(!/href="[^"]*poeaa-part-4/.test(html), `${file} must not link unpublished series parts`);
     }
   }
 
