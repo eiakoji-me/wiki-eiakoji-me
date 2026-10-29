@@ -1059,7 +1059,12 @@ async function testNoInternalMetadata() {
       assert.ok(!/class="(topic-link|related-tag|related-label)/.test(rail), `${file} right rail must use plain topic links`);
     }
     if (file.includes('poeaa-part-1')) {
-      assert.ok(!/href="[^"]*poeaa-part-[234]/.test(html), `${file} must not link unpublished series parts`);
+      assert.ok(html.includes('href="/articles/poeaa-part-2-data-source-persistence/"'), `${file} must link published Part 2`);
+      assert.ok(!/href="[^"]*poeaa-part-[34]/.test(html), `${file} must not link unpublished series parts`);
+    }
+    if (file.includes('poeaa-part-2')) {
+      assert.ok(html.includes('href="/articles/poeaa-part-1-layering-and-domain-logic/"'), `${file} must link published Part 1`);
+      assert.ok(!/href="[^"]*poeaa-part-[34]/.test(html), `${file} must not link unpublished series parts`);
     }
   }
 
