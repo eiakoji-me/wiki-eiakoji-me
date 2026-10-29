@@ -51,9 +51,11 @@ const workshops = data.workshops ?? [];
 const archetypesArticles = data.archetypesArticles ?? [];
 const systemDesignArticles = data.systemDesignArticles ?? [];
 
+// The section leads with the archetype framework, so broader system design articles
+// only fill remaining slots once at least one archetypes article exists.
 // Deduplicate articles so an article present in both archetypes and system design is never repeated
 const seenSystemDesignIds = new Set<string>();
-const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
+const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArticles, ...systemDesignArticles] : [])
   .filter((item) => {
     if (!item?._id || seenSystemDesignIds.has(item._id)) return false;
     seenSystemDesignIds.add(item._id);
@@ -127,7 +129,7 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     <div class="section-header">
       <div>
         <h2 id="system-design-heading">System Design</h2>
-        <p class="section-subheading">Scalability, distributed consensus, data systems, and architectural patterns.</p>
+        <p class="section-subheading">A systematic study of recurring problem spaces, architectural archetypes, and the mechanisms used to construct large-scale systems.</p>
       </div>
       <a class="section-nav-link" href="/topics/system-design/">Browse System Design →</a>
     </div>
@@ -135,13 +137,13 @@ const systemDesignCombined = [...archetypesArticles, ...systemDesignArticles]
     <!-- Archetypes Spotlight Module -->
     <div class="archetypes-banner">
       <div class="archetypes-header">
-        <h3>Reusable Architectural Blueprints</h3>
+        <h3>System Design Archetypes &amp; Problem Classification</h3>
         <p class="archetypes-copy">
-          Mapping recurring system-design archetypes (write-ahead logs, event loops, replicated state machines, CQRS) to production systems.
+          A framework for recognizing recurring system-design problems, identifying their requirements and correctness invariants, and mapping them to architectural mechanisms, trade-offs, and composition patterns.
         </p>
       </div>
       <div class="archetypes-footer">
-        <a class="button primary" href="/topics/system-design/">Explore System Design →</a>
+        <a class="button primary" href="/topics/system-design/">Explore the Framework →</a>
       </div>
     </div>
 
