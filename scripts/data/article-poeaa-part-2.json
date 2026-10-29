@@ -13,10 +13,10 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-5fd489c085871eade84949706865d3bf3c1dcf98-1600x838-png"
+      "_ref": "image-7ce6350b1952baa18ccdb266b1e188cd73b2ce46-1602x902-png"
     },
-    "alt": "Architectural schematic of the behavioral persistence boundary isolating an in-memory domain graph from relational database storage via Data Mappers, Identity Maps, and Units of Work.",
-    "caption": "Figure 1: Behavioral persistence boundary isolating the in-memory domain graph from relational storage via Data Mappers, Identity Maps, and Units of Work."
+    "alt": "Patterns of Enterprise Application Architecture Part II: Data Source and Persistence Patterns showing O/R Chasm, Active Record vs Data Mapper, and Unit of Work lifecycle.",
+    "caption": "The O/R Impedance Mismatch, Persistence Continuum, and Unit of Work transaction coordination."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
   "summary": "Relational databases model tabular schemas, while domain models traverse object graphs. Grounded in Martin Fowler’s patterns, this analysis evaluates how Data Mappers, Units of Work, and Identity Maps resolve the O/R impedance mismatch without leaking schema details.",
@@ -60,7 +60,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-5fd489c085871eade84949706865d3bf3c1dcf98-1600x838-png"
+        "_ref": "image-7ce6350b1952baa18ccdb266b1e188cd73b2ce46-1602x902-png"
       }
     }
   },
