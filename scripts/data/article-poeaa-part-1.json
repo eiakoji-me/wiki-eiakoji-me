@@ -19,7 +19,7 @@
     "caption": "Three-Layer Architecture, Domain Logic Continuum, and self-validating Value Objects."
   },
   "publishedAt": "2026-10-28T00:00:00.000Z",
-  "summary": "How enterprise systems organize domain logic and protect business invariants: comparing Transaction Scripts, Table Modules, and Domain Models, coordinating workflows via the Service Layer, and eliminating Primitive Obsession with Value Objects.",
+  "summary": "Complex systems fail when business logic leaks into database queries and UI controllers. Grounded in Martin Fowler’s patterns, this analysis evaluates how Transaction Scripts, Table Modules, and Domain Models isolate business rules behind an explicit service layer.",
   "primaryTopic": {
     "_type": "reference",
     "_ref": "topic-architectural-patterns"
