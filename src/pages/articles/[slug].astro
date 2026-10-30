@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import ArticlePager from '../../components/ArticlePager.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import RightRail from '../../components/RightRail.astro';
 import RichText from '../../components/RichText.astro';
@@ -84,6 +85,7 @@ if (article.primaryTopic?.slug) {
 
     <div class="entry-body">
       <RichText value={article.body} />
+      <ArticlePager body={article.body} />
     </div>
   </article>
 
