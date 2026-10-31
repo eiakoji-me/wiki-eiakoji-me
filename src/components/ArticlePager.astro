@@ -24,7 +24,7 @@ const hasNavigation = Boolean(prevItem || nextItem);
       <a href={prevItem.href} class="pager-link pager-prev">
         <span class="pager-arrow" aria-hidden="true">←</span>
         <div class="pager-content">
-          <span class="pager-label">Previous Part</span>
+          <span class="pager-label">Prev</span>
           <span class="pager-title">{prevItem.title}</span>
         </div>
       </a>
@@ -36,7 +36,7 @@ const hasNavigation = Boolean(prevItem || nextItem);
       nextItem.status === 'completed' && nextItem.href ? (
         <a href={nextItem.href} class="pager-link pager-next">
           <div class="pager-content">
-            <span class="pager-label">Next Part</span>
+            <span class="pager-label">Next</span>
             <span class="pager-title">{nextItem.title}</span>
           </div>
           <span class="pager-arrow" aria-hidden="true">→</span>
@@ -44,7 +44,7 @@ const hasNavigation = Boolean(prevItem || nextItem);
       ) : (
         <div class="pager-link pager-next is-upcoming">
           <div class="pager-content">
-            <span class="pager-label">Next Part (Upcoming)</span>
+            <span class="pager-label">Next (Upcoming)</span>
             <span class="pager-title">{nextItem.title}</span>
           </div>
         </div>
@@ -93,14 +93,14 @@ const hasNavigation = Boolean(prevItem || nextItem);
     color: var(--text-muted);
   }
   .pager-title {
-    font-size: var(--text-body);
+    font-size: var(--text-nav);
     font-weight: 600;
     line-height: 1.4;
     color: var(--text-strong);
     transition: color 0.15s ease;
   }
   .pager-arrow {
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
     color: var(--link);
     line-height: 1;
     flex-shrink: 0;
@@ -108,7 +108,7 @@ const hasNavigation = Boolean(prevItem || nextItem);
   }
   .pager-link:hover .pager-title {
     color: var(--link);
-    text-decoration: underline;
+    text-decoration: none;
   }
   .pager-prev:hover .pager-arrow {
     transform: translateX(-4px);
