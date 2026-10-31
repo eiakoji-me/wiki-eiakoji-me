@@ -13,7 +13,7 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-c57db3d4c0fe4582268b05afda5a49557317e060-1600x900-png"
+      "_ref": "image-670a1673d58d9198dc84aa3c2126ade203a00acb-1600x900-png"
     },
     "alt": "Enterprise offline concurrency, session state, and resilient foundation architecture: business transactions spanning user think time on the left, optimistic and pessimistic locking in the center, and distributed Redis session hub with Spring Boot gateways on the right.",
     "caption": "Figure 1: Architectural blueprint of offline concurrency and session state in Java and Spring Boot: reconciling long-running business workflows with short ACID database transactions using Optimistic Offline Locking, Redis leases, Coarse-Grained aggregate locks, and resilient Gateways."
@@ -59,7 +59,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-c57db3d4c0fe4582268b05afda5a49557317e060-1600x900-png"
+        "_ref": "image-670a1673d58d9198dc84aa3c2126ade203a00acb-1600x900-png"
       }
     }
   },
