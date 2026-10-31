@@ -10,6 +10,7 @@
     "check": "astro check",
     "studio": "sanity dev --host 0.0.0.0",
     "studio:build": "sanity build .sanity-dist",
+    "studio:deploy": "sanity deploy .sanity-dist",
     "test:publication": "node scripts/test-publication.mjs",
     "test:styles": "node scripts/test-styles.mjs",
     "test:taxonomy": "node scripts/test-taxonomy-seed.mjs",
