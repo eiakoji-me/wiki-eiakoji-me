@@ -21,30 +21,30 @@ const hasNavigation = Boolean(prevItem || nextItem);
 {hasNavigation && (
   <nav class="article-pager" aria-label="Article navigation">
     {prevItem && prevItem.href ? (
-      <a href={prevItem.href} class="pager-card pager-prev">
+      <a href={prevItem.href} class="pager-link pager-prev">
         <span class="pager-arrow" aria-hidden="true">←</span>
         <div class="pager-content">
-          <span class="pager-direction">Previous Part</span>
+          <span class="pager-label">Previous Part</span>
           <span class="pager-title">{prevItem.title}</span>
         </div>
       </a>
     ) : (
-      <div class="pager-placeholder" />
+      <div class="pager-spacer" />
     )}
 
     {nextItem && (
       nextItem.status === 'completed' && nextItem.href ? (
-        <a href={nextItem.href} class="pager-card pager-next">
+        <a href={nextItem.href} class="pager-link pager-next">
           <div class="pager-content">
-            <span class="pager-direction">Next Part</span>
+            <span class="pager-label">Next Part</span>
             <span class="pager-title">{nextItem.title}</span>
           </div>
           <span class="pager-arrow" aria-hidden="true">→</span>
         </a>
       ) : (
-        <div class="pager-card pager-next is-upcoming">
+        <div class="pager-link pager-next is-upcoming">
           <div class="pager-content">
-            <span class="pager-direction">Next Part (Upcoming)</span>
+            <span class="pager-label">Next Part (Upcoming)</span>
             <span class="pager-title">{nextItem.title}</span>
           </div>
         </div>
@@ -57,25 +57,19 @@ const hasNavigation = Boolean(prevItem || nextItem);
   .article-pager {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 48px;
-    padding-top: 24px;
+    gap: 32px;
+    margin-top: 56px;
+    padding-block: 24px;
     border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
-  .pager-card {
+  .pager-link {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    background: var(--background-subtle);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    gap: 14px;
     text-decoration: none;
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-  .pager-card:hover {
-    border-color: var(--border-strong);
-    background: var(--background);
+    color: inherit;
+    transition: opacity 0.15s ease;
   }
   .pager-prev {
     justify-content: flex-start;
@@ -85,57 +79,75 @@ const hasNavigation = Boolean(prevItem || nextItem);
     justify-content: flex-end;
     text-align: right;
   }
-  .pager-prev:hover .pager-arrow {
-    transform: translateX(-3px);
-  }
-  .pager-next:hover .pager-arrow {
-    transform: translateX(3px);
-  }
   .pager-content {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     min-width: 0;
   }
-  .pager-direction {
+  .pager-label {
     font-size: var(--text-xs);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: var(--text-muted);
   }
   .pager-title {
-    font-size: var(--text-sm);
+    font-size: var(--text-body);
     font-weight: 600;
+    line-height: 1.4;
     color: var(--text-strong);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    transition: color 0.15s ease;
   }
   .pager-arrow {
-    font-size: var(--text-base);
+    font-size: var(--text-lg);
     color: var(--link);
-    transition: transform 0.15s ease;
+    line-height: 1;
     flex-shrink: 0;
+    transition: transform 0.15s ease;
   }
-  .pager-card.is-upcoming {
-    opacity: 0.6;
-    border-style: dashed;
+  .pager-link:hover .pager-title {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .pager-prev:hover .pager-arrow {
+    transform: translateX(-4px);
+  }
+  .pager-next:hover .pager-arrow {
+    transform: translateX(4px);
+  }
+  .pager-link.is-upcoming {
+    opacity: 0.55;
     cursor: default;
   }
-  .pager-placeholder {
+  .pager-link.is-upcoming .pager-title {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .pager-link.is-upcoming:hover .pager-title {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .pager-spacer {
     visibility: hidden;
   }
   @media (max-width: 640px) {
     .article-pager {
       grid-template-columns: 1fr;
+      gap: 20px;
     }
-    .pager-placeholder {
+    .pager-spacer {
       display: none;
     }
     .pager-next {
-      justify-content: flex-start;
+      justify-content: space-between;
       text-align: left;
+    }
+    .pager-next .pager-arrow {
+      order: 2;
+    }
+    .pager-next .pager-content {
+      order: 1;
     }
   }
 </style>
