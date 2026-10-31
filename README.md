@@ -7,8 +7,8 @@ with Astro and Sanity.
 
 - **Astro + TypeScript** renders a static reader site.
 - **Sanity** project `7rp2puan`, dataset `production`, stores structured content.
-- **Sanity Studio** is configured in this repository but runs and deploys
-  separately from the reader site.
+- **Sanity Studio** is configured in this repository and hosted by Sanity at
+  <https://wiki-eiakoji-me.sanity.studio>, separately from the reader site.
 - **Netlify** is prepared to build the static site from `main`; this repository
   does not create a Netlify project, deploy, or change DNS.
 
@@ -37,15 +37,29 @@ token to a `PUBLIC_` variable or commit a token to this repository.
 
 ## Content authoring
 
-Run Studio in a separate terminal:
+Publish from any machine with the hosted Studio at
+<https://wiki-eiakoji-me.sanity.studio>. Sign in with an account that is a
+member of Sanity project `7rp2puan`.
+
+To work on the schema, run Studio locally in a separate terminal:
 
 ```sh
 npm run studio
 ```
 
 Studio defaults to `http://localhost:3333`. If Sanity asks for a CORS origin,
-add only that controlled local origin and enable credentials. A future hosted
-Studio origin must be approved and configured separately.
+add only that controlled local origin and enable credentials.
+
+Schema and Studio changes reach the hosted Studio only when it is redeployed.
+After the change is merged to `main`, and with operator approval, run:
+
+```sh
+npm run studio:deploy
+```
+
+The app ID in `sanity.cli.ts` targets the existing hosted Studio, so the
+command never creates a new one. `deployment.autoUpdates` keeps the hosted
+Studio on the latest compatible `sanity` release without a redeploy.
 
 The initial content model contains:
 
@@ -114,6 +128,7 @@ SANITY_WRITE_TOKEN=... npm run seed:taxonomy -- --dataset production --write
 | `npm run preview` | Preview the Astro production build |
 | `npm run studio` | Start Sanity Studio locally |
 | `npm run studio:build` | Validate and build Studio without deploying |
+| `npm run studio:deploy` | Build and deploy the hosted Studio (operator approval required) |
 | `npm run test:publication` | Exercise built routes, metadata, configuration, and live GROQ queries |
 | `npm run test:taxonomy` | Check the taxonomy seed planner and its effect on the navigation |
 | `npm run verify` | Run checks, both production builds, publication integration tests, and taxonomy seed tests |
