@@ -181,13 +181,13 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
 
   <!-- 4. WORKSHOPS MODULE -->
   <section class="section shell workshops-section" aria-labelledby="workshops-heading">
-    <div class="workshops-banner">
-      <div class="workshops-content">
-        <h2 id="workshops-heading">Hands-on Engineering Labs & Guided Builds</h2>
-        <p>Explore complete runnable code repositories, step-by-step implementations, and guided architectural walkthroughs.</p>
+    <div class="banner-card">
+      <div class="banner-card-content">
+        <h2 id="workshops-heading" class="banner-card-title">Engineering Workshops</h2>
+        <p class="banner-card-desc">Practical investigations of software engineering concepts through implementation, experimentation, and analysis of system behavior.</p>
       </div>
-      <div class="workshops-action">
-        <a class="button primary" href="/workshops/">All Workshops →</a>
+      <div class="banner-card-action">
+        <a class="banner-card-link" href="/workshops/">Explore Workshops <span aria-hidden="true">→</span></a>
       </div>
     </div>
 
@@ -204,36 +204,40 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
   <section class="section shell disciplines-section" aria-labelledby="disciplines-heading">
     <div class="section-header">
       <div>
-        <h2 id="disciplines-heading">Specialized Disciplines</h2>
-        <p class="section-subheading">Software architecture and cloud platform engineering in depth.</p>
+        <h2 id="disciplines-heading">Explore by Discipline</h2>
+        <p class="section-subheading">Study notes, technical articles, and implementation guides organized by subject.</p>
       </div>
     </div>
 
     <div class="disciplines-grid">
       <article class="discipline-card">
-        <h3>Software Architecture</h3>
-        <p class="discipline-topics">Architectural Patterns · Domain-Driven Design · Agentic Workflows</p>
-        <p class="discipline-desc">Structural patterns, domain logic organization, modular decomposition, and boundary management in complex software systems.</p>
-        <a class="discipline-link" href="/topics/software-architecture/">Explore Software Architecture →</a>
+        <div class="discipline-content">
+          <h3>Software Engineering</h3>
+          <p class="discipline-desc">Programming languages, frameworks, algorithms, data structures, and software design.</p>
+        </div>
+        <a class="discipline-link" href="/topics/software-architecture/">Explore Software Engineering <span aria-hidden="true">→</span></a>
       </article>
 
       <article class="discipline-card">
-        <h3>Platform Engineering</h3>
-        <p class="discipline-topics">Cloud Native · Infrastructure as Code · Delivery & Observability · Automation</p>
-        <p class="discipline-desc">Foundational architectures for dependable internal developer platforms, container orchestration, and declarative infrastructure.</p>
-        <a class="discipline-link" href="/topics/platform-engineering/">Explore Platform Engineering →</a>
+        <div class="discipline-content">
+          <h3>Cloud & Platform Engineering</h3>
+          <p class="discipline-desc">Cloud architecture, infrastructure, deployment systems, observability, and operational reliability.</p>
+        </div>
+        <a class="discipline-link" href="/topics/platform-engineering/">Explore Cloud & Platforms <span aria-hidden="true">→</span></a>
       </article>
     </div>
   </section>
 
   <!-- 6. PROJECTS ENTRY -->
-  <section class="section shell projects-strip-section">
-    <div class="projects-bar">
-      <div>
-        <p class="projects-bar-eyebrow">Open-Source & Software</p>
-        <p class="projects-bar-text">Looking for independent open-source tools, runnable libraries, and software releases?</p>
+  <section class="section shell projects-strip-section" aria-labelledby="projects-heading">
+    <div class="banner-card">
+      <div class="banner-card-content">
+        <p id="projects-heading" class="banner-card-eyebrow">ENGINEERING PROJECTS &amp; CASE STUDIES</p>
+        <p class="banner-card-desc">Documenting engineering work through the problems addressed, architectural decisions, implementation challenges, and outcomes.</p>
       </div>
-      <a class="button" href="/projects/">Browse Projects →</a>
+      <div class="banner-card-action">
+        <a class="banner-card-link" href="/projects/">Explore Projects <span aria-hidden="true">→</span></a>
+      </div>
     </div>
   </section>
 </BaseLayout>
@@ -369,28 +373,54 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
     max-width: 70ch;
   }
 
-  /* Workshops */
-  .workshops-banner {
-    background: var(--background-subtle);
+  /* Banner cards (Workshops & Projects) */
+  .banner-card {
+    background: var(--background);
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: clamp(24px, 4vw, 32px);
+    padding: clamp(20px, 3vw, 24px);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
+    flex-direction: column;
+    gap: 16px;
+    transition: border-color 140ms ease;
   }
-  .workshops-content h2 {
+  .banner-card:hover {
+    border-color: var(--border-strong);
+  }
+  .banner-card-title {
     margin: 0 0 6px;
-    font-size: var(--title-section);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-strong);
   }
-  .workshops-content p {
+  .banner-card-eyebrow {
+    margin: 0 0 6px;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .banner-card-desc {
     margin: 0;
     color: var(--text-muted);
-    max-width: 70ch;
+    font-size: var(--text-base);
+    line-height: 1.5;
   }
-  .workshops-action .button {
+  .banner-card-action {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .banner-card-link {
+    color: var(--link);
+    font-size: var(--text-nav);
+    font-weight: 500;
+    text-decoration: none;
     white-space: nowrap;
+  }
+  .banner-card-link:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
   }
 
   /* Disciplines */
@@ -407,60 +437,40 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    gap: 16px;
+    transition: border-color 140ms ease;
+  }
+  .discipline-card:hover {
+    border-color: var(--border-strong);
   }
   .discipline-card h3 {
     margin: 0 0 6px;
     font-size: var(--text-lg);
-  }
-  .discipline-topics {
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--text-muted);
-    margin: 0 0 12px;
+    font-weight: 600;
+    color: var(--text-strong);
   }
   .discipline-desc {
     color: var(--text-muted);
-    margin: 0 0 16px;
+    margin: 0;
     font-size: var(--text-base);
+    line-height: 1.5;
   }
   .discipline-link {
     color: var(--link);
     font-size: var(--text-nav);
     font-weight: 500;
     text-decoration: none;
+    white-space: nowrap;
   }
   .discipline-link:hover {
     color: var(--link-hover);
     text-decoration: underline;
   }
 
-  /* Projects bar */
+  /* Projects strip section */
   .projects-strip-section {
     padding-top: 8px;
     padding-bottom: 32px;
-  }
-  .projects-bar {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 20px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-  }
-  .projects-bar-eyebrow {
-    margin: 0 0 4px;
-    font-size: var(--text-xs);
-    font-weight: 500;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .projects-bar-text {
-    margin: 0;
-    font-weight: 500;
-    font-size: var(--text-base);
   }
 
   @media (max-width: 900px) {
@@ -468,9 +478,7 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
     .disciplines-grid {
       grid-template-columns: 1fr;
     }
-    .archetypes-banner,
-    .workshops-banner,
-    .projects-bar {
+    .archetypes-banner {
       flex-direction: column;
       align-items: flex-start;
     }
