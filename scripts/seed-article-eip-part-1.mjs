@@ -2,7 +2,8 @@
 //
 //   npm run seed:article:eip-part-1 -- --dataset <name> --dry-run
 //   SANITY_WRITE_TOKEN=... npm run seed:article:eip-part-1 -- --dataset <name> --write
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -52,6 +53,35 @@ if (existing) {
 }
 
 if (values.write) {
+  const heroPath = path.join(__dirname, '..', 'documentation', 'diagrams', 'eip-part-1', 'eip-part-1-hero-monochrome.png');
+  console.log('Uploading hero diagram asset to Sanity...');
+  const asset = await client.assets.upload('image', createReadStream(heroPath), {
+    filename: 'eip-part-1-hero-monochrome.png',
+  });
+  console.log(`Hero diagram asset uploaded: ${asset._id}`);
+
+  articleDoc.featuredImage = {
+    _type: 'imageWithAlt',
+    asset: {
+      _type: 'reference',
+      _ref: asset._id,
+    },
+    alt: 'Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway.',
+    caption: 'Figure 1: Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway.',
+  };
+
+  if (articleDoc.seo) {
+    articleDoc.seo.image = {
+      _type: 'image',
+      asset: {
+        _type: 'reference',
+        _ref: asset._id,
+      },
+    };
+  }
+
+  await writeFile(articlePath, JSON.stringify(articleDoc, null, 2) + '\n', 'utf8');
+
   const result = await client.createOrReplace(articleDoc);
   console.log(`Created or replaced document ${result._id} (new rev: ${result._rev}).`);
 } else {
