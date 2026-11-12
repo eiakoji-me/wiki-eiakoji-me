@@ -34,7 +34,7 @@
     "Asynchronous Messaging"
   ],
   "technologies": [
-    "TypeScript",
+    "Java",
     "Distributed Systems",
     "Message Queues",
     "Architecture"
@@ -123,10 +123,47 @@
       ]
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-4-775d7577f073",
-      "code": "+-------------------------------------------------------------------------------+\n|                           THE COUPLING QUADRILEMMA                            |\n+---------------------+---------------------------------------------------------+\n| Dimension           | Architectural Constraint                                |\n+---------------------+---------------------------------------------------------+\n| Temporal Coupling   | Caller and callee must be available and executing       |\n|                     | simultaneously at the moment of interaction.            |\n+---------------------+---------------------------------------------------------+\n| Spatial Coupling    | Caller must resolve the physical network identity, port,|\n|                     | or virtual host of the callee.                          |\n+---------------------+---------------------------------------------------------+\n| Interface Coupling  | Caller and callee must agree on shared types, parameter |\n|                     | order, binary/text serialization, and method contracts.|\n+---------------------+---------------------------------------------------------+\n| Data Coupling       | Caller and callee share direct knowledge of underlying  |\n|                     | storage schemas or participate in shared lock scopes.   |\n+---------------------+---------------------------------------------------------+",
-      "language": "typescript"
+      "_type": "table",
+      "_key": "tbl-coupling-quadrilemma",
+      "caption": "Table 1: The Four Dimensions of Distributed Coupling",
+      "hasHeaderRow": true,
+      "rows": [
+        {
+          "_key": "r-hdr",
+          "cells": [
+            "Dimension",
+            "Architectural Constraint & Physical Consequence"
+          ]
+        },
+        {
+          "_key": "r-temporal",
+          "cells": [
+            "Temporal Coupling",
+            "Caller and callee must be available and executing simultaneously at the moment of interaction."
+          ]
+        },
+        {
+          "_key": "r-spatial",
+          "cells": [
+            "Spatial Coupling",
+            "Caller must resolve the physical network identity, IP address, port, or virtual host of the callee."
+          ]
+        },
+        {
+          "_key": "r-interface",
+          "cells": [
+            "Interface Coupling",
+            "Caller and callee must agree on shared types, parameter order, serialization format, and method contracts."
+          ]
+        },
+        {
+          "_key": "r-data",
+          "cells": [
+            "Data Coupling",
+            "Caller and callee share direct knowledge of underlying storage schemas or participate in shared lock scopes."
+          ]
+        }
+      ]
     },
     {
       "_type": "block",
@@ -481,10 +518,82 @@
       "level": 1
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-25-d10bbdc7e06d",
-      "code": "+------------------------------------------------------------------------------------------+\n|                       COMPARATIVE MATRIX: INTEGRATION STYLES                             |\n+---------------------+-------------------+-----------------+----------------+-------------+\n| Dimension           | File Transfer     | Shared Database | Sync RPC       | Messaging   |\n+---------------------+-------------------+-----------------+----------------+-------------+\n| Temporal Coupling   | None (Batch)      | Low             | High (Lockstep)| None (Async)|\n| Spatial Coupling    | File Path / Bucket| Host / DB Conn  | Host / Port    | Channel Name|\n| Interface Coupling  | Format / Schema   | DB Schema / DDL | Strict API     | Msg Envelope|\n| Data Coupling       | Low               | Maximum         | None           | None        |\n| Data Freshness      | Hours / Days      | Immediate       | Milliseconds   | Milliseconds|\n| Failure Containment | High              | Low (Locks)     | Critical (Zero)| Maximum     |\n+---------------------+-------------------+-----------------+----------------+-------------+",
-      "language": "typescript"
+      "_type": "table",
+      "_key": "tbl-integration-styles-matrix",
+      "caption": "Table 2: Trade-off Matrix Across the Four Integration Styles",
+      "hasHeaderRow": true,
+      "rows": [
+        {
+          "_key": "r-hdr",
+          "cells": [
+            "Dimension",
+            "File Transfer",
+            "Shared Database",
+            "Remote Procedure Invocation",
+            "Asynchronous Messaging"
+          ]
+        },
+        {
+          "_key": "r-1",
+          "cells": [
+            "Temporal Coupling",
+            "None (Batch)",
+            "Low (Store-and-query)",
+            "High (Lockstep execution)",
+            "None (Store-and-forward)"
+          ]
+        },
+        {
+          "_key": "r-2",
+          "cells": [
+            "Spatial Coupling",
+            "File Path / S3 URI",
+            "Host / DB Conn String",
+            "Host IP / Port / Path",
+            "Channel / Topic Name"
+          ]
+        },
+        {
+          "_key": "r-3",
+          "cells": [
+            "Interface Coupling",
+            "File Format (Parquet/CSV)",
+            "Relational Schema / DDL",
+            "Strict API Contract (gRPC/REST)",
+            "Message Envelope Contract"
+          ]
+        },
+        {
+          "_key": "r-4",
+          "cells": [
+            "Data Coupling",
+            "Low (Isolated parse)",
+            "Maximum (Shared tables/locks)",
+            "None (Encapsulated state)",
+            "None (Encapsulated state)"
+          ]
+        },
+        {
+          "_key": "r-5",
+          "cells": [
+            "Data Freshness",
+            "Hours / Days (Batch)",
+            "Immediate (Real-time query)",
+            "Immediate (Millisecond sync)",
+            "Near-Real-Time (Millisecond queue)"
+          ]
+        },
+        {
+          "_key": "r-6",
+          "cells": [
+            "Failure Containment",
+            "High (Isolated process)",
+            "Low (Lock contention leaks)",
+            "Critical (Cascading timeouts)",
+            "Maximum (Durable isolation)"
+          ]
+        }
+      ]
     },
     {
       "_type": "block",
@@ -1359,7 +1468,7 @@
         {
           "_type": "span",
           "_key": "b-077-b774d8ba9e73-s0",
-          "text": "To demonstrate the structural difference between synchronous thread exhaustion and asynchronous pipeline buffering, consider the following reference implementation in TypeScript:",
+          "text": "To demonstrate the structural difference between synchronous thread exhaustion and asynchronous pipeline buffering, consider the following reference implementation in Java:",
           "marks": []
         }
       ]
@@ -1367,8 +1476,9 @@
     {
       "_type": "codeBlock",
       "_key": "code-78-0d35ed1f38a3",
-      "code": "// verify-foundations.ts\nimport { strict as assert } from 'node:assert';\n\n// ----------------------------------------------------------------------------\n// Model 1: Synchronous RPC Worker Pool under Downstream Latency Degradation\n// ----------------------------------------------------------------------------\nexport class SynchronousWorkerPool {\n  private activeThreads = 0;\n  private readonly maxThreads: number;\n  private readonly callTimeoutMs: number;\n\n  constructor(maxThreads = 3, callTimeoutMs = 50) {\n    this.maxThreads = maxThreads;\n    this.callTimeoutMs = callTimeoutMs;\n  }\n\n  async invoke<T>(remoteServiceFn: () => Promise<T>): Promise<{ data?: T; error?: string }> {\n    if (this.activeThreads >= this.maxThreads) {\n      // Little's Law saturation: all workers blocked on degraded socket I/O\n      return { error: `THREAD_POOL_EXHAUSTION: Active threads (${this.activeThreads}) at capacity` };\n    }\n\n    this.activeThreads++;\n    try {\n      const timeout = new Promise<never>((_, reject) =>\n        setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.callTimeoutMs)\n      );\n      const data = await Promise.race([remoteServiceFn(), timeout]);\n      return { data };\n    } catch (err) {\n      return { error: err instanceof Error ? err.message : String(err) };\n    } finally {\n      this.activeThreads--;\n    }\n  }\n}\n\n// ----------------------------------------------------------------------------\n// Model 2: Asynchronous Pipes-and-Filters with Bounded Buffers\n// ----------------------------------------------------------------------------\nexport interface Filter<TIn, TOut> {\n  readonly name: string;\n  process(input: TIn): Promise<TOut>;\n}\n\nexport class BoundedPipe<T> {\n  private buffer: T[] = [];\n  constructor(public readonly capacity = 10) {}\n\n  push(item: T): boolean {\n    if (this.buffer.length >= this.capacity) return false; // Enforce backpressure\n    this.buffer.push(item);\n    return true;\n  }\n\n  pull(): T | undefined {\n    return this.buffer.shift();\n  }\n\n  get size(): number {\n    return this.buffer.length;\n  }\n}\n\nexport class PipelineStage<TIn, TOut> {\n  constructor(\n    public readonly filter: Filter<TIn, TOut>,\n    public readonly inPipe: BoundedPipe<TIn>,\n    public readonly outPipe: BoundedPipe<TOut>\n  ) {}\n\n  async step(): Promise<boolean> {\n    const input = this.inPipe.pull();\n    if (input === undefined) return false;\n    const output = await this.filter.process(input);\n    return this.outPipe.push(output);\n  }\n}",
-      "language": "typescript"
+      "filename": "VerifyFoundations.java",
+      "language": "java",
+      "code": "package me.eiakoji.wiki.eip.foundations;\n\nimport java.time.Duration;\nimport java.util.Optional;\nimport java.util.concurrent.*;\n\npublic class VerifyFoundations {\n\n    public static class SynchronousRpcWorkerPool {\n        private final Semaphore workerSlots;\n        private final int maxThreads;\n        private final Duration timeout;\n\n        public SynchronousRpcWorkerPool(int maxThreads, Duration timeout) {\n            this.maxThreads = maxThreads;\n            this.workerSlots = new Semaphore(maxThreads);\n            this.timeout = timeout;\n        }\n\n        public record CallResult<T>(Optional<T> data, Optional<String> error) {}\n\n        public <T> CallResult<T> invoke(Callable<T> remoteCall) {\n            if (!workerSlots.tryAcquire()) {\n                return new CallResult<>(Optional.empty(),\n                    Optional.of(\"THREAD_POOL_EXHAUSTION: Active workers at capacity (\" + maxThreads + \")\"));\n            }\n\n            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {\n                Future<T> future = executor.submit(remoteCall);\n                T data = future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);\n                return new CallResult<>(Optional.of(data), Optional.empty());\n            } catch (TimeoutException e) {\n                return new CallResult<>(Optional.empty(), Optional.of(\"RPC_TIMEOUT: Call exceeded \" + timeout.toMillis() + \"ms\"));\n            } catch (Exception e) {\n                return new CallResult<>(Optional.empty(), Optional.of(e.getMessage()));\n            } finally {\n                workerSlots.release();\n            }\n        }\n    }\n\n    @FunctionalInterface\n    public interface Filter<TIn, TOut> {\n        TOut process(TIn input) throws Exception;\n    }\n\n    public static class BoundedPipe<T> {\n        private final BlockingQueue<T> queue;\n\n        public BoundedPipe(int capacity) {\n            this.queue = new ArrayBlockingQueue<>(capacity);\n        }\n\n        public boolean push(T item) {\n            return queue.offer(item);\n        }\n\n        public Optional<T> pull() {\n            return Optional.ofNullable(queue.poll());\n        }\n\n        public int size() {\n            return queue.size();\n        }\n    }\n\n    public record PipelineStage<TIn, TOut>(\n        String stageName,\n        Filter<TIn, TOut> filter,\n        BoundedPipe<TIn> inPipe,\n        BoundedPipe<TOut> outPipe\n    ) {\n        public boolean step() throws Exception {\n            Optional<TIn> input = inPipe.pull();\n            if (input.isEmpty()) {\n                return false;\n            }\n            TOut output = filter.process(input.get());\n            return outPipe.push(output);\n        }\n    }\n}"
     },
     {
       "_type": "block",

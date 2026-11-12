@@ -69,7 +69,21 @@ export interface CalloutBlock {
   items?: CalloutItem[];
 }
 
-export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock | CalloutBlock;
+export interface TableRow {
+  _key?: string;
+  _type?: 'tableRow';
+  cells: string[];
+}
+
+export interface TableBlock {
+  _key?: string;
+  _type: 'table';
+  caption?: string;
+  hasHeaderRow?: boolean;
+  rows?: TableRow[];
+}
+
+export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock | CalloutBlock | TableBlock;
 
 export interface Topic {
   _id: string;

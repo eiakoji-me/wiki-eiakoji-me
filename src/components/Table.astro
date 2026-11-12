@@ -1,0 +1,97 @@
+---
+import type { Props as PortableTextProps } from '@portabletext/astro/types';
+import type { TableBlock } from '../lib/sanity/types';
+
+type Props = PortableTextProps<TableBlock>;
+const { node } = Astro.props;
+
+const rows = node.rows ?? [];
+const hasHeader = node.hasHeaderRow !== false && rows.length > 0;
+const headerRow = hasHeader ? rows[0] : null;
+const bodyRows = hasHeader ? rows.slice(1) : rows;
+---
+
+<div class="table-wrapper">
+  <table class="article-table">
+    {node.caption && <caption>{node.caption}</caption>}
+    {headerRow && (
+      <thead>
+        <tr>
+          {headerRow.cells.map((cell) => (
+            <th>{cell}</th>
+          ))}
+        </tr>
+      </thead>
+    )}
+    <tbody>
+      {bodyRows.map((row) => (
+        <tr>
+          {row.cells.map((cell, idx) => (
+            <td class={idx === 0 ? 'cell-primary' : ''}>{cell}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-wrapper {
+    margin: 2em 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--background);
+  }
+
+  .article-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .article-table caption {
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+    background: var(--background-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .article-table th {
+    padding: 10px 14px;
+    font-weight: 600;
+    color: var(--text-strong);
+    background: var(--background-subtle);
+    border-bottom: 2px solid var(--border-strong);
+    white-space: nowrap;
+  }
+
+  .article-table td {
+    padding: 10px 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .article-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .article-table tbody tr:hover {
+    background: var(--background-subtle);
+  }
+
+  .cell-primary {
+    font-weight: 600;
+    color: var(--text-strong);
+    white-space: nowrap;
+  }
+</style>
