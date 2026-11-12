@@ -23,7 +23,7 @@
     },
     {
       "_type": "reference",
-      "_ref": "topic-software-architecture",
+      "_ref": "domain-software-architecture",
       "_key": "rel-topic-sa"
     }
   ],
