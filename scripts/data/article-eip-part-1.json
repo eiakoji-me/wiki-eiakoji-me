@@ -42,7 +42,14 @@
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
     "title": "EIP Part I: Foundations of Enterprise Integration — wiki.eiakoji.me",
-    "description": "An architectural deconstruction of distributed coupling physics: evaluating File Transfer, Shared Database, RPC, and Messaging, demonstrating how synchronous call graphs trigger cascading failure, and deriving the Pipes-and-Filters topology."
+    "description": "An architectural deconstruction of distributed coupling physics: evaluating File Transfer, Shared Database, RPC, and Messaging, demonstrating how synchronous call graphs trigger cascading failure, and deriving the Pipes-and-Filters topology.",
+    "image": {
+      "_type": "image",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-e2f4fb50c094cd83c84fa18053f5356d12d0b8ce-1608x900-png"
+      }
+    }
   },
   "body": [
     {
@@ -1647,5 +1654,14 @@
       "listItem": "bullet",
       "level": 1
     }
-  ]
+  ],
+  "featuredImage": {
+    "_type": "imageWithAlt",
+    "asset": {
+      "_type": "reference",
+      "_ref": "image-e2f4fb50c094cd83c84fa18053f5356d12d0b8ce-1608x900-png"
+    },
+    "alt": "Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway.",
+    "caption": "Figure 1: Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway."
+  }
 }
