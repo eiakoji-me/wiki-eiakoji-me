@@ -6,6 +6,7 @@ import CodeBlock from './CodeBlock.astro';
 import Heading2 from './Heading2.astro';
 import Heading3 from './Heading3.astro';
 import SanityImage from './SanityImage.astro';
+import Table from './Table.astro';
 import type { BodyBlock } from '../lib/sanity/types';
 import { extractHeadings } from '../lib/slugify';
 
@@ -21,6 +22,7 @@ const components = {
     imageWithAlt: SanityImage,
     codeBlock: CodeBlock,
     callout: Callout,
+    table: Table,
   },
   block: {
     h2: Heading2,

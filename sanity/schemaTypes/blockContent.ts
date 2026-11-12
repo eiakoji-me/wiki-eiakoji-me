@@ -126,5 +126,50 @@ export const blockContent = defineType({
         }),
       },
     }),
+    defineArrayMember({
+      name: 'table',
+      title: 'Table',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'caption',
+          title: 'Caption',
+          type: 'string',
+        }),
+        defineField({
+          name: 'hasHeaderRow',
+          title: 'Has Header Row',
+          type: 'boolean',
+          initialValue: true,
+        }),
+        defineField({
+          name: 'rows',
+          title: 'Rows',
+          type: 'array',
+          of: [
+            defineArrayMember({
+              name: 'tableRow',
+              title: 'Row',
+              type: 'object',
+              fields: [
+                defineField({
+                  name: 'cells',
+                  title: 'Cells',
+                  type: 'array',
+                  of: [{ type: 'string' }],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+      preview: {
+        select: { title: 'caption' },
+        prepare: ({ title }) => ({
+          title: title || 'Table',
+          subtitle: 'Tabular data',
+        }),
+      },
+    }),
   ],
 });
