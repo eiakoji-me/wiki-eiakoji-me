@@ -1,0 +1,37 @@
+---
+import katex from 'katex';
+import type { Props as PortableTextProps } from '@portabletext/astro/types';
+
+interface TextNode {
+  _type: string;
+  text: string;
+}
+
+type Props = PortableTextProps<TextNode>;
+const { node } = Astro.props;
+
+function renderMathText(text: string): string {
+  if (!text || !text.includes('$')) {
+    return text;
+  }
+  return text.replace(/(?<!\\)\$([^\$]+?)\$/g, (match, tex) => {
+    // Avoid false positives on currency ranges like "$10 and $20"
+    if (/^\d+(\.\d+)?(\s+and|\s+to|\s*,\s*)\s*$/i.test(tex)) {
+      return match;
+    }
+    try {
+      return katex.renderToString(tex, {
+        displayMode: false,
+        throwOnError: false,
+      });
+    } catch {
+      return match;
+    }
+  });
+}
+
+const rendered = renderMathText(node.text);
+const hasHtml = rendered !== node.text;
+---
+
+{hasHtml ? <Fragment set:html={rendered} /> : node.text}

@@ -3,8 +3,10 @@ import { PortableText } from '@portabletext/astro';
 import type { PortableTextBlock } from '@portabletext/types';
 import Callout from './Callout.astro';
 import CodeBlock from './CodeBlock.astro';
+import Equation from './Equation.astro';
 import Heading2 from './Heading2.astro';
 import Heading3 from './Heading3.astro';
+import InlineText from './InlineText.astro';
 import SanityImage from './SanityImage.astro';
 import Table from './Table.astro';
 import type { BodyBlock } from '../lib/sanity/types';
@@ -23,7 +25,9 @@ const components = {
     codeBlock: CodeBlock,
     callout: Callout,
     table: Table,
+    equation: Equation,
   },
+  text: InlineText,
   block: {
     h2: Heading2,
     h3: Heading3,

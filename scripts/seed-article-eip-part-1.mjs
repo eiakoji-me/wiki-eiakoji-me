@@ -53,18 +53,27 @@ if (existing) {
 }
 
 if (values.write) {
-  const heroPath = path.join(__dirname, '..', 'documentation', 'diagrams', 'eip-part-1', 'eip-part-1-hero-monochrome.png');
-  console.log('Uploading hero diagram asset to Sanity...');
-  const asset = await client.assets.upload('image', createReadStream(heroPath), {
-    filename: 'eip-part-1-hero-monochrome.png',
-  });
-  console.log(`Hero diagram asset uploaded: ${asset._id}`);
+  const diagramsDir = path.join(__dirname, '..', 'documentation', 'diagrams', 'eip-part-1');
+  const uploadDiagram = async (filename) => {
+    console.log(`Uploading ${filename} to Sanity...`);
+    const filePath = path.join(diagramsDir, filename);
+    const asset = await client.assets.upload('image', createReadStream(filePath), {
+      filename,
+    });
+    console.log(`Uploaded ${filename}: ${asset._id}`);
+    return asset._id;
+  };
+
+  const heroAssetId = await uploadDiagram('eip-part-1-hero-monochrome.png');
+  const stylesAssetId = await uploadDiagram('eip-part-1-four-integration-styles.png');
+  const cascadeAssetId = await uploadDiagram('eip-part-1-sync-failure-cascade.png');
+  const pipesAssetId = await uploadDiagram('eip-part-1-pipes-and-filters.png');
 
   articleDoc.featuredImage = {
     _type: 'imageWithAlt',
     asset: {
       _type: 'reference',
-      _ref: asset._id,
+      _ref: heroAssetId,
     },
     alt: 'Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway.',
     caption: 'Figure 1: Architectural blueprint of enterprise integration foundations: contrasting tight synchronous RPC coupling with the decoupled event-driven Pipes-and-Filters integration highway.',
@@ -75,9 +84,22 @@ if (values.write) {
       _type: 'image',
       asset: {
         _type: 'reference',
-        _ref: asset._id,
+        _ref: heroAssetId,
       },
     };
+  }
+
+  // Update content diagram image blocks
+  for (const block of articleDoc.body) {
+    if (block._type === 'imageWithAlt') {
+      if (block._key === 'img-four-integration-styles') {
+        block.asset._ref = stylesAssetId;
+      } else if (block._key === 'img-sync-failure-cascade') {
+        block.asset._ref = cascadeAssetId;
+      } else if (block._key === 'img-pipes-and-filters') {
+        block.asset._ref = pipesAssetId;
+      }
+    }
   }
 
   await writeFile(articlePath, JSON.stringify(articleDoc, null, 2) + '\n', 'utf8');
