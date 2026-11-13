@@ -9,7 +9,7 @@
   "format": "article",
   "difficulty": "Advanced",
   "featured": false,
-  "publishedAt": "2026-11-14T00:00:00Z",
+  "publishedAt": "2026-11-13T09:00:00.000Z",
   "readingTime": "18 min read",
   "summary": "An architectural deconstruction of message construction: classifying Command, Document, and Event intents, engineering non-blocking asynchronous request-reply, and modeling correlation mechanics.",
   "primaryTopic": {
