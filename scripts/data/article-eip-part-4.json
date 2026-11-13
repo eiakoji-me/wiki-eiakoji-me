@@ -7,11 +7,11 @@
     "current": "eip-part-4-message-routing"
   },
   "format": "article",
-  "difficulty": "advanced",
+  "difficulty": "Advanced",
   "featured": false,
-  "publishedAt": "2026-11-15T00:00:00Z",
-  "readingTime": "20 min read",
-  "summary": "An architectural breakdown of asynchronous mediation: evaluating Content-Based Routers, Splitter-Aggregator pipelines, Scatter-Gather, and Saga process coordination.",
+  "publishedAt": "2026-11-13T09:00:00.000Z",
+  "readingTime": "22 min read",
+  "summary": "An architectural deconstruction of asynchronous mediation: evaluating Content-Based Routers, Splitter-Aggregator pipelines, Resequencers, Scatter-Gather, and Sagas versus Choreography.",
   "primaryTopic": {
     "_type": "reference",
     "_ref": "topic-architectural-patterns"
@@ -32,13 +32,15 @@
     "Enterprise Integration Patterns",
     "Distributed Systems",
     "Software Architecture",
-    "Asynchronous Messaging"
+    "Asynchronous Messaging",
+    "Stream Processing"
   ],
   "technologies": [
     "Java 21",
-    "Distributed Systems",
-    "Message Queues",
-    "Architecture"
+    "Distributed Sagas",
+    "Apache Flink",
+    "Kafka Streams",
+    "AWS EventBridge"
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
@@ -74,322 +76,865 @@
         {
           "_key": "nav-eip-4",
           "title": "Part IV: Message Routing & Process Coordination",
+          "href": "/articles/eip-part-4-message-routing/",
           "status": "current"
         },
         {
           "_key": "nav-eip-5",
           "title": "Part V: Message Transformation & Interoperability",
           "href": "/articles/eip-part-5-message-transformation/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-6",
           "title": "Part VI: Messaging Endpoints & Reliable Processing",
           "href": "/articles/eip-part-6-messaging-endpoints/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-7",
           "title": "Part VII: Operations, Observability & Governance",
           "href": "/articles/eip-part-7-integration-operations/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-8",
           "title": "Part VIII: Composing Enterprise Integration Patterns",
           "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
-          "status": "completed"
-        }
-      ]
-    },
-    {
-      "_key": "b-03-h2-scope",
-      "_type": "block",
-      "style": "h2",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-h2-scope-s0",
-          "_type": "span",
-          "text": "1. Architectural Scope and Problem Statement",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-03-p-scope",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-p-scope-s0",
-          "_type": "span",
-          "text": "An architectural breakdown of asynchronous mediation: evaluating Content-Based Routers, Splitter-Aggregator pipelines, Scatter-Gather, and Saga process coordination.",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-03-callout-note",
-      "_type": "callout",
-      "tone": "note",
-      "title": "EIP Part 4 \u2014 Upcoming Series Installment",
-      "items": [
-        {
-          "_key": "note-item-3",
-          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
           "status": "upcoming"
         }
       ]
     },
     {
-      "_key": "b-03-h2-patterns",
+      "_key": "h2-001",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-h2-patterns-s0",
+          "_key": "s-002",
           "_type": "span",
-          "text": "2. Pattern Catalog & Formal Realizations",
+          "text": "1. Architectural Scope: Routing as Decentralized Mediation",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-03-p-patterns-intro",
+      "_key": "p-003",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-p-patterns-intro-s0",
+          "_key": "s-004",
           "_type": "span",
-          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "text": "In distributed message-driven topologies, producers should never bind directly to consumer physical locations, network identities, or processing topologies. Point-to-point hardcoding creates spatial coupling that makes architectural evolution impossible. Message Routers serve as the mediating control plane: they consume messages from an inbound channel and determine their downstream destination without altering the encapsulated domain payload.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-03-pat-00",
+      "_key": "p-005",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-pat-00-s0",
+          "_key": "s-006",
           "_type": "span",
-          "text": "Content-Based Router: Stateless dispatch engine inspecting message payload properties to route messages to appropriate destination channels.",
+          "text": "Routing patterns divide along two fundamental architectural axes: statefulness (stateless packet inspection versus stateful windowed stream reassembly) and coordination topology (decentralized choreography where itineraries travel in message headers versus centralized orchestration where a state machine drives compensating transactions).",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-03-pat-01",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-01-s0",
-          "_type": "span",
-          "text": "Message Filter: Boundary gatekeeper evaluating criteria to discard uninteresting messages without consumer processing overhead.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      "_key": "img-hero-routing",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Enterprise message routing and process coordination architectural overview: stateless inspection, stream reassembly, and distributed sagas.",
+      "caption": "Figure 1: Enterprise Message Routing Architecture — taxonomy of stateless filters, stream decomposition and reassembly, and distributed saga coordination."
     },
     {
-      "_key": "b-03-pat-02",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-02-s0",
-          "_type": "span",
-          "text": "Dynamic Router & Recipient List: Rule-driven routing where recipient channels are determined dynamically at runtime based on configuration or registry lookup.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-03",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-03-s0",
-          "_type": "span",
-          "text": "Splitter: Decomposes a composite message containing multiple items into distinct independent messages for parallel processing.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-04",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-04-s0",
-          "_type": "span",
-          "text": "Aggregator: Stateful mediation component that correlates and merges multiple related messages into a unified composite message.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-05",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-05-s0",
-          "_type": "span",
-          "text": "Resequencer: Buffers and reorders out-of-sequence messages according to sequence metadata before downstream delivery.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-06",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-06-s0",
-          "_type": "span",
-          "text": "Scatter-Gather: Broadcasts a request to multiple parallel providers and aggregates their responses within a bounded timeout deadline.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-07",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-07-s0",
-          "_type": "span",
-          "text": "Routing Slip: Choreographed routing pattern where the message header carries an explicit sequence of processing steps to traverse.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-pat-08",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-03-pat-08-s0",
-          "_type": "span",
-          "text": "Process Manager (Saga Coordinator): Centralized stateful orchestrator directing multi-step distributed workflows, coordinating compensating actions during failure.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-03-h2-invariants",
+      "_key": "h2-007",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-h2-invariants-s0",
+          "_key": "s-008",
           "_type": "span",
-          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "text": "2. Stateless Selective Routing: Filters, Dynamic Tables, and Fan-Out",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-03-p-invariants-intro",
+      "_key": "p-009",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-p-invariants-intro-s0",
+          "_key": "s-010",
           "_type": "span",
-          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "text": "Stateless routers evaluate individual messages in strict isolation, maintaining zero session history across invocations. Because they store no in-memory state, stateless routers scale horizontally with linear throughput and zero cross-node synchronization overhead.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-03-inv-00",
+      "_key": "h3-011",
       "_type": "block",
-      "style": "normal",
+      "style": "h3",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-inv-00-s0",
+          "_key": "s-012",
           "_type": "span",
-          "text": "Aggregator Memory Saturation: Aggregators must retain partial state until completion conditions are met; missing fragments or lost messages risk memory exhaustion without bounded completion timeouts.",
+          "text": "Content-Based Router (Predicate Dispatch)",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-03-inv-01",
+      "_key": "p-013",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-inv-01-s0",
+          "_key": "s-014",
           "_type": "span",
-          "text": "Choreography vs Orchestration: Routing Slips maximize component autonomy but obscure overall system state; Process Managers provide centralized observability and deterministic saga compensation at the expense of an orchestration bottleneck.",
+          "text": "A Content-Based Router inspects message headers or payload attributes against configured routing rules to direct the message to one of several mutually exclusive output channels. For example, a financial payment router reads the currency field: USD transactions are routed to the Fedwire gateway, EUR to SEPA, and JPY to BOJ-NET. In modern cloud architectures, Content-Based Routing is natively implemented by broker topic exchanges (RabbitMQ topic exchanges, AWS EventBridge rules, or Google Cloud Pub/Sub attribute filters).",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-03-inv-02",
+      "_key": "h3-015",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-016",
+          "_type": "span",
+          "text": "Message Filter (Predicate Drops vs. Quarantine)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-017",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-03-inv-02-s0",
+          "_key": "s-018",
           "_type": "span",
-          "text": "Resequencer Buffer Windowing: Sliding-window resequencing requires strict boundary sizing to prevent buffer starvation when messages are permanently dropped upstream.",
+          "text": "A Message Filter evaluates a single boolean predicate. If the message satisfies the criteria, it passes to the output channel. If evaluation yields false, the message is dropped. Crucially, integration architects must distinguish between uninteresting messages (which should be silently discarded to preserve downstream bandwidth) and malformed messages (which must be routed to an Invalid Message Channel for operator triage).",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
+    },
+    {
+      "_key": "h3-019",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-020",
+          "_type": "span",
+          "text": "Dynamic Router & Recipient List",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-021",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-022",
+          "_type": "span",
+          "text": "While Content-Based Routers embed static routing logic in configuration or code, the Dynamic Router queries an external control plane (such as etcd, Consul, or an operational database) to resolve destinations dynamically at runtime. When a single message must be dispatched to multiple recipients determined at runtime, the Recipient List iterates over the resolved target set, emitting a discrete copy to each channel.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-023",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-024",
+          "_type": "span",
+          "text": "3. Stream Decomposition & Reassembly: Splitter and Aggregator Dynamics",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-025",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-026",
+          "_type": "span",
+          "text": "Enterprise messages frequently arrive as composite bulk payloads (e.g., an Order containing 50 line items, or a payroll batch containing 10,000 employee records). Processing the entire document sequentially as a monolithic batch creates severe head-of-line blocking and underutilizes downstream horizontal compute pools.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-splitter-aggregator",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Splitter-Aggregator lifecycle and Resequencer sliding buffer mechanics.",
+      "caption": "Figure 2: Stream Decomposition and Reassembly — Splitter header injection, parallel worker execution, aggregator state buffer, and resequencer monotonic streaming."
+    },
+    {
+      "_key": "h3-027",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-028",
+          "_type": "span",
+          "text": "Splitter Mechanics: The Three Injected Sequence Headers",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-029",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-030",
+          "_type": "span",
+          "text": "The Splitter decomposes a composite message into individual child messages. To make downstream reassembly possible across an asynchronous, non-deterministic network, the Splitter must inject three metadata headers into every emitted item:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-031",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-032",
+          "_type": "span",
+          "text": "1. correlation_id: A shared unique identifier tying all child messages back to the parent composite transaction.\n2. sequence_number: A 1-based index (1, 2, ..., N) denoting the item position within the parent batch.\n3. sequence_size: An integer defining the total expected number of split items (N).",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-033",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-034",
+          "_type": "span",
+          "text": "Aggregator Dynamics: Completion Conditions and Memory Starvation",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-035",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-036",
+          "_type": "span",
+          "text": "The Aggregator is an inherently stateful pattern. It maintains an in-memory or distributed state buffer (keyed by correlation_id) that collects individual child messages until a completion condition evaluates to true. Once satisfied, it combines the buffered items into a single composite output and purges the state buffer.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-037",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-038",
+          "_type": "span",
+          "text": "The primary operational hazard of the Aggregator is Memory Starvation caused by partial failures. If a batch contains 10 items, but Worker #7 crashes and item 7 is lost or routed to a dead-letter queue, the aggregator will buffer items 1-6 and 8-10 indefinitely. In high-throughput systems, thousands of incomplete correlation buffers accumulate, eventually exhausting the JVM heap or Redis memory.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-039",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-040",
+          "_type": "span",
+          "text": "4. Sequence Monotonicity: The Resequencer Sliding Buffer",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-041",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-042",
+          "_type": "span",
+          "text": "When messages travel across parallel worker pools, multi-partition Kafka topics, or variable-latency network paths, they arrive out of order. For state machines that require strict causal ordering (such as bank ledger debits and credits), consumers must reorder messages into strict monotonic sequence before execution.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-043",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-044",
+          "_type": "span",
+          "text": "The Resequencer maintains an internal sorted priority queue and an expected sequence counter $k$. If message $k+2$ arrives before $k$, the Resequencer buffers $k+2$ and waits. Only when $k$ arrives and is emitted does the cursor advance to $k+1$. This introduces the classic Head-of-Line (HoL) Blocking trade-off: a single delayed packet stalls the entire downstream processing pipeline until a timeout forces a gap skip or pipeline alert.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-045",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-046",
+          "_type": "span",
+          "text": "5. Competitive Fan-Out: Scatter-Gather Mechanics",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-047",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-048",
+          "_type": "span",
+          "text": "The Scatter-Gather pattern broadcasts a single request message to multiple autonomous recipient systems in parallel (Scatter), then aggregates their responses to synthesize a single best outcome (Gather). Classic use cases include flight ticket pricing aggregators, freight bidding platforms, and distributed algorithmic trading.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-049",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-050",
+          "_type": "span",
+          "text": "The gather phase operates under strict time constraints. The aggregator cannot wait indefinitely for unresponsive external vendors; it must enforce a hard SLA timeout $T_{\\text{timeout}}$. When the deadline expires, the gatherer evaluates the bids collected so far (e.g., selecting the minimum quote among the received responses) and drops any late arrivals arriving post-timeout into an audit log or dead-letter channel.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-051",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-052",
+          "_type": "span",
+          "text": "6. Distributed Process Coordination: Routing Slip vs. Process Manager (Saga)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-053",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-054",
+          "_type": "span",
+          "text": "When an enterprise workflow spans multiple independent microservices (such as Order Checkout involving Fraud Detection, Payment Authorization, Inventory Reservation, and Shipping Dispatch), architects face a fundamental choice between decentralized choreography and centralized orchestration.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-routing-slip-saga",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Comparison of Routing Slip choreography versus Process Manager saga orchestration.",
+      "caption": "Figure 3: Process Coordination Archetypes — Routing Slip decentralized itinerary forwarding compared with Process Manager centralized saga orchestration and compensating rollbacks."
+    },
+    {
+      "_key": "h3-055",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-056",
+          "_type": "span",
+          "text": "Routing Slip (Decentralized Choreography)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-057",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-058",
+          "_type": "span",
+          "text": "The Routing Slip attaches an itinerary header directly to the message envelope: `routing-slip: [ServiceA, ServiceB, ServiceC]`. When Service A finishes its task, it pops its own name from the list and forwards the message to the new head of the list (Service B). There is no central coordinator. While lightweight and decoupled from central infrastructure, Routing Slips become unwieldy when errors occur: executing compensating rollbacks requires forwarding complex reverse-itinerary slips through already-executed services.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-059",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-060",
+          "_type": "span",
+          "text": "Process Manager / Saga (Centralized Orchestration)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-061",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-062",
+          "_type": "span",
+          "text": "A Process Manager is an explicit, stateful orchestrator that maintains a durable state machine (persisted in an append-only write-ahead log). It issues imperative Command Messages to participating services and awaits domain Event notifications. When a step fails (e.g., Inventory throws OutOfStockException), the Process Manager initiates a deterministic backward compensation sequence, commanding previous services to roll back side-effects (e.g., triggering RefundPayment). Modern cloud realizations include Temporal, Camunda, and AWS Step Functions.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-063",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-064",
+          "_type": "span",
+          "text": "7. Comparative Architectural Trade-Offs",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-065",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-066",
+          "_type": "span",
+          "text": "The following trade-off matrix compares the primary message routing and coordination patterns across 8 architectural dimensions:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "tbl-routing-matrix",
+      "_type": "table",
+      "rows": [
+        {
+          "_key": "row-rm-0",
+          "_type": "tableRow",
+          "cells": [
+            "Architectural Dimension",
+            "Content-Based Router",
+            "Splitter-Aggregator",
+            "Routing Slip (Choreography)",
+            "Process Manager (Saga)"
+          ]
+        },
+        {
+          "_key": "row-rm-1",
+          "_type": "tableRow",
+          "cells": [
+            "State Ownership",
+            "Stateless (zero session storage)",
+            "Stateful correlation window",
+            "State carried in message header",
+            "Centralized persistent state machine"
+          ]
+        },
+        {
+          "_key": "row-rm-2",
+          "_type": "tableRow",
+          "cells": [
+            "Failure Isolation",
+            "High (isolated to single packet)",
+            "Moderate (partial drops stall batch)",
+            "Low (failures require reverse slip)",
+            "High (deterministic compensating actions)"
+          ]
+        },
+        {
+          "_key": "row-rm-3",
+          "_type": "tableRow",
+          "cells": [
+            "Coupling Degree",
+            "Producer decoupled from consumer",
+            "Strong temporal coupling during aggregation",
+            "Services know next destination from header",
+            "Services decoupled; bound only to task API"
+          ]
+        },
+        {
+          "_key": "row-rm-4",
+          "_type": "tableRow",
+          "cells": [
+            "Operational Complexity",
+            "Minimal (rule table evaluation)",
+            "High (memory eviction, TTL timers)",
+            "Low runtime infra; high tracing overhead",
+            "High (requires coordinator DB & HA)"
+          ]
+        },
+        {
+          "_key": "row-rm-5",
+          "_type": "tableRow",
+          "cells": [
+            "Throughput Scalability",
+            "Linear horizontal scaling O(N)",
+            "Bounded by aggregator heap & memory TTL",
+            "High (distributed node-to-node dispatch)",
+            "Bounded by coordinator database IOPS"
+          ]
+        },
+        {
+          "_key": "row-rm-6",
+          "_type": "tableRow",
+          "cells": [
+            "Observability & Auditing",
+            "Simple trace inspection",
+            "Difficult (scattered child spans)",
+            "Hard (requires distributed trace reconstruction)",
+            "Single pane of glass (explicit workflow audit)"
+          ]
+        },
+        {
+          "_key": "row-rm-7",
+          "_type": "tableRow",
+          "cells": [
+            "Primary Cloud Realization",
+            "AWS EventBridge, RabbitMQ topic exchange",
+            "Apache Flink tumbling window, Camel Aggregator",
+            "OpenTelemetry context, Spring Integration slip",
+            "Temporal.io, AWS Step Functions, Camunda Zeebe"
+          ]
+        }
+      ]
+    },
+    {
+      "_key": "h2-067",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-068",
+          "_type": "span",
+          "text": "8. Mathematical Formulations: Memory Bounds and Latency Profiles",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-069",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-070",
+          "_type": "span",
+          "text": "Aggregator Buffer Sizing and Memory Saturation Bounds",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-071",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-072",
+          "_type": "span",
+          "text": "In high-throughput architectures, the memory consumed by an active Aggregator is a function of the composite ingestion rate $\\lambda$ (batches/sec), the average number of split items per batch $N$, the average serialized message size $\\bar{S}_{\\text{msg}}$, and the aggregation completion window $T_{\\text{window}}$:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-073",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-074",
+          "_type": "span",
+          "text": "$$M_{\\text{aggregator}} = \\lambda \\cdot N \\cdot \\bar{S}_{\\text{msg}} \\cdot T_{\\text{window}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-075",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-076",
+          "_type": "span",
+          "text": "If a fraction $p_{\\text{loss}}$ of child messages is lost or stalled downstream, and if the aggregator lacks an eviction timeout ($T_{\\text{timeout}} = \\infty$), the steady-state memory leak grows linearly without upper bound:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-077",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-078",
+          "_type": "span",
+          "text": "$$\\frac{dM_{\\text{leak}}}{dt} = \\lambda \\cdot p_{\\text{loss}} \\cdot (N - 1) \\cdot \\bar{S}_{\\text{msg}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-079",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-080",
+          "_type": "span",
+          "text": "Enforcing a strict finite TTL $T_{\\text{evict}}$ caps the maximum leak volume at $M_{\\text{leak, max}} = \\lambda \\cdot p_{\\text{loss}} \\cdot (N - 1) \\cdot \\bar{S}_{\\text{msg}} \\cdot T_{\\text{evict}}$, preserving JVM heap stability.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-081",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-082",
+          "_type": "span",
+          "text": "Scatter-Gather Latency Bound Under Tail Latency",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-083",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-084",
+          "_type": "span",
+          "text": "When scattering to $k$ independent suppliers whose response latencies $T_1, T_2, \\dots, T_k$ follow independent probability distributions $F(t) = P(T_i \\le t)$, the total scatter-gather response time without timeout is governed by the maximum order statistic:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-085",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-086",
+          "_type": "span",
+          "text": "$$P(T_{\\text{gather}} \\le t) = \\prod_{i=1}^k P(T_i \\le t) = [F(t)]^k$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-087",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-088",
+          "_type": "span",
+          "text": "As fan-out width $k$ grows, the probability of encountering an extreme 99th-percentile tail latency approaches unity: $1 - [F(t_{99})]^k = 1 - (0.99)^k$. For $k = 50$, $1 - (0.99)^{50} \\approx 39.5\\%$ of all scatter-gather invocations experience tail delay. Consequently, the gather phase must be bounded by a deadline $T_{\\text{deadline}}$:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-089",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-090",
+          "_type": "span",
+          "text": "$$T_{\\text{effective}} = \\min\\left(\\max_{1 \\le i \\le k}(T_i), T_{\\text{deadline}}\\right)$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-091",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-092",
+          "_type": "span",
+          "text": "9. Production Reference Implementation: Java 21 LTS",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-093",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-094",
+          "_type": "span",
+          "text": "The following production reference implementation provides a thread-safe, timeout-evicting Aggregator leveraging Java 21 records, ConcurrentHashMap, and virtual threads for background expiry.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "code-aggregator-java",
+      "_type": "code",
+      "language": "java",
+      "filename": "ConcurrentAggregator.java",
+      "code": "package me.eiakoji.eip.routing;\n\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.util.*;\nimport java.util.concurrent.*;\nimport java.util.function.Consumer;\n\n/**\n * Production-grade Concurrent Aggregator with TTL-based memory eviction.\n * Accumulates split items by correlationId until all items arrive or timeout expires.\n */\npublic final class ConcurrentAggregator<T> implements AutoCloseable {\n\n    public record SplitItem<T>(\n        UUID correlationId,\n        int sequenceNumber,\n        int sequenceSize,\n        T payload,\n        Instant receivedAt\n    ) {}\n\n    public record AggregatedBatch<T>(\n        UUID correlationId,\n        List<T> items,\n        boolean complete,\n        Duration processingTime\n    ) {}\n\n    private static final class Accumulator<T> {\n        final UUID correlationId;\n        final int expectedSize;\n        final Instant createdAt;\n        final Map<Integer, T> items = new ConcurrentSkipListMap<>();\n\n        Accumulator(UUID correlationId, int expectedSize) {\n            this.correlationId = correlationId;\n            this.expectedSize = expectedSize;\n            this.createdAt = Instant.now();\n        }\n\n        boolean isComplete() {\n            return items.size() >= expectedSize;\n        }\n\n        AggregatedBatch<T> buildBatch(boolean complete) {\n            return new AggregatedBatch<>(\n                correlationId,\n                List.copyOf(items.values()),\n                complete,\n                Duration.between(createdAt, Instant.now())\n            );\n        }\n    }\n\n    private final ConcurrentMap<UUID, Accumulator<T>> buffers = new ConcurrentHashMap<>();\n    private final Duration timeout;\n    private final Consumer<AggregatedBatch<T>> onCompleteConsumer;\n    private final Consumer<AggregatedBatch<T>> onTimeoutConsumer;\n    private final ScheduledExecutorService reaper;\n\n    public ConcurrentAggregator(\n        Duration timeout,\n        Consumer<AggregatedBatch<T>> onCompleteConsumer,\n        Consumer<AggregatedBatch<T>> onTimeoutConsumer\n    ) {\n        this.timeout = Objects.requireNonNull(timeout);\n        this.onCompleteConsumer = Objects.requireNonNull(onCompleteConsumer);\n        this.onTimeoutConsumer = Objects.requireNonNull(onTimeoutConsumer);\n\n        this.reaper = Executors.newSingleThreadScheduledExecutor(r -> {\n            Thread t = Thread.ofVirtual().name(\"aggregator-reaper\").unstarted(r);\n            t.setDaemon(true);\n            return t;\n        });\n\n        long intervalMs = Math.max(100, timeout.toMillis() / 2);\n        this.reaper.scheduleAtFixedRate(this::evictExpiredBuffers, intervalMs, intervalMs, TimeUnit.MILLISECONDS);\n    }\n\n    public void accept(SplitItem<T> item) {\n        Accumulator<T> acc = buffers.computeIfAbsent(\n            item.correlationId(),\n            k -> new Accumulator<>(item.correlationId(), item.sequenceSize())\n        );\n\n        acc.items.put(item.sequenceNumber(), item.payload());\n\n        if (acc.isComplete()) {\n            if (buffers.remove(item.correlationId(), acc)) {\n                onCompleteConsumer.accept(acc.buildBatch(true));\n            }\n        }\n    }\n\n    private void evictExpiredBuffers() {\n        Instant now = Instant.now();\n        for (Map.Entry<UUID, Accumulator<T>> entry : buffers.entrySet()) {\n            Accumulator<T> acc = entry.getValue();\n            if (Duration.between(acc.createdAt, now).compareTo(timeout) > 0) {\n                if (buffers.remove(entry.getKey(), acc)) {\n                    onTimeoutConsumer.accept(acc.buildBatch(false));\n                }\n            }\n        }\n    }\n\n    @Override\n    public void close() {\n        reaper.shutdown();\n        try {\n            if (!reaper.awaitTermination(2, TimeUnit.SECONDS)) {\n                reaper.shutdownNow();\n            }\n        } catch (InterruptedException e) {\n            Thread.currentThread().interrupt();\n        }\n    }\n}"
+    },
+    {
+      "_key": "h2-095",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-096",
+          "_type": "span",
+          "text": "10. Enterprise Invariants & Operational Failure Triage",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-097",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-098",
+          "_type": "span",
+          "text": "When operating distributed routing topologies in production, adhere to the following enterprise architectural invariants:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-099",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-100",
+          "_type": "span",
+          "text": "1. Strict Buffer Timeouts: Never deploy an Aggregator or Resequencer without a finite memory eviction timeout. An unbounded accumulator is an inevitable out-of-memory crash waiting for a downstream partition drop.\n2. Idempotent Compensations: All reverse actions commanded by a Process Manager / Saga must be strictly idempotent. Because compensations execute across at-least-once broker channels, retried refunds or stock releases must not produce double mutations.\n3. Monotonic Sequence Validation: Resequencer windows must bound maximum out-of-order latency. If a missing message exceeds the window threshold, the gap must be quarantined to a dead-letter channel rather than stalling global stream progress.\n4. Correlation Lineage Preservation: Splitters and routers must propagate the parent correlation ID across all decomposed child messages. Never generate orphaned child tokens that sever distributed tracing call trees.",
+          "marks": []
+        }
+      ]
     }
   ]
 }
