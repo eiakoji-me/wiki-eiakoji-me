@@ -83,7 +83,14 @@ export interface TableBlock {
   rows?: TableRow[];
 }
 
-export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock | CalloutBlock | TableBlock;
+export interface EquationBlock {
+  _key?: string;
+  _type: 'equation';
+  latex: string;
+  caption?: string;
+}
+
+export type BodyBlock = PortableTextBlock | SanityImage | CodeBlock | CalloutBlock | TableBlock | EquationBlock;
 
 export interface Topic {
   _id: string;

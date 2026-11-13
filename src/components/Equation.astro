@@ -1,0 +1,18 @@
+---
+import katex from 'katex';
+import type { Props as PortableTextProps } from '@portabletext/astro/types';
+import type { EquationBlock } from '../lib/sanity/types';
+
+type Props = PortableTextProps<EquationBlock>;
+const { node } = Astro.props;
+
+const html = katex.renderToString(node.latex || '', {
+  displayMode: true,
+  throwOnError: false,
+});
+---
+
+<figure class="equation-block my-6">
+  <div class="equation-math overflow-x-auto py-2 text-center" set:html={html} />
+  {node.caption && <figcaption class="equation-caption text-xs text-center mt-2 text-[var(--text-subtle)] font-mono">{node.caption}</figcaption>}
+</figure>

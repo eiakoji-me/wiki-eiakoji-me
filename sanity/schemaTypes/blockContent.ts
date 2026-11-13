@@ -171,5 +171,31 @@ export const blockContent = defineType({
         }),
       },
     }),
+    defineArrayMember({
+      name: 'equation',
+      title: 'Equation',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'latex',
+          title: 'LaTeX Formula',
+          type: 'text',
+          rows: 3,
+          validation: (rule) => rule.required(),
+        }),
+        defineField({
+          name: 'caption',
+          title: 'Caption / Description',
+          type: 'string',
+        }),
+      ],
+      preview: {
+        select: { title: 'latex', subtitle: 'caption' },
+        prepare: ({ title, subtitle }) => ({
+          title: title ? `$$ ${title} $$` : 'Equation',
+          subtitle: subtitle || 'LaTeX mathematical formula',
+        }),
+      },
+    }),
   ],
 });

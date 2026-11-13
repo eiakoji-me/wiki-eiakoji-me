@@ -28,6 +28,7 @@
     "@sanity/client": "^8.10.1",
     "@sanity/image-url": "^2.1.1",
     "astro": "^7.4.2",
+    "katex": "^0.19.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "sanity": "^6.20.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@types/katex": "^0.16.8",
     "@types/node": "^26.6.5",
     "groq-js": "^2.0.1",
     "typescript": "^6.0.3"

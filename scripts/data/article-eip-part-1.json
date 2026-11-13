@@ -41,7 +41,7 @@
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
-    "title": "EIP Part I: Foundations of Enterprise Integration — wiki.eiakoji.me",
+    "title": "EIP Part I: Foundations of Enterprise Integration \u2014 wiki.eiakoji.me",
     "description": "An architectural deconstruction of distributed coupling physics: evaluating File Transfer, Shared Database, RPC, and Messaging, demonstrating how synchronous call graphs trigger cascading failure, and deriving the Pipes-and-Filters topology.",
     "image": {
       "_type": "image",
@@ -208,10 +208,14 @@
       ]
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-8-17f253e93211",
-      "code": "flowchart TD\n    subgraph S1[\"1. File Transfer\"]\n        direction TB\n        AppA1[\"Producer App\"] -->|\"Batch write\"| FileShare[(\"Shared File System / S3\")]\n        FileShare -->|\"Periodic polling\"| AppB1[\"Consumer App\"]\n    end\n\n    subgraph S2[\"2. Shared Database\"]\n        direction TB\n        AppA2[\"App Instance A\"] -->|\"SQL INSERT / UPDATE\"| SharedDB[(\"Unified Database\")]\n        AppB2[\"App Instance B\"] -->|\"SQL SELECT / LOCK\"| SharedDB\n    end\n\n    subgraph S3[\"3. Remote Procedure Invocation\"]\n        direction TB\n        Client[\"Client / Caller\"] -->|\"Sync HTTP / gRPC\"| Server[\"Target Service\"]\n        Server -.->|\"Blocking Response\"| Client\n    end\n\n    subgraph S4[\"4. Asynchronous Messaging\"]\n        direction TB\n        Sender[\"Producer\"] -->|\"Emit Message\"| Channel[(\"Message Channel / Queue\")]\n        Channel -->|\"Decoupled Delivery\"| Receiver[\"Consumer\"]\n    end",
-      "language": "mermaid"
+      "_type": "imageWithAlt",
+      "_key": "img-four-integration-styles",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-4386ce773479accb11dcb9cb3c6fba6b426d0c56-1108x568-png"
+      },
+      "alt": "The Four Integration Styles: File Transfer, Shared Database, Remote Procedure Invocation, and Asynchronous Messaging.",
+      "caption": "Figure 2: The Four Integration Styles \u2014 comparing coordination semantics, storage boundaries, and coupling profiles."
     },
     {
       "_type": "block",
@@ -282,7 +286,7 @@
         {
           "_type": "span",
           "_key": "b-012-1c8f32fd9cbb-s1",
-          "text": ": Temporal decoupling is high—the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
+          "text": ": Temporal decoupling is high\u2014the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
           "marks": []
         }
       ],
@@ -822,18 +826,10 @@
       ]
     },
     {
-      "_type": "block",
-      "_key": "b-039-85bfac341805",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-039-85bfac341805-s0",
-          "text": "$$L_{\\text{total}} = \\sum_{i=1}^{n} L_i$$",
-          "marks": []
-        }
-      ]
+      "_type": "equation",
+      "_key": "eq-tail-latency-sum",
+      "latex": "L_{\\text{total}} = \\sum_{i=1}^{n} L_i",
+      "caption": "Cumulative latency of a synchronous request across n sequential RPC dependencies."
     },
     {
       "_type": "block",
@@ -850,18 +846,10 @@
       ]
     },
     {
-      "_type": "block",
-      "_key": "b-041-8fb5395aa21a",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-041-8fb5395aa21a-s0",
-          "text": "$$P(\\text{slow request}) = 1 - (1 - 0.01)^5 = 1 - (0.99)^5 \\approx 4.90\\%$$",
-          "marks": []
-        }
-      ]
+      "_type": "equation",
+      "_key": "eq-slow-request-prob",
+      "latex": "P(\\text{slow request}) = 1 - (1 - 0.01)^5 = 1 - (0.99)^5 \\approx 4.90\\%",
+      "caption": "Probability of encountering tail latency across 5 sequential service invocations with 99th percentile degradation."
     },
     {
       "_type": "block",
@@ -920,18 +908,10 @@
       ]
     },
     {
-      "_type": "block",
-      "_key": "b-045-c5cb3ed14efc",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-045-c5cb3ed14efc-s0",
-          "text": "$$L = \\lambda \\cdot W$$",
-          "marks": []
-        }
-      ]
+      "_type": "equation",
+      "_key": "eq-littles-law",
+      "latex": "L = \\lambda \\cdot W",
+      "caption": "Little's Law: concurrency (L) equals arrival rate (\\lambda) multiplied by average service time (W)."
     },
     {
       "_type": "block",
@@ -1010,18 +990,10 @@
       ]
     },
     {
-      "_type": "block",
-      "_key": "b-051-99e64122cdf4",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-051-99e64122cdf4-s0",
-          "text": "$$L = 1000 \\cdot 0.05 = 50\\text{ concurrent threads}$$",
-          "marks": []
-        }
-      ]
+      "_type": "equation",
+      "_key": "eq-littles-law-healthy",
+      "latex": "L = 1000 \\cdot 0.05 = 50\\text{ concurrent threads}",
+      "caption": "Healthy operating equilibrium with 75% worker thread pool headroom."
     },
     {
       "_type": "block",
@@ -1052,18 +1024,10 @@
       ]
     },
     {
-      "_type": "block",
-      "_key": "b-054-48fd9c8b4cff",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "_key": "b-054-48fd9c8b4cff-s0",
-          "text": "$$L = 1000 \\cdot 0.5 = 500\\text{ concurrent threads}$$",
-          "marks": []
-        }
-      ]
+      "_type": "equation",
+      "_key": "eq-littles-law-degraded",
+      "latex": "L = 1000 \\cdot 0.5 = 500\\text{ concurrent threads}",
+      "caption": "Degraded state requiring 500 concurrent threads against a fixed 200-thread capacity ceiling."
     },
     {
       "_type": "block",
@@ -1080,10 +1044,14 @@
       ]
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-56-9e5a6b86222d",
-      "code": "sequenceDiagram\n    autonumber\n    actor User as Inbound Client\n    participant GW as API Gateway (Pool: 200 Threads)\n    participant SvcA as Order Service\n    participant SvcB as Inventory (Degraded)\n\n    User->>GW: POST /checkout\n    GW->>SvcA: RPC invoke\n    Note over SvcA: Thread 1 allocated\n    SvcA->>SvcB: RPC queryInventory()\n    Note over SvcB: 800ms Latency Spike\n    \n    User->>GW: POST /checkout (Arrival 1,000 req/s)\n    GW->>SvcA: RPC invoke\n    Note over SvcA: Threads 2..200 allocated & blocked\n    \n    User->>GW: POST /checkout\n    GW--xSvcA: CONNECTION REJECTED\n    Note over GW: Thread Pool Exhausted (504 Gateway Timeout)",
-      "language": "mermaid"
+      "_type": "imageWithAlt",
+      "_key": "img-sync-failure-cascade",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-46a2f8ecf62be0d1839329c2bc59350bd9cf4829-1107x580-png"
+      },
+      "alt": "Synchronous failure cascade: Little's Law thread starvation and saturation under downstream latency degradation.",
+      "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation \u2014 contrast between healthy equilibrium and thread exhaustion under downstream degradation."
     },
     {
       "_type": "block",
@@ -1274,10 +1242,14 @@
       ]
     },
     {
-      "_type": "codeBlock",
-      "_key": "code-66-058df37bd78c",
-      "code": "flowchart LR\n    Inbound[(\"Inbound Pipe<br/>(Queue)\")] --> Filter1[\"Filter 1:<br/>Schema Validator\"]\n    Filter1 --> Intermediate[(\"Intermediate Pipe<br/>(Buffer)\")]\n    Intermediate --> Filter2[\"Filter 2:<br/>Tax & Surcharge\"]\n    Filter2 --> Egress[(\"Egress Pipe<br/>(Queue)\")]\n    Egress --> Sink[\"Downstream<br/>Ledger / ERP\"]\n\n    style Inbound fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;\n    style Intermediate fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;\n    style Egress fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;\n    style Filter1 fill:#eff6ff,stroke:#2563eb,stroke-width:2px;\n    style Filter2 fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px;",
-      "language": "mermaid"
+      "_type": "imageWithAlt",
+      "_key": "img-pipes-and-filters",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-47f9b3ddb5102907900fdea86111c40912041b4d-1109x328-png"
+      },
+      "alt": "Pipes and Filters Composition Pipeline: Inbound queue, schema validator filter, intermediate buffer queue, tax filter, and egress queue.",
+      "caption": "Figure 4: Pipes and Filters Composition Pipeline \u2014 decoupling processing stages with message queue buffers."
     },
     {
       "_type": "block",
@@ -1613,7 +1585,7 @@
         {
           "_type": "span",
           "_key": "b-085-8ca55586b0ab-s1",
-          "text": ": The topology of message distribution—evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
+          "text": ": The topology of message distribution\u2014evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
           "marks": []
         }
       ],
@@ -1661,7 +1633,7 @@
         {
           "_type": "span",
           "_key": "b-087-d8625b126e97-s1",
-          "text": ": Navigating complex routing fabrics without sender coupling—Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
+          "text": ": Navigating complex routing fabrics without sender coupling\u2014Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
           "marks": []
         }
       ],
@@ -1685,7 +1657,7 @@
         {
           "_type": "span",
           "_key": "b-088-6d82860f673f-s1",
-          "text": ": Overcoming data format impedance mismatch—Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
+          "text": ": Overcoming data format impedance mismatch\u2014Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
           "marks": []
         }
       ],
@@ -1709,7 +1681,7 @@
         {
           "_type": "span",
           "_key": "b-089-f392598420cd-s1",
-          "text": ": Consumer concurrency and the physical reality of at-least-once delivery—Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
+          "text": ": Consumer concurrency and the physical reality of at-least-once delivery\u2014Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
           "marks": []
         }
       ],
@@ -1733,7 +1705,7 @@
         {
           "_type": "span",
           "_key": "b-090-e216a9d9965f-s1",
-          "text": ": Making asynchronous meshes observable—Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
+          "text": ": Making asynchronous meshes observable\u2014Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
           "marks": []
         }
       ],
