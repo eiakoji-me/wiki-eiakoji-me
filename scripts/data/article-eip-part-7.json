@@ -9,8 +9,8 @@
   "format": "article",
   "difficulty": "advanced",
   "featured": false,
-  "publishedAt": "2026-11-18T00:00:00Z",
-  "readingTime": "17 min read",
+  "publishedAt": "2026-11-13T09:00:00.000Z",
+  "readingTime": "19 min read",
   "summary": "An architectural evaluation of distributed telemetry: bridging the asynchronous observability gap using Wire Taps, Message History, OpenTelemetry context, and Control Buses.",
   "primaryTopic": {
     "_type": "reference",
@@ -36,15 +36,16 @@
   ],
   "technologies": [
     "Java 21",
-    "Distributed Systems",
-    "Message Queues",
+    "OpenTelemetry",
+    "Distributed Tracing",
+    "Kafka",
     "Architecture"
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
     "_type": "seo",
     "title": "EIP Part VII: Operations, Observability & Governance",
-    "description": "Overcoming the asynchronous observability deficit: Wire Taps, Message Stores, W3C traceparent propagation with OpenTelemetry, and Control Bus design."
+    "description": "Observability in asynchronous topologies: Wire Taps, OpenTelemetry context propagation across broker boundaries, Control Bus, and dead-letter redrive."
   },
   "body": [
     {
@@ -98,245 +99,114 @@
           "_key": "nav-eip-8",
           "title": "Part VIII: Composing Enterprise Integration Patterns",
           "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
-          "status": "completed"
-        }
-      ]
-    },
-    {
-      "_key": "b-06-h2-scope",
-      "_type": "block",
-      "style": "h2",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-h2-scope-s0",
-          "_type": "span",
-          "text": "1. Architectural Scope and Problem Statement",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-06-p-scope",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-p-scope-s0",
-          "_type": "span",
-          "text": "An architectural evaluation of distributed telemetry: bridging the asynchronous observability gap using Wire Taps, Message History, OpenTelemetry context, and Control Buses.",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-06-callout-note",
-      "_type": "callout",
-      "tone": "note",
-      "title": "EIP Part 7 \u2014 Upcoming Series Installment",
-      "items": [
-        {
-          "_key": "note-item-6",
-          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
           "status": "upcoming"
         }
       ]
     },
     {
-      "_key": "b-06-h2-patterns",
+      "_key": "h2-001",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-h2-patterns-s0",
+          "_key": "s-001",
           "_type": "span",
-          "text": "2. Pattern Catalog & Formal Realizations",
+          "text": "1. Architectural Scope and the Asynchronous Observability Deficit",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-06-p-patterns-intro",
+      "_key": "p-001",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-p-patterns-intro-s0",
+          "_key": "s-002",
           "_type": "span",
-          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "text": "Synchronous, request-reply topologies offer an intuitive debugging mental model: a thread initiates an RPC or HTTP call, stack frames accumulate deterministically down the call hierarchy, and execution resumes sequentially upon response delivery. Distributed tracing frameworks in synchronous architectures exploit this thread-local invariant via storage constructs like Java's ThreadLocal or MDC (Mapped Diagnostic Context), binding correlation identifiers directly to the active OS thread.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-06-pat-00",
+      "_key": "p-002",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-pat-00-s0",
+          "_key": "s-003",
           "_type": "span",
-          "text": "Control Bus: Dedicated administrative communication channel for monitoring, configuring, and orchestrating distributed integration components.",
+          "text": "In asynchronous messaging architectures, this contiguous execution model completely fractures. When a producer dispatches an event to an intermediary broker, its thread pool completes execution and yields back to the OS or runtime scheduler immediately upon receiving an append acknowledgment. The message may reside in a persistent commit log or queue buffer for milliseconds, hours, or days before an autonomous consumer polls or receives it. The consumer executes on an entirely uncoordinated thread pool, in a separate operating process, and potentially on a different hardware cluster. Without explicit protocol-level intervention, the execution context is destroyed at the broker ingress boundary.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-06-pat-01",
+      "_key": "p-003",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-pat-01-s0",
+          "_key": "s-004",
           "_type": "span",
-          "text": "Detour & Wire Tap: Non-intrusive message interception: copies live message traffic to secondary channels for audit, logging, or metric aggregation without altering data flow.",
+          "text": "This operational reality creates what we formalize as the Asynchronous Observability Deficit: the loss of causal continuity, uncoordinated failure cascades, silent message drops, and opaque queue lag. To operate distributed message meshes reliably at scale, systems must incorporate dedicated management patterns: Wire Taps for zero-overhead inspection, immutable Message Stores for state audit, OpenTelemetry context propagators across record headers, and isolated Control Buses for dynamic runtime governance.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-06-pat-02",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-02-s0",
-          "_type": "span",
-          "text": "Message History: Appends processing component timestamps and instance identifiers to the message header as it traverses pipeline stages.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      "_key": "img-hero-operations",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Operations, Observability, and Governance architectural overview: Wire Tap interceptors, OpenTelemetry context propagation, and Control Bus topology governance.",
+      "caption": "Figure 1: Enterprise Integration Operations Control Plane — Integrating passive Wire Taps, distributed W3C OpenTelemetry propagation, dynamic Detour switches, and administrative Control Bus channels."
     },
     {
-      "_key": "b-06-pat-03",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-03-s0",
-          "_type": "span",
-          "text": "Message Store: Centralized durable archival repository recording complete message payloads for audit compliance, dispute resolution, and state replay.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-06-pat-04",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-04-s0",
-          "_type": "span",
-          "text": "Smart Proxy: Transparent mediation proxy intercepting requests to inject correlation tokens, rate limiting, and distributed tracing headers.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-06-pat-05",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-05-s0",
-          "_type": "span",
-          "text": "Test Message: Synthetic heartbeat probes injected into live integration highways to verify routing correctness and end-to-end latency.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-06-pat-06",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-06-s0",
-          "_type": "span",
-          "text": "Channel Purger: Administrative utility for safely draining, filtering, and resetting dead-letter and test queues without broker restarts.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-06-pat-07",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-06-pat-07-s0",
-          "_type": "span",
-          "text": "OpenTelemetry Context Propagation: Injecting and extracting W3C traceparent and tracestate headers across message broker boundaries to preserve distributed causal traces.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-06-h2-invariants",
+      "_key": "h2-002",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-h2-invariants-s0",
+          "_key": "s-005",
           "_type": "span",
-          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "text": "2. Context Propagation Across Broken Horizons: W3C TraceContext & OpenTelemetry",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-06-p-invariants-intro",
+      "_key": "p-004",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-p-invariants-intro-s0",
+          "_key": "s-006",
           "_type": "span",
-          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "text": "To reconstruct a unified causal Directed Acyclic Graph (DAG) across decoupled systems, metadata containing distributed trace identifiers must traverse the messaging fabric alongside the business payload. Modern cloud-native engineering standardizes this via the W3C TraceContext specification, represented primarily by two canonical headers:",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-06-inv-00",
+      "_key": "b-pat-traceparent",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-inv-00-s0",
+          "_key": "s-007",
           "_type": "span",
-          "text": "The Asynchronous Observability Deficit: When messages decouple senders from receivers, traditional synchronous thread-local stack traces vanish; W3C correlation propagation is mandatory for distributed root cause analysis.",
+          "text": "traceparent: A 4-part hyphen-delimited string (version-trace_id-parent_id-trace_flags). For example, 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01 binds a 16-byte global trace ID to an 8-byte parent span ID with a 1-byte sampling flag (01 indicating sampled).",
           "marks": []
         }
       ],
@@ -344,15 +214,15 @@
       "level": 1
     },
     {
-      "_key": "b-06-inv-01",
+      "_key": "b-pat-tracestate",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-inv-01-s0",
+          "_key": "s-008",
           "_type": "span",
-          "text": "Wire Tap Performance Overhead: Secondary logging and tapping must execute asynchronously or over non-blocking buffers to prevent diagnostic inspection from degrading primary pipeline throughput.",
+          "text": "tracestate: An opaque comma-separated list of vendor-specific key-value pairs (e.g. ro=0.5,tenant=emea) enabling multi-vendor APM telemetry routing and specialized sampling metadata to survive intermediaries.",
           "marks": []
         }
       ],
@@ -360,15 +230,604 @@
       "level": 1
     },
     {
-      "_key": "b-06-inv-02",
+      "_key": "p-005",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-06-inv-02-s0",
+          "_key": "s-009",
           "_type": "span",
-          "text": "Control Plane Isolation: Administrative control commands must run on isolated physical or virtual channels to prevent operator commands from competing with production message queues.",
+          "text": "The integration mechanism requires injecting these headers into the native broker envelope (such as Kafka Record Headers, AWS SQS MessageAttributes, or AMQP 0-9-1 properties) before dispatch, and extracting them on consumption to reconstitute the active OpenTelemetry Context.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-opentelemetry-w3c",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "OpenTelemetry W3C trace context propagation diagram showing producer injection, broker envelope persistence, and consumer extraction with span links.",
+      "caption": "Figure 2: Distributed Context Propagation — Producer span injection into record metadata, temporal log persistence, and consumer DAG reconstruction (Parent-Child vs. Batch Span Links)."
+    },
+    {
+      "_key": "h3-001",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-010",
+          "_type": "span",
+          "text": "Single Consumer vs. Batch Consumer Semantics: Parent-Child vs. Span Links",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-006",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-011",
+          "_type": "span",
+          "text": "A subtle failure mode in asynchronous tracing arises when consumers process messages in micro-batches (e.g. kafkaConsumer.poll(Duration.ofMillis(100)) returning 500 records). In a single-message consumption model, the consumer creates a child span whose parent context is the extracted producer span: Span A ➔ Span B. The causal hierarchy remains unbroken.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-007",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-012",
+          "_type": "span",
+          "text": "However, in batch processing, 500 independent messages may originate from 500 distinct producers across different business transactions. A single consumer execution span cannot mathematically have 500 distinct parent spans in standard OpenTelemetry data models without corrupting trace visualizers. The correct architectural pattern is Span Linking: the batch processing span initiates a brand-new root trace, while adding an explicit Link reference to each of the 500 extracted traceparent contexts. This preserves bidirectional cross-trace correlation without corrupting the execution graph.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-008",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-013",
+          "_type": "span",
+          "text": "Sampling overhead must also be balanced mathematically. In high-throughput messaging fabrics transmitting millions of events per second, tracing every transaction introduces unacceptable telemetry storage and network overhead. Head-based probabilistic sampling with sample probability p_sample reduces volume, but introduces estimation variance on latency percentiles:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-trace-sampling",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-014",
+          "_type": "span",
+          "text": "$$\\text{Var}(\\hat{L}) = \\frac{\\sigma^2}{n \\cdot p_{\\text{sample}}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-009",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-015",
+          "_type": "span",
+          "text": "where \\hat{L} is the empirical mean latency estimate, \\sigma^2 is the true latency variance, n is the total message population size, and p_{\\text{sample}} is the sampling probability. Topologies must ensure that tail-based sampling or adaptive sampling is applied when isolating high-latency consumer anomalies.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-003",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-016",
+          "_type": "span",
+          "text": "3. Non-Intrusive Interception: Wire Tap, Message Store & Invariant Protection",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-010",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-017",
+          "_type": "span",
+          "text": "The Wire Tap pattern inspects messages traversing a point-to-point channel without modifying the primary message payload or altering channel consumption semantics. A non-intrusive probe duplicates the message and routes the copy to a secondary channel, typically destined for an immutable Message Store, an APM telemetry collector, or a security audit pipeline.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-wiretap-controlbus",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Wire Tap non-intrusive interception and Control Bus dynamic Detour routing diagram.",
+      "caption": "Figure 3: Interception & Control Topologies — Non-blocking ring-buffered Wire Tap with drop-on-full SLA guarantees alongside dynamic Control Bus Detour switching."
+    },
+    {
+      "_key": "h3-002",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-018",
+          "_type": "span",
+          "text": "The Wire Tap Backpressure Invariant",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-011",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-019",
+          "_type": "span",
+          "text": "The primary design flaw in naive Wire Tap implementations is synchronous coupling to the audit sink. If a Wire Tap writes directly to a secondary datastore (such as Elasticsearch or an S3 bucket) within the main message dispatch loop, any network jitter, garbage collection pause, or outage in the audit datastore directly throttles the production channel. A secondary diagnostic facility must NEVER compromise primary operational throughput.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-012",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-020",
+          "_type": "span",
+          "text": "To guarantee backpressure isolation, the Wire Tap must execute through a lock-free, bounded in-memory ring buffer (such as an LMAX Disruptor or an ArrayBlockingQueue backed by virtual threads) configured with an explicit Drop-on-Full policy. Modeled as a finite-capacity M/M/1/K queuing system, the probability of an audit drop P_{\\text{loss}} during high ingress surges is expressed as:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-wiretap-loss",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-021",
+          "_type": "span",
+          "text": "$$P_{\\text{loss}} = \\frac{(1 - \\rho)\\rho^K}{1 - \\rho^{K+1}}, \\quad \\text{where } \\rho = \\frac{\\lambda}{\\mu}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-013",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-022",
+          "_type": "span",
+          "text": "where \\lambda is the arrival rate of business messages, \\mu is the processing rate of the audit worker, and K is the buffer capacity. Sizing K sufficiently large buffers typical microbursts without memory exhaustion, while the finite bound guarantees that memory saturation sheds audit logs rather than crashing the primary JVM or blocking message acknowledgment.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-004",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-023",
+          "_type": "span",
+          "text": "4. Architectural Control Bus: Dynamic Detour, Governance & DLQ Redrive",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-014",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-024",
+          "_type": "span",
+          "text": "Integration topologies are not static. Production environments demand runtime reconfiguration: diverting messages away from degrading downstream dependencies, enabling live diagnostic capture during active incidents, purging poison pills, and redriving dead-lettered messages. The Control Bus pattern addresses this by establishing a dedicated administrative messaging channel through which operations staff and automated supervisory agents transmit command messages to manage integration endpoints.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-015",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-025",
+          "_type": "span",
+          "text": "The Control Bus interacts with endpoints via Smart Proxies and Detour Routers. A Detour acts as an electronically controlled track switch in a rail yard. Under baseline operations, messages follow the primary high-speed route. When the Control Bus broadcasts an ACTIVATE_DETOUR command, the proxy atomically toggles an internal routing flag, directing traffic through a diagnostic filter, a canary evaluator, or a data-cleansing pipeline before returning it to the main sequence.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-003",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-026",
+          "_type": "span",
+          "text": "Consumer Lag Dynamics & Safe Dead-Letter Redrive",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-016",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-027",
+          "_type": "span",
+          "text": "A critical operational metric governed by the Control Bus is Consumer Lag L(t), representing the accumulation of unread messages in a partitioned log or queue. During consumer degradation or downstream outages, lag accumulates continuously according to the arrival and processing functions:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-consumer-lag",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-028",
+          "_type": "span",
+          "text": "$$L(t) = L(0) + \\int_{0}^{t} \\left( \\lambda_{\\text{in}}(u) - \\mu_{\\text{out}}(u) \\right) du$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-017",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-029",
+          "_type": "span",
+          "text": "When failures exhaust consumer retry budgets (as analyzed in Part VI), messages divert to a Dead-Letter Channel (DLQ). Once the underlying defect (e.g. database schema mismatch or third-party outage) is resolved, operators initiate a DLQ Redrive. Naive redrive implementations immediately replay thousands of dead messages into the active queue, triggering an immediate thundering herd collapse. A safe Control Bus redrive orchestrator must enforce two invariants:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-inv-redrive-rate",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-030",
+          "_type": "span",
+          "text": "Strict Leaky-Bucket Rate Limiting: Redrive throughput must not exceed 10% to 20% of the active channel's steady-state processing capacity \\mu_{\\text{out}}, ensuring production traffic SLA is never violated.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-inv-redrive-fence",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-031",
+          "_type": "span",
+          "text": "Idempotent Replay Fencing: If downstream systems partially applied side-effects before failing, replaying without deduplication keys will corrupt state. Replay must incorporate idempotent message receivers and version fences.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "h2-005",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-032",
+          "_type": "span",
+          "text": "5. Comparative Trade-Off Matrix: Operations & Governance Patterns",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-018",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-033",
+          "_type": "span",
+          "text": "Deploying management patterns requires evaluating resource consumption, latency intrusion, and backpressure behavior across eight architectural dimensions:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "tbl-operations-matrix",
+      "_type": "table",
+      "rows": [
+        {
+          "_key": "r0",
+          "_type": "tableRow",
+          "cells": [
+            "Pattern",
+            "Primary Mechanism",
+            "Intrusiveness / SLA Risk",
+            "Backpressure Behavior",
+            "Storage Footprint",
+            "Consistency Guarantee",
+            "Failure Mode",
+            "Modern Cloud Realization"
+          ]
+        },
+        {
+          "_key": "r1",
+          "_type": "tableRow",
+          "cells": [
+            "Wire Tap",
+            "Passive Tee Interceptor",
+            "Zero (when async bounded)",
+            "Drop-on-Full or async queue",
+            "Proportional to sample rate",
+            "At-Most-Once on tap branch",
+            "Silent audit drop on buffer full",
+            "LMAX Disruptor, Virtual Thread Tap"
+          ]
+        },
+        {
+          "_key": "r2",
+          "_type": "tableRow",
+          "cells": [
+            "Message Store",
+            "Append-Only Audit Ledger",
+            "Low (isolated consumer/sink)",
+            "Absorbed by object store tier",
+            "Very High (requires TTL/tiering)",
+            "At-Least-Once append log",
+            "Storage exhaustion / high cloud spend",
+            "S3 Glacier, BigQuery, Kafka Compaction"
+          ]
+        },
+        {
+          "_key": "r3",
+          "_type": "tableRow",
+          "cells": [
+            "Control Bus",
+            "Dedicated Admin Command Topic",
+            "Zero on business messages",
+            "Strictly isolated partition",
+            "Minimal (ephemeral commands)",
+            "Exactly-Once / Idempotent cmd",
+            "Split-brain if commands partition",
+            "NATS JetStream, Kafka Admin Topic"
+          ]
+        },
+        {
+          "_key": "r4",
+          "_type": "tableRow",
+          "cells": [
+            "Detour / Smart Proxy",
+            "Atomic Route Switching Proxy",
+            "Low in baseline; High on detour",
+            "Inherits target detour route",
+            "Negligible (memory routing flag)",
+            "Matches active branch policy",
+            "Misrouted traffic if toggle drifts",
+            "Spring Cloud Gateway, Envoy Proxy"
+          ]
+        },
+        {
+          "_key": "r5",
+          "_type": "tableRow",
+          "cells": [
+            "Message History",
+            "Header-Based Routing Stamps",
+            "Negligible (< 1KB per envelope)",
+            "Zero impact on queue pipeline",
+            "Linear with routing hops",
+            "Strict causal ordering in header",
+            "Header byte explosion on deep DAGs",
+            "CloudEvents trace history, Kafka headers"
+          ]
+        },
+        {
+          "_key": "r6",
+          "_type": "tableRow",
+          "cells": [
+            "Test Message / Canary",
+            "Synthetic Probe Injection",
+            "Negligible (< 0.1% synthetic)",
+            "Co-mingled with live workload",
+            "Zero (purged by test filter)",
+            "Transactional rollback at sink",
+            "Polluting prod DB if filter fails",
+            "Datadog Synthetic Probes, Custom Canary"
+          ]
+        }
+      ]
+    },
+    {
+      "_key": "h2-006",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-034",
+          "_type": "span",
+          "text": "6. Production-Grade Java 21 LTS Reference Implementation",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-019",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-035",
+          "_type": "span",
+          "text": "The following complete Java 21 LTS reference implementation demonstrates the three pillars of operational governance: (1) W3C OpenTelemetry context propagation across message record headers, (2) an asynchronous, non-blocking Wire Tap with drop-on-full backpressure protection, and (3) an architectural Control Bus coordinator with atomic dynamic Detour switching and rate-limited dead-letter redrive.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "code-operations-java",
+      "_type": "code",
+      "language": "java",
+      "filename": "IntegrationOperationsPlane.java",
+      "code": "package me.eiakoji.integration.operations;\n\nimport java.nio.charset.StandardCharsets;\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.AtomicBoolean;\nimport java.util.concurrent.atomic.AtomicLong;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n\n/**\n * Enterprise Integration Operations, Observability, and Governance Control Plane.\n * Implements W3C OpenTelemetry context propagation, non-blocking Wire Taps,\n * dynamic Detour routing, and rate-limited DLQ redrive.\n */\npublic final class IntegrationOperationsPlane {\n\n    private static final Logger log = Logger.getLogger(IntegrationOperationsPlane.class.getName());\n\n    // -------------------------------------------------------------------------\n    // 1. Immutable Data Model & W3C Trace Record\n    // -------------------------------------------------------------------------\n    public record MessageRecord(\n        String id,\n        Map<String, String> headers,\n        byte[] payload,\n        Instant timestamp\n    ) {\n        public MessageRecord {\n            headers = Map.copyOf(headers);\n            payload = payload.clone();\n        }\n\n        public MessageRecord withHeader(String key, String value) {\n            Map<String, String> updated = new HashMap<>(headers);\n            updated.put(key, value);\n            return new MessageRecord(id, updated, payload, timestamp);\n        }\n    }\n\n    // -------------------------------------------------------------------------\n    // 2. OpenTelemetry W3C Trace Context Propagator\n    // -------------------------------------------------------------------------\n    public static final class W3CTraceContextPropagator {\n        public static final String TRACEPARENT_HEADER = \"traceparent\";\n        public static final String TRACESTATE_HEADER = \"tracestate\";\n\n        public record TraceContext(String traceId, String spanId, boolean sampled) {\n            public String toTraceParent() {\n                return String.format(\"00-%s-%s-%s\", traceId, spanId, sampled ? \"01\" : \"00\");\n            }\n        }\n\n        public static MessageRecord inject(MessageRecord record, TraceContext context) {\n            return record.withHeader(TRACEPARENT_HEADER, context.toTraceParent());\n        }\n\n        public static Optional<TraceContext> extract(MessageRecord record) {\n            String header = record.headers().get(TRACEPARENT_HEADER);\n            if (header == null || !header.startsWith(\"00-\")) {\n                return Optional.empty();\n            }\n            String[] parts = header.split(\"-\");\n            if (parts.length < 4) {\n                return Optional.empty();\n            }\n            String traceId = parts[1];\n            String spanId = parts[2];\n            boolean sampled = \"01\".equals(parts[3]);\n            return Optional.of(new TraceContext(traceId, spanId, sampled));\n        }\n    }\n\n    // -------------------------------------------------------------------------\n    // 3. Asynchronous Non-Blocking Wire Tap\n    // -------------------------------------------------------------------------\n    public static final class AsynchronousWireTap implements AutoCloseable {\n        private final BlockingQueue<MessageRecord> ringBuffer;\n        private final ExecutorService consumerExecutor;\n        private final AtomicLong droppedMessages = new AtomicLong(0);\n        private final AtomicLong tappedMessages = new AtomicLong(0);\n        private final java.util.function.Consumer<MessageRecord> auditSink;\n        private volatile boolean running = true;\n\n        public AsynchronousWireTap(int capacity, java.util.function.Consumer<MessageRecord> auditSink) {\n            this.ringBuffer = new ArrayBlockingQueue<>(capacity);\n            this.auditSink = Objects.requireNonNull(auditSink);\n            this.consumerExecutor = Executors.newVirtualThreadPerTaskExecutor();\n            this.consumerExecutor.submit(this::drainLoop);\n        }\n\n        public void tap(MessageRecord record) {\n            // Non-blocking offer: Drop-on-full protects primary pipeline SLA\n            if (!ringBuffer.offer(record)) {\n                droppedMessages.incrementAndGet();\n                log.log(Level.WARNING, \"WireTap ring buffer saturated. Dropping audit record: {0}\", record.id());\n            } else {\n                tappedMessages.incrementAndGet();\n            }\n        }\n\n        private void drainLoop() {\n            while (running || !ringBuffer.isEmpty()) {\n                try {\n                    MessageRecord record = ringBuffer.poll(100, TimeUnit.MILLISECONDS);\n                    if (record != null) {\n                        auditSink.accept(record);\n                    }\n                } catch (InterruptedException e) {\n                    Thread.currentThread().interrupt();\n                    break;\n                } catch (Exception e) {\n                    log.log(Level.SEVERE, \"Error executing audit sink dispatch\", e);\n                }\n            }\n        }\n\n        public long getDroppedCount() { return droppedMessages.get(); }\n        public long getTappedCount() { return tappedMessages.get(); }\n\n        @Override\n        public void close() {\n            this.running = false;\n            this.consumerExecutor.shutdown();\n            try {\n                if (!consumerExecutor.awaitTermination(3, TimeUnit.SECONDS)) {\n                    consumerExecutor.shutdownNow();\n                }\n            } catch (InterruptedException e) {\n                consumerExecutor.shutdownNow();\n                Thread.currentThread().interrupt();\n            }\n        }\n    }\n\n    // -------------------------------------------------------------------------\n    // 4. Control Bus & Dynamic Detour Router\n    // -------------------------------------------------------------------------\n    public static final class ControlBusCoordinator {\n        public enum CommandType { ACTIVATE_DETOUR, DEACTIVATE_DETOUR, REDRIVE_DLQ }\n        public record AdminCommand(CommandType type, String correlationId, Map<String, String> parameters) {}\n\n        private final AtomicBoolean detourActive = new AtomicBoolean(false);\n        private final BlockingQueue<MessageRecord> deadLetterQueue = new LinkedBlockingQueue<>();\n        private final BlockingQueue<MessageRecord> primaryQueue = new LinkedBlockingQueue<>();\n\n        public void processAdminCommand(AdminCommand command) {\n            switch (command.type()) {\n                case ACTIVATE_DETOUR -> {\n                    detourActive.set(true);\n                    log.info(\"ControlBus: Dynamic Detour ACTIVATED by command: \" + command.correlationId());\n                }\n                case DEACTIVATE_DETOUR -> {\n                    detourActive.set(false);\n                    log.info(\"ControlBus: Dynamic Detour DEACTIVATED by command: \" + command.correlationId());\n                }\n                case REDRIVE_DLQ -> {\n                    int maxRate = Integer.parseInt(command.parameters().getOrDefault(\"maxRate\", \"10\"));\n                    executeRateLimitedRedrive(maxRate);\n                }\n            }\n        }\n\n        public void routeMessage(MessageRecord record) {\n            if (detourActive.get()) {\n                executeDiagnosticDetour(record);\n            } else {\n                executeNormalPipeline(record);\n            }\n        }\n\n        private void executeNormalPipeline(MessageRecord record) {\n            primaryQueue.offer(record);\n            log.fine(\"Normal pipeline routed: \" + record.id());\n        }\n\n        private void executeDiagnosticDetour(MessageRecord record) {\n            // Add detour routing breadcrumb to message history\n            MessageRecord stamped = record.withHeader(\"X-Routing-Detour\", Instant.now().toString());\n            primaryQueue.offer(stamped);\n            log.info(\"Diagnostic detour inspected and forwarded: \" + record.id());\n        }\n\n        private void executeRateLimitedRedrive(int maxMessagesPerSecond) {\n            long delayMs = 1000L / Math.max(1, maxMessagesPerSecond);\n            Thread.startVirtualThread(() -> {\n                int redriven = 0;\n                MessageRecord dlqItem;\n                while ((dlqItem = deadLetterQueue.poll()) != null) {\n                    primaryQueue.offer(dlqItem);\n                    redriven++;\n                    try {\n                        Thread.sleep(Duration.ofMillis(delayMs));\n                    } catch (InterruptedException e) {\n                        Thread.currentThread().interrupt();\n                        break;\n                    }\n                }\n                log.info(\"ControlBus: DLQ Redrive complete. Replayed \" + redriven + \" messages.\");\n            });\n        }\n\n        public void enqueueDeadLetter(MessageRecord record) {\n            deadLetterQueue.offer(record);\n        }\n\n        public boolean isDetourActive() { return detourActive.get(); }\n        public int getPrimaryQueueSize() { return primaryQueue.size(); }\n        public int getDeadLetterQueueSize() { return deadLetterQueue.size(); }\n    }\n}\n"
+    },
+    {
+      "_key": "h2-007",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-036",
+          "_type": "span",
+          "text": "7. Architectural Summary and Operational Takeaways",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-020",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-037",
+          "_type": "span",
+          "text": "Operating high-throughput asynchronous integration architectures requires treating observability and governance as first-class architectural subsystems rather than diagnostic afterthoughts:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-summary-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-038",
+          "_type": "span",
+          "text": "Context Continuity: Distributed tracing cannot depend on thread-local context. Standardized W3C traceparent headers must be serialized at producer ingress and reconstituted at consumer egress. Use Parent-Child spans for single consumers and Span Links for batch processing.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-summary-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-039",
+          "_type": "span",
+          "text": "Zero-Impact Interception: Wire Taps must decouple from auditing sinks via bounded, lock-free ring buffers with explicit Drop-on-Full policies. Sinking telemetry must never throttle the primary business SLA.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-summary-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-040",
+          "_type": "span",
+          "text": "Administrative Channel Isolation: Control Bus command conduits must run on dedicated broker topics to avoid resource contention during queue saturation.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-summary-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-041",
+          "_type": "span",
+          "text": "Controlled Redrive: Never replay dead letters into active queues without leaky-bucket rate limiting and idempotent receiver deduplication fences.",
           "marks": []
         }
       ],
