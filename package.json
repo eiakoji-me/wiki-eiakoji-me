@@ -26,6 +26,7 @@
     "seed:article:eip-part-7": "node scripts/seed-article-eip-part-7.mjs",
     "seed:article:eip-part-8": "node scripts/seed-article-eip-part-8.mjs",
     "seed:eip-series": "node scripts/seed-eip-series.mjs",
+    "patch:eip-callouts": "node scripts/patch-eip-callouts.mjs",
     "seed:taxonomy": "node scripts/seed-taxonomy.mjs",
     "seed:publish": "node scripts/publish-content.mjs",
     "verify": "npm run test:styles && npm run check && npm run studio:build && npm run build && npm run test:publication && npm run test:taxonomy"

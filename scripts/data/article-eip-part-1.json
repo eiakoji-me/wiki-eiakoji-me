@@ -66,44 +66,44 @@
         {
           "_key": "nav-eip-2",
           "title": "Part II: Messaging Channels & Communication Models",
-          "href": "/articles/eip-part-2-messaging-channels/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-2-messaging-channels/"
         },
         {
           "_key": "nav-eip-3",
           "title": "Part III: Message Construction & Exchange Semantics",
-          "href": "/articles/eip-part-3-message-construction/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-3-message-construction/"
         },
         {
           "_key": "nav-eip-4",
           "title": "Part IV: Message Routing & Process Coordination",
-          "href": "/articles/eip-part-4-message-routing/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-4-message-routing/"
         },
         {
           "_key": "nav-eip-5",
           "title": "Part V: Message Transformation & Interoperability",
-          "href": "/articles/eip-part-5-message-transformation/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-5-message-transformation/"
         },
         {
           "_key": "nav-eip-6",
           "title": "Part VI: Messaging Endpoints & Reliable Processing",
-          "href": "/articles/eip-part-6-messaging-endpoints/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-6-messaging-endpoints/"
         },
         {
           "_key": "nav-eip-7",
           "title": "Part VII: Operations, Observability & Governance",
-          "href": "/articles/eip-part-7-integration-operations/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-7-integration-operations/"
         },
         {
           "_key": "nav-eip-8",
           "title": "Part VIII: Composing Enterprise Integration Patterns",
-          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/"
         }
       ]
     },
@@ -270,7 +270,7 @@
         "_ref": "image-4386ce773479accb11dcb9cb3c6fba6b426d0c56-1108x568-png"
       },
       "alt": "The Four Integration Styles: File Transfer, Shared Database, Remote Procedure Invocation, and Asynchronous Messaging.",
-      "caption": "Figure 2: The Four Integration Styles \u2014 comparing coordination semantics, storage boundaries, and coupling profiles."
+      "caption": "Figure 2: The Four Integration Styles — comparing coordination semantics, storage boundaries, and coupling profiles."
     },
     {
       "_type": "block",
@@ -341,7 +341,7 @@
         {
           "_type": "span",
           "_key": "b-012-1c8f32fd9cbb-s1",
-          "text": ": Temporal decoupling is high\u2014the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
+          "text": ": Temporal decoupling is high—the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
           "marks": []
         }
       ],
@@ -1106,7 +1106,7 @@
         "_ref": "image-f7ba5c258d1a396de85bdf716857e7104613a479-1108x448-png"
       },
       "alt": "Synchronous failure cascade: Little's Law thread starvation and saturation under downstream latency degradation.",
-      "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation \u2014 contrast between healthy equilibrium and thread exhaustion under downstream degradation."
+      "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation — contrast between healthy equilibrium and thread exhaustion under downstream degradation."
     },
     {
       "_type": "block",
@@ -1304,7 +1304,7 @@
         "_ref": "image-3d0a1f01bb4843880f9fd7e5c1a686c6d2d76c5b-1110x268-png"
       },
       "alt": "Pipes and Filters Composition Pipeline: Inbound queue, schema validator filter, intermediate buffer queue, tax filter, and egress queue.",
-      "caption": "Figure 4: Pipes and Filters Composition Pipeline \u2014 decoupling processing stages with message queue buffers."
+      "caption": "Figure 4: Pipes and Filters Composition Pipeline — decoupling processing stages with message queue buffers."
     },
     {
       "_type": "block",
@@ -1640,7 +1640,7 @@
         {
           "_type": "span",
           "_key": "b-085-8ca55586b0ab-s1",
-          "text": ": The topology of message distribution\u2014evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
+          "text": ": The topology of message distribution—evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
           "marks": []
         }
       ],
@@ -1688,7 +1688,7 @@
         {
           "_type": "span",
           "_key": "b-087-d8625b126e97-s1",
-          "text": ": Navigating complex routing fabrics without sender coupling\u2014Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
+          "text": ": Navigating complex routing fabrics without sender coupling—Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
           "marks": []
         }
       ],
@@ -1712,7 +1712,7 @@
         {
           "_type": "span",
           "_key": "b-088-6d82860f673f-s1",
-          "text": ": Overcoming data format impedance mismatch\u2014Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
+          "text": ": Overcoming data format impedance mismatch—Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
           "marks": []
         }
       ],
@@ -1736,7 +1736,7 @@
         {
           "_type": "span",
           "_key": "b-089-f392598420cd-s1",
-          "text": ": Consumer concurrency and the physical reality of at-least-once delivery\u2014Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
+          "text": ": Consumer concurrency and the physical reality of at-least-once delivery—Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
           "marks": []
         }
       ],
@@ -1760,7 +1760,7 @@
         {
           "_type": "span",
           "_key": "b-090-e216a9d9965f-s1",
-          "text": ": Making asynchronous meshes observable\u2014Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
+          "text": ": Making asynchronous meshes observable—Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
           "marks": []
         }
       ],

@@ -156,6 +156,27 @@ async function testBuiltSite() {
       for (const removed of ['series-pager', 'series-card', 'aria-label="Series navigation"']) {
         assert.ok(!html.includes(removed), `/articles/${entry.name}/ must not render series UI (${removed})`);
       }
+
+      if (entry.name.startsWith('eip-part-')) {
+        assert.ok(
+          !html.includes('pager-link pager-next is-upcoming'),
+          `/articles/${entry.name}/ must not render disabled upcoming Next pager link`,
+        );
+
+        if (entry.name !== 'eip-part-8-composing-enterprise-integration-patterns') {
+          assert.ok(
+            html.includes('class="pager-link pager-next"') || html.includes("class='pager-link pager-next'"),
+            `/articles/${entry.name}/ must render an active Next pager link`,
+          );
+        }
+
+        if (entry.name !== 'eip-part-1-foundations-of-enterprise-integration') {
+          assert.ok(
+            html.includes('class="pager-link pager-prev"') || html.includes("class='pager-link pager-prev'"),
+            `/articles/${entry.name}/ must render an active Prev pager link`,
+          );
+        }
+      }
     }
 
     const unknownArticle = await fetch(`${origin}/articles/not-a-real-slug/`);

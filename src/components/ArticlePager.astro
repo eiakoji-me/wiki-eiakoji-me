@@ -33,7 +33,7 @@ const hasNavigation = Boolean(prevItem || nextItem);
     )}
 
     {nextItem && (
-      nextItem.status === 'completed' && nextItem.href ? (
+      (nextItem.status === 'completed' || (nextItem.href && nextItem.status !== 'upcoming')) && nextItem.href ? (
         <a href={nextItem.href} class="pager-link pager-next">
           <div class="pager-content">
             <span class="pager-label">Next</span>
