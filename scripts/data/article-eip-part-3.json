@@ -7,11 +7,11 @@
     "current": "eip-part-3-message-construction"
   },
   "format": "article",
-  "difficulty": "advanced",
+  "difficulty": "Advanced",
   "featured": false,
   "publishedAt": "2026-11-14T00:00:00Z",
-  "readingTime": "16 min read",
-  "summary": "An architectural exploration of message anatomy: classifying Command, Event, and Document intents, engineering non-blocking asynchronous request-reply, and enforcing correlation semantics.",
+  "readingTime": "18 min read",
+  "summary": "An architectural deconstruction of message construction: classifying Command, Document, and Event intents, engineering non-blocking asynchronous request-reply, and modeling correlation mechanics.",
   "primaryTopic": {
     "_type": "reference",
     "_ref": "topic-architectural-patterns"
@@ -36,9 +36,10 @@
   ],
   "technologies": [
     "Java 21",
-    "Distributed Systems",
-    "Message Queues",
-    "Architecture"
+    "CloudEvents",
+    "Kafka",
+    "RabbitMQ",
+    "Message Broker"
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
@@ -68,328 +69,1150 @@
         {
           "_key": "nav-eip-3",
           "title": "Part III: Message Construction & Exchange Semantics",
+          "href": "/articles/eip-part-3-message-construction/",
           "status": "current"
         },
         {
           "_key": "nav-eip-4",
           "title": "Part IV: Message Routing & Process Coordination",
           "href": "/articles/eip-part-4-message-routing/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-5",
           "title": "Part V: Message Transformation & Interoperability",
           "href": "/articles/eip-part-5-message-transformation/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-6",
           "title": "Part VI: Messaging Endpoints & Reliable Processing",
           "href": "/articles/eip-part-6-messaging-endpoints/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-7",
           "title": "Part VII: Operations, Observability & Governance",
           "href": "/articles/eip-part-7-integration-operations/",
-          "status": "completed"
+          "status": "upcoming"
         },
         {
           "_key": "nav-eip-8",
           "title": "Part VIII: Composing Enterprise Integration Patterns",
           "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
-          "status": "completed"
-        }
-      ]
-    },
-    {
-      "_key": "b-02-h2-scope",
-      "_type": "block",
-      "style": "h2",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-h2-scope-s0",
-          "_type": "span",
-          "text": "1. Architectural Scope and Problem Statement",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-02-p-scope",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-p-scope-s0",
-          "_type": "span",
-          "text": "An architectural exploration of message anatomy: classifying Command, Event, and Document intents, engineering non-blocking asynchronous request-reply, and enforcing correlation semantics.",
-          "marks": []
-        }
-      ]
-    },
-    {
-      "_key": "b-02-callout-note",
-      "_type": "callout",
-      "tone": "note",
-      "title": "EIP Part 3 \u2014 Upcoming Series Installment",
-      "items": [
-        {
-          "_key": "note-item-2",
-          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
           "status": "upcoming"
         }
       ]
     },
     {
-      "_key": "b-02-h2-patterns",
+      "_key": "h2-001",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-h2-patterns-s0",
+          "_key": "s-002",
           "_type": "span",
-          "text": "2. Pattern Catalog & Formal Realizations",
+          "text": "1. Architectural Scope: Transport vs. Encapsulation",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-02-p-patterns-intro",
+      "_key": "p-003",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-p-patterns-intro-s0",
+          "_key": "s-004",
           "_type": "span",
-          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "text": "In Part II of this series, we explored the physics of messaging channels—the conduits, log segments, and replica quorums that guarantee byte delivery across distributed boundaries. However, a transport channel is fundamentally indifferent to the payload it conveys. To a storage engine or message broker, an inbound frame is merely an opaque sequence of bytes destined for disk write-ahead logs and network socket buffers.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-02-pat-00",
+      "_key": "p-005",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-pat-00-s0",
+          "_key": "s-006",
           "_type": "span",
-          "text": "Command Message: Intent-driven message instructing a specific downstream recipient to perform a transactional action (e.g. CQRS command payload).",
+          "text": "Connecting distributed systems solely by pushing raw bytes across queues inevitably creates chaotic coupling. When producers and consumers lack an architectural consensus on message structure, routing headers, and semantic intent, systems degenerate into brittle, unmaintainable fabrics. Consumers crash on unexpected schema mutations, thread pools deadlock waiting for replies that lack correlation context, and stale messages trigger catastrophic phantom transactions long after their business utility has expired.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-02-pat-01",
+      "_key": "p-007",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-pat-01-s0",
+          "_key": "s-008",
           "_type": "span",
-          "text": "Document Message: State-carrying message transferring an explicit snapshot of domain state without prescriptive execution orders.",
+          "text": "Gregor Hohpe and Bobby Woolf formalized message construction to solve this foundational dilemma. A message is not simply a payload; it is a structured envelope comprising two strictly partitioned concerns:",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-02-pat-02",
+      "_key": "q-009",
+      "_type": "block",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-010",
+          "_type": "span",
+          "text": "A Message consists of two fundamental parts: Header and Body. The Header contains metadata used by the messaging system to route, filter, and correlate the message without inspecting the body. The Body contains the application domain data and is completely ignored by the messaging infrastructure.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-011",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-pat-02-s0",
+          "_key": "s-012",
           "_type": "span",
-          "text": "Event Message: Immutable notification that a discrete domain state transition has occurred (e.g. OrderPlaced, PaymentAuthorized).",
+          "text": "In this deep dive, we formalize the anatomy of enterprise messages, deconstruct the triad of semantic intents (Command, Document, and Event), model non-blocking asynchronous request-reply correlation, and derive the mathematical bounds governing correlation collision entropy and message expiration.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-02-pat-03",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-03-s0",
-          "_type": "span",
-          "text": "Request-Reply: Two-way conversational messaging over asynchronous channels, linking requests to replies without holding open TCP connections.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      "_key": "img-hero-construction",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Architectural blueprint of enterprise message construction: envelope anatomy, intent classification triad (Command, Document, Event), and asynchronous request-reply correlation fabric.",
+      "caption": "Figure 1: Architectural blueprint of message construction: deconstructing structured envelopes, the triad of semantic intents, and non-blocking asynchronous request-reply correlation."
     },
     {
-      "_key": "b-02-pat-04",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-04-s0",
-          "_type": "span",
-          "text": "Return Address: Header metadata specifying the reply destination channel to which response messages must be delivered.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-02-pat-05",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-05-s0",
-          "_type": "span",
-          "text": "Correlation Identifier: Unique request token header (e.g. W3C traceparent or correlationId) enabling callers to match inbound responses with inflight requests.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-02-pat-06",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-06-s0",
-          "_type": "span",
-          "text": "Message Sequence: Ordering metadata (sequence IDs, total chunk counts, partition offsets) enabling reassembly of fragmented streams.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-02-pat-07",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-07-s0",
-          "_type": "span",
-          "text": "Message Expiration: Time-to-live (TTL) headers enabling brokers and consumers to discard stale messages that are no longer operationally valid.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-02-pat-08",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-02-pat-08-s0",
-          "_type": "span",
-          "text": "Format Indicator: Envelope metadata specifying the serialization format or schema registry version identifier (e.g. CloudEvents datacontenttype).",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-02-h2-invariants",
+      "_key": "h2-013",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-h2-invariants-s0",
+          "_key": "s-014",
           "_type": "span",
-          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "text": "2. The Intent Triad: Command, Document, and Event Messages",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-02-p-invariants-intro",
+      "_key": "p-015",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-p-invariants-intro-s0",
+          "_key": "s-016",
           "_type": "span",
-          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "text": "A recurring failure mode in enterprise integration is semantic overloading—using an identical message envelope or payload format to represent fundamentally conflicting operational intents. When architects treat all messages generically as \"data packets,\" boundaries erode and systems suffer from implicit, hidden coupling.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-02-inv-00",
+      "_key": "p-017",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-inv-00-s0",
+          "_key": "s-018",
           "_type": "span",
-          "text": "Intent Classification: Blurring Command and Event semantics creates tight distributed coupling; Events announce facts to autonomous subscribers, while Commands enforce execution expectations on specific processors.",
+          "text": "Enterprise Integration Patterns partitions messaging semantics into a rigorous triad based on intent, recipient expectations, and mutability:",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-02-inv-01",
+      "_key": "h3-019",
       "_type": "block",
-      "style": "normal",
+      "style": "h3",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-inv-01-s0",
+          "_key": "s-020",
           "_type": "span",
-          "text": "Asynchronous Correlation Leaks: Temporary reply queues and in-memory correlation maps leak resources if upstream clients crash before responses return; robust systems enforce strict expiration windows.",
+          "text": "Command Message (Invocation Intent)",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-02-inv-02",
+      "_key": "p-021",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-02-inv-02-s0",
+          "_key": "s-022",
           "_type": "span",
-          "text": "Clock Skew in Expiration: Message expiration based on absolute wall-clock timestamps fails under distributed clock drift; relative TTL offsets provide resilience against unsynchronized node clocks.",
+          "text": "A Command Message represents an imperative invocation requesting that a specific action be executed within the recipient domain. It is an asynchronous RPC replacement. The sender knows exactly what procedure must run, names the message using an imperative verb phrase (e.g., SubmitOrder, ChargeCreditCard, AllocateInventory), and directs the message to a specific single-consumer queue.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
+    },
+    {
+      "_key": "p-023",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-024",
+          "_type": "span",
+          "text": "Because a command instructs a downstream service to mutate state, it carries high sender-to-receiver coupling. The sender expects either an explicit acknowledgement or a compensation event if execution fails. Command messages cannot be safely broadcast to arbitrary consumer groups; doing so causes duplicate side-effects (e.g., double-billing a customer or issuing duplicate shipping manifests).",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-025",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-026",
+          "_type": "span",
+          "text": "Document Message (Information Intent)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-027",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-028",
+          "_type": "span",
+          "text": "A Document Message transports raw state representation without specifying what the recipient should do with it. The payload represents a complete domain entity or snapshot (e.g., CustomerProfileDTO, MonthlyAccountStatement). The sender is simply an information broker, publishing data and granting receivers autonomy over how that data is stored, indexed, or analyzed.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-029",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-030",
+          "_type": "span",
+          "text": "Document messages eliminate procedural coupling: the producer has zero knowledge of consumer business logic. However, they introduce contract and schema coupling. Any structural change in the document schema (such as renaming or deleting a field) risks breaking downstream consumers unless strict backward and forward compatibility rules are enforced via a schema registry.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-031",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-032",
+          "_type": "span",
+          "text": "Event Message (Notification Intent)",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-033",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-034",
+          "_type": "span",
+          "text": "An Event Message is an immutable announcement that a domain state transition has already occurred in the past. It represents a historical fact. Events are strictly named with past-tense verb phrases (e.g., OrderPlaced, PaymentAuthorized, ShipmentDispatched) and are published to fan-out channels or partitioned topic logs.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-035",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-036",
+          "_type": "span",
+          "text": "Events provide the highest degree of architectural decoupling: the emitter has zero awareness of whether downstream consumers exist, what technologies they use, or when they consume the record. Because historical facts cannot be undone, events are append-only and immutable. If an event was emitted with erroneous data, the producer does not mutate the historical record; instead, it emits a subsequent compensating event (e.g., PaymentReversed).",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-037",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-038",
+          "_type": "span",
+          "text": "The following native table summarizes the structural and operational trade-offs of the Intent Triad:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "tbl-039",
+      "_type": "table",
+      "rows": [
+        {
+          "_key": "row-040",
+          "_type": "tableRow",
+          "cells": [
+            "Architectural Dimension",
+            "Command Message",
+            "Document Message",
+            "Event Message"
+          ]
+        },
+        {
+          "_key": "row-041",
+          "_type": "tableRow",
+          "cells": [
+            "Primary Intent",
+            "Imperative invocation of action",
+            "State representation transfer",
+            "Notification of historical fact"
+          ]
+        },
+        {
+          "_key": "row-042",
+          "_type": "tableRow",
+          "cells": [
+            "Naming Convention",
+            "Imperative Verb (ChargeCard)",
+            "Domain Noun (InvoiceDTO)",
+            "Past-Tense Verb (OrderPaid)"
+          ]
+        },
+        {
+          "_key": "row-043",
+          "_type": "tableRow",
+          "cells": [
+            "Destination Topology",
+            "Point-to-Point Queue",
+            "Point-to-Point or Topic",
+            "Publish-Subscribe Topic Log"
+          ]
+        },
+        {
+          "_key": "row-044",
+          "_type": "tableRow",
+          "cells": [
+            "Consumer Cardinality",
+            "Exactly-one worker instance",
+            "One or multiple subscribers",
+            "Zero, one, or many consumer groups"
+          ]
+        },
+        {
+          "_key": "row-045",
+          "_type": "tableRow",
+          "cells": [
+            "Producer Coupling",
+            "High (knows action & receiver)",
+            "Moderate (shared schema contract)",
+            "Zero (agnostic to consumer existence)"
+          ]
+        },
+        {
+          "_key": "row-046",
+          "_type": "tableRow",
+          "cells": [
+            "State Mutability",
+            "Demands state mutation",
+            "Transfers snapshot state",
+            "Strictly immutable historical fact"
+          ]
+        },
+        {
+          "_key": "row-047",
+          "_type": "tableRow",
+          "cells": [
+            "Modern Realization",
+            "SQS task queues, Temporal commands",
+            "Kafka CDC snapshots, Debezium",
+            "Kafka topic events, EventBridge"
+          ]
+        }
+      ]
+    },
+    {
+      "_key": "h2-048",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-049",
+          "_type": "span",
+          "text": "3. Envelope Specifications: Classic EIP vs. CloudEvents v1.0",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-050",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-051",
+          "_type": "span",
+          "text": "To decouple routing mediators from domain payloads, the messaging infrastructure must be able to inspect operational metadata without deserializing the body. Deserializing an uninterpreted payload at every intermediary proxy or router consumes extensive CPU cycles, breaks zero-copy kernel socket transfers, and creates dependency hell when internal schemas mutate.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-052",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-053",
+          "_type": "span",
+          "text": "In 2003, Hohpe and Woolf established the canonical header attributes for enterprise envelopes. Today, this model has been standardized by the Cloud Native Computing Foundation (CNCF) under the CloudEvents v1.0 specification, creating a common cross-cloud protocol for event metadata.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-envelope-anatomy",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Comparison of classic EIP message envelope structure against the modern CloudEvents v1.0 specification.",
+      "caption": "Figure 2: Message Envelope Anatomy: Classic Hohpe-Woolf headers compared with the CloudEvents v1.0 specification and broker transport attributes."
+    },
+    {
+      "_key": "h3-054",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-055",
+          "_type": "span",
+          "text": "Canonical Header Attributes",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-056",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-057",
+          "_type": "span",
+          "text": "A production-grade message envelope must define the following metadata fields:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-058",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-059",
+          "_type": "span",
+          "text": "1. Message Identifier (id): A globally unique identifier assigned to the message at creation time. Used for broker deduplication, idempotent consumption fences, and distributed dead-letter indexing.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-060",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-061",
+          "_type": "span",
+          "text": "2. Correlation Identifier (correlation_id): A unique transaction token carried across asynchronous request-reply cycles and saga pipelines to associate related messages across decoupled threads.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-062",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-063",
+          "_type": "span",
+          "text": "3. Return Address (reply_to): The logical channel name or temporary queue address to which the consumer must dispatch response messages or error notifications.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-064",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-065",
+          "_type": "span",
+          "text": "4. Message Expiration (time-to-live / ttl): An epoch timestamp or relative millisecond duration after which the message must be discarded or diverted to a dead-letter channel rather than processed.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-066",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-067",
+          "_type": "span",
+          "text": "5. Sequence Identifier: Sequence numbers and chunk indices used by aggregators and resequencers to reconstruct ordered streams or fragmented payloads.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-068",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-069",
+          "_type": "span",
+          "text": "6. Format Indicator & Content Type: MIME types and schema registry identifiers indicating whether the payload is encoded as Avro, JSON, or Protocol Buffers, and which specific schema version governs deserialization.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-070",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-071",
+          "_type": "span",
+          "text": "The following listing demonstrates a production CloudEvents v1.0 payload incorporating these EIP header primitives:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "code-072",
+      "_type": "code",
+      "language": "json",
+      "filename": "cloudevents-envelope.json",
+      "code": "{\n  \"specversion\": \"1.0\",\n  \"id\": \"A234-1234-1234\",\n  \"source\": \"https://payments.eiakoji.me/transactions\",\n  \"type\": \"me.eiakoji.payments.authorization.completed\",\n  \"datacontenttype\": \"application/json\",\n  \"dataschema\": \"https://schema.eiakoji.me/payments/auth-completed/v1.json\",\n  \"time\": \"2026-11-14T08:00:00Z\",\n  \"traceparent\": \"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\",\n  \"correlationid\": \"c7f8a14b-7128-4e89-8d19-21cb8b77a1e0\",\n  \"replyto\": \"payments.responses.node-42\",\n  \"data\": {\n    \"orderId\": \"ord-9821\",\n    \"amountCents\": 14999,\n    \"currency\": \"USD\",\n    \"status\": \"SETTLED\",\n    \"authCode\": \"AUTH-771290\"\n  }\n}"
+    },
+    {
+      "_key": "h3-073",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-074",
+          "_type": "span",
+          "text": "Mathematical Derivation: Correlation ID Collision Probability",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-075",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-076",
+          "_type": "span",
+          "text": "In high-throughput distributed systems generating millions of messages per second, generating non-colliding Correlation Identifiers is critical. If two concurrent requests generate identical correlation tokens, response messages will resolve the wrong client futures, causing severe silent data corruption.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-077",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-078",
+          "_type": "span",
+          "text": "When using 128-bit identifiers (such as UUIDv4 or time-ordered UUIDv7), the collision probability over $k$ active in-flight messages within an ID space of size $N$ is governed by the Birthday Problem bound:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-079",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-080",
+          "_type": "span",
+          "text": "$$P_{\\text{collision}}(k, N) \\approx 1 - \\exp\\left(-\\frac{k^2}{2N}\\right)$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-081",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-082",
+          "_type": "span",
+          "text": "For UUIDv4/v7, $N = 2^{122} \\approx 5.3169 \\times 10^{36}$ (since 6 bits are reserved for variant and version metadata). By Taylor series approximation for $\\frac{k^2}{2N} \\ll 1$:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-083",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-084",
+          "_type": "span",
+          "text": "$$P_{\\text{collision}} \\approx \\frac{k^2}{2N} = \\frac{k^2}{2^{123}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-085",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-086",
+          "_type": "span",
+          "text": "Even under extreme enterprise load with $k = 10^9$ (one billion active, concurrent in-flight requests):",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-087",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-088",
+          "_type": "span",
+          "text": "$$P_{\\text{collision}} \\approx \\frac{(10^9)^2}{2 \\times 5.3169 \\times 10^{36}} \\approx 9.404 \\times 10^{-20}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-089",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-090",
+          "_type": "span",
+          "text": "This proves that 128-bit identifiers provide absolute immunity against correlation collision, rendering centralized coordination services (such as distributed sequence generators or database sequences) completely unnecessary.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-091",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-092",
+          "_type": "span",
+          "text": "4. Non-Blocking Asynchronous Request-Reply Mechanics",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-093",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-094",
+          "_type": "span",
+          "text": "While event-driven architectures favor fire-and-forget topologies, business processes frequently require bidirectional request-reply coordination (e.g., querying credit limits, validating token balances, or reserving inventory). Attempting to implement synchronous RPC across microservices violates the fallacies of distributed computing, creating cascading thread starvation under downstream latency spikes.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-095",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-096",
+          "_type": "span",
+          "text": "The Request-Reply pattern resolves this dilemma by executing two-way conversations over two distinct, asynchronous, unidirectional point-to-point channels without blocking caller threads.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-async-request-reply",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Non-blocking asynchronous request-reply flow diagram: client correlation map, request channel, worker service, return address channel, and timeout eviction sink.",
+      "caption": "Figure 3: Non-Blocking Asynchronous Request-Reply: Lock-free correlation map, dynamic return addresses, and promise resolution without thread pool starvation."
+    },
+    {
+      "_key": "h3-097",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-098",
+          "_type": "span",
+          "text": "The Four-Step Correlation Dance",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-099",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-100",
+          "_type": "span",
+          "text": "1. Correlation Token Assignment: The client process constructs a Command Message, generates a unique Correlation ID ($C_{\\text{id}}$), and writes the callback queue address into the Return Address ($reply\\_to$) header.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-101",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-102",
+          "_type": "span",
+          "text": "2. Non-Blocking Promise Registration: Before emitting the message, the client registers an uncompleted future (e.g., CompletableFuture<Response>) into a thread-safe, lock-free in-memory lookup table (ConcurrentHashMap<UUID, Promise>) keyed by $C_{\\text{id}}$. The caller thread is immediately released back to its thread pool to process other inbound workloads.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-103",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-104",
+          "_type": "span",
+          "text": "3. Autonomous Worker Processing: The service worker dequeues the command message from the request queue, executes the transactional business logic, and constructs a Document Response. The worker extracts the $reply\\_to$ channel address and echoes the original $C_{\\text{id}}$ into the response envelope headers.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-105",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-106",
+          "_type": "span",
+          "text": "4. Response Dispatch & Promise Completion: A dedicated listener on the client side receives the response, reads $C_{\\text{id}}$, removes the pending future from the correlation map, and invokes CompletableFuture.complete(response). Downstream callbacks execute asynchronously on worker thread pools.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-107",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-108",
+          "_type": "span",
+          "text": "Mathematical Derivation: Request-Reply Timeout Budgeting",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-109",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-110",
+          "_type": "span",
+          "text": "A critical failure mode in asynchronous request-reply is the Correlation Leak. If a downstream worker crashes or drops a message, the pending future in the client map will remain allocated indefinitely. In high-traffic systems, this leads to heap exhaustion and OutOfMemoryError (OOM) crashes.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-111",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-112",
+          "_type": "span",
+          "text": "To prevent memory leaks, every asynchronous correlation must define a bounded timeout $T_{\\text{timeout}}$. To avoid false-positive timeouts while protecting against heap bloat, the timeout must be mathematically dimensioned against network latency and queue wait distributions:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-113",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-114",
+          "_type": "span",
+          "text": "$$T_{\\text{timeout}} = 2 \\cdot T_{\\text{net}} + T_{\\text{queue}} + T_{\\text{proc}} + 4 \\cdot \\sigma_{\\text{jitter}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-115",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-116",
+          "_type": "span",
+          "text": "Where $T_{\\text{net}}$ is the one-way network transit latency, $T_{\\text{queue}}$ is the 99th percentile queue dwell time under peak arrival load, $T_{\\text{proc}}$ is the downstream service processing time, and $\\sigma_{\\text{jitter}}$ is the composite standard deviation of latency variance across the pipeline. Setting the deadline to $4\\sigma$ guarantees that fewer than 0.006% of healthy requests are prematurely aborted due to transient variance.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-117",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-118",
+          "_type": "span",
+          "text": "5. Temporal Boundaries: Message Expiration (TTL) and Clock Skew",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-119",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-120",
+          "_type": "span",
+          "text": "Messages represent data that is valid only within a specific temporal window. An algorithmic trade order submitted at 09:30:00 becomes dangerous if delayed in an overloaded queue and executed at 09:35:00. Similarly, an authorization token or inventory hold loses validity after its reservation expires.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-121",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-122",
+          "_type": "span",
+          "text": "The Message Expiration pattern enforces temporal boundaries by stamping envelopes with a Time-To-Live (TTL) or epoch expiration timestamp. Message brokers and consumer endpoints inspect this metadata and immediately purge or divert expired records to Dead Letter Channels without executing business logic.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h3-123",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-124",
+          "_type": "span",
+          "text": "The Distributed Clock Skew Trap",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-125",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-126",
+          "_type": "span",
+          "text": "In distributed systems spanning multiple physical servers, VMs, and data centers, system clocks are never perfectly synchronized. Network Time Protocol (NTP) daemons synchronize clocks via network packets, introducing an unavoidable clock drift $\\Delta_{\\text{clock\\_skew}}$:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-127",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-128",
+          "_type": "span",
+          "text": "$$t_{\\text{effective\\_expire}} = t_{\\text{emit}} + \\text{TTL} \\pm \\Delta_{\\text{clock\\_skew}}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-129",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-130",
+          "_type": "span",
+          "text": "If a producer server clock is 500ms ahead of the consumer clock, a message with a 500ms TTL will be immediately evaluated as expired upon arrival and erroneously discarded. Conversely, if the producer clock is behind, expired commands will execute past their intended business deadline.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "q-131",
+      "_type": "block",
+      "style": "blockquote",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-132",
+          "_type": "span",
+          "text": "Architectural Rule: Never rely on client-side absolute timestamps for message expiration in multi-datacenter topologies. Use relative millisecond TTL durations stamped at broker ingestion time, or enforce monotonically increasing broker-assigned sequence epochs.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-133",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-134",
+          "_type": "span",
+          "text": "6. Production Reference Implementation: Java 21 LTS",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-135",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-136",
+          "_type": "span",
+          "text": "The following production-grade Java 21 LTS reference implementation demonstrates the complete Message Construction architecture. It uses sealed interfaces to enforce the Intent Triad, immutable records for thread-safe envelope modeling, pattern matching for dispatch, and an asynchronous correlation gateway with scheduled timeout eviction:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "code-137",
+      "_type": "code",
+      "language": "java",
+      "filename": "VerifyMessageConstruction.java",
+      "code": "package me.eiakoji.eip.construction;\n\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.util.Objects;\nimport java.util.Optional;\nimport java.util.UUID;\nimport java.util.concurrent.CompletableFuture;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.concurrent.Executors;\nimport java.util.concurrent.ScheduledExecutorService;\nimport java.util.concurrent.TimeUnit;\nimport java.util.concurrent.TimeoutException;\n\npublic class VerifyMessageConstruction {\n\n    public sealed interface MessageEnvelope<T> permits CommandMessage, DocumentMessage, EventMessage {\n        UUID messageId();\n        Instant timestamp();\n        Optional<UUID> correlationId();\n        Optional<String> replyTo();\n        Optional<Duration> timeToLive();\n        String contentType();\n        T payload();\n\n        default boolean isExpired(Instant currentInstant) {\n            return timeToLive()\n                    .map(ttl -> currentInstant.isAfter(timestamp().plus(ttl)))\n                    .orElse(false);\n        }\n    }\n\n    public record CommandMessage<T>(\n            UUID messageId,\n            Instant timestamp,\n            Optional<UUID> correlationId,\n            Optional<String> replyTo,\n            Optional<Duration> timeToLive,\n            String contentType,\n            String commandName,\n            T payload\n    ) implements MessageEnvelope<T> {\n        public CommandMessage {\n            Objects.requireNonNull(messageId, \"messageId must not be null\");\n            Objects.requireNonNull(timestamp, \"timestamp must not be null\");\n            Objects.requireNonNull(commandName, \"commandName must not be null\");\n            Objects.requireNonNull(payload, \"payload must not be null\");\n        }\n\n        public static <T> CommandMessage<T> of(String commandName, T payload, String replyTo, Duration ttl) {\n            return new CommandMessage<>(\n                    UUID.randomUUID(),\n                    Instant.now(),\n                    Optional.of(UUID.randomUUID()),\n                    Optional.ofNullable(replyTo),\n                    Optional.ofNullable(ttl),\n                    \"application/json\",\n                    commandName,\n                    payload\n            );\n        }\n    }\n\n    public record DocumentMessage<T>(\n            UUID messageId,\n            Instant timestamp,\n            Optional<UUID> correlationId,\n            Optional<String> replyTo,\n            Optional<Duration> timeToLive,\n            String contentType,\n            String schemaVersion,\n            T payload\n    ) implements MessageEnvelope<T> {\n        public DocumentMessage {\n            Objects.requireNonNull(messageId, \"messageId must not be null\");\n            Objects.requireNonNull(timestamp, \"timestamp must not be null\");\n            Objects.requireNonNull(schemaVersion, \"schemaVersion must not be null\");\n            Objects.requireNonNull(payload, \"payload must not be null\");\n        }\n\n        public static <T> DocumentMessage<T> replyTo(UUID correlationId, String schemaVersion, T payload) {\n            return new DocumentMessage<>(\n                    UUID.randomUUID(),\n                    Instant.now(),\n                    Optional.of(correlationId),\n                    Optional.empty(),\n                    Optional.empty(),\n                    \"application/json\",\n                    schemaVersion,\n                    payload\n            );\n        }\n    }\n\n    public record EventMessage<T>(\n            UUID messageId,\n            Instant timestamp,\n            Optional<UUID> correlationId,\n            Optional<String> replyTo,\n            Optional<Duration> timeToLive,\n            String contentType,\n            String eventType,\n            T payload\n    ) implements MessageEnvelope<T> {\n        public EventMessage {\n            Objects.requireNonNull(messageId, \"messageId must not be null\");\n            Objects.requireNonNull(timestamp, \"timestamp must not be null\");\n            Objects.requireNonNull(eventType, \"eventType must not be null\");\n            Objects.requireNonNull(payload, \"payload must not be null\");\n        }\n\n        public static <T> EventMessage<T> of(String eventType, T payload) {\n            return new EventMessage<>(\n                    UUID.randomUUID(),\n                    Instant.now(),\n                    Optional.empty(),\n                    Optional.empty(),\n                    Optional.empty(),\n                    \"application/json\",\n                    eventType,\n                    payload\n            );\n        }\n    }\n\n    public record PaymentCommand(String orderId, long amountCents, String currency) {}\n    public record PaymentResult(String orderId, String transactionId, String status) {}\n    public record OrderPlacedEvent(String orderId, Instant placedAt, long totalCents) {}\n\n    public static class AsyncRequestReplyGateway {\n        private final ConcurrentHashMap<UUID, CompletableFuture<DocumentMessage<PaymentResult>>> pendingRequests = new ConcurrentHashMap<>();\n        private final ScheduledExecutorService timeoutScheduler = Executors.newSingleThreadScheduledExecutor();\n\n        public CompletableFuture<DocumentMessage<PaymentResult>> sendRequest(\n                CommandMessage<PaymentCommand> command,\n                Duration timeout\n        ) {\n            UUID correlationId = command.correlationId()\n                    .orElseThrow(() -> new IllegalArgumentException(\"Request-Reply commands must contain a correlationId\"));\n\n            CompletableFuture<DocumentMessage<PaymentResult>> future = new CompletableFuture<>();\n            pendingRequests.put(correlationId, future);\n\n            timeoutScheduler.schedule(() -> {\n                CompletableFuture<DocumentMessage<PaymentResult>> expired = pendingRequests.remove(correlationId);\n                if (expired != null && !expired.isDone()) {\n                    expired.completeExceptionally(new TimeoutException(\"Correlation timed out after \" + timeout.toMillis() + \"ms\"));\n                }\n            }, timeout.toMillis(), TimeUnit.MILLISECONDS);\n\n            return future;\n        }\n\n        public boolean dispatchReply(DocumentMessage<PaymentResult> reply) {\n            UUID correlationId = reply.correlationId()\n                    .orElseThrow(() -> new IllegalArgumentException(\"Reply messages must specify a correlationId\"));\n\n            CompletableFuture<DocumentMessage<PaymentResult>> pendingFuture = pendingRequests.remove(correlationId);\n            if (pendingFuture == null) {\n                return false;\n            }\n\n            return pendingFuture.complete(reply);\n        }\n\n        public void shutdown() {\n            timeoutScheduler.shutdown();\n        }\n    }\n}"
+    },
+    {
+      "_key": "h2-138",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-139",
+          "_type": "span",
+          "text": "7. Enterprise Architectural Invariants",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-140",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-141",
+          "_type": "span",
+          "text": "To ensure reliability, scalability, and long-term maintainability across asynchronous message-driven topologies, engineering teams must enforce four architectural invariants:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-142",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-143",
+          "_type": "span",
+          "text": "1. Strict Header/Body Separation: Mediators, routers, filters, and brokers must never deserialize domain payloads. All routing, correlation, and filtering decisions must execute against envelope headers to maintain line-rate throughput and zero-copy performance.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-144",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-145",
+          "_type": "span",
+          "text": "2. Explicit Intent Classification: Never use generic message wrappers. Formally separate Command Messages (imperative, targeted, side-effectual), Document Messages (informational, state snapshots), and Event Messages (historical, immutable, fan-out) in your domain type system.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-146",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-147",
+          "_type": "span",
+          "text": "3. Non-Blocking Request-Reply: Never block OS or virtual threads waiting on asynchronous broker responses. Always register non-blocking promises in a correlation map and resolve them via dynamic return address callbacks.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-148",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-149",
+          "_type": "span",
+          "text": "4. Bounded Correlation Lifecycles: Every in-flight correlation must be bound to a scheduled timeout eviction mechanism to guarantee that dropped or delayed downstream responses cannot trigger memory leaks or heap exhaustion.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-150",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-151",
+          "_type": "span",
+          "text": "In Part IV of this series, we will examine Message Routing and Process Coordination: building stateless dispatchers, stream aggregators, resequencers, and distributed sagas.",
+          "marks": []
+        }
+      ]
     }
   ]
 }
