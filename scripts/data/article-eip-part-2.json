@@ -1,0 +1,395 @@
+{
+  "_id": "article-eip-part-2-messaging-channels",
+  "_type": "article",
+  "title": "EIP Part II: Messaging Channels and Communication Models",
+  "slug": {
+    "_type": "slug",
+    "current": "eip-part-2-messaging-channels"
+  },
+  "format": "article",
+  "difficulty": "advanced",
+  "featured": false,
+  "publishedAt": "2026-11-13T00:00:00Z",
+  "readingTime": "18 min read",
+  "summary": "A mechanical evaluation of message conduits: contrasting point-to-point queues and publish-subscribe topics, deriving durability and quorum invariants, and isolating dead-letter triage paths.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-architectural-patterns"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "topic-distributed-systems",
+      "_key": "rel-topic-ds"
+    },
+    {
+      "_type": "reference",
+      "_ref": "domain-software-architecture",
+      "_key": "rel-topic-sa"
+    }
+  ],
+  "topics": [
+    "Enterprise Integration Patterns",
+    "Distributed Systems",
+    "Software Architecture",
+    "Asynchronous Messaging"
+  ],
+  "technologies": [
+    "Java 21",
+    "Distributed Systems",
+    "Message Queues",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "_type": "seo",
+    "title": "EIP Part II: Messaging Channels & Communication Models",
+    "description": "Point-to-Point vs Publish-Subscribe, delivery guarantee mechanics (fsync, WAL, replication quorums), Dead Letter Channels, and message bus topologies."
+  },
+  "body": [
+    {
+      "_key": "b-eip-series-nav",
+      "_type": "callout",
+      "tone": "series",
+      "title": "Enterprise Integration Patterns",
+      "items": [
+        {
+          "_key": "nav-eip-1",
+          "title": "Part I: Foundations of Enterprise Integration",
+          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-2",
+          "title": "Part II: Messaging Channels & Communication Models",
+          "status": "current"
+        },
+        {
+          "_key": "nav-eip-3",
+          "title": "Part III: Message Construction & Exchange Semantics",
+          "href": "/articles/eip-part-3-message-construction/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-4",
+          "title": "Part IV: Message Routing & Process Coordination",
+          "href": "/articles/eip-part-4-message-routing/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-5",
+          "title": "Part V: Message Transformation & Interoperability",
+          "href": "/articles/eip-part-5-message-transformation/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-6",
+          "title": "Part VI: Messaging Endpoints & Reliable Processing",
+          "href": "/articles/eip-part-6-messaging-endpoints/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-7",
+          "title": "Part VII: Operations, Observability & Governance",
+          "href": "/articles/eip-part-7-integration-operations/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-8",
+          "title": "Part VIII: Composing Enterprise Integration Patterns",
+          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "_key": "b-01-h2-scope",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-h2-scope-s0",
+          "_type": "span",
+          "text": "1. Architectural Scope and Problem Statement",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-p-scope",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-p-scope-s0",
+          "_type": "span",
+          "text": "A mechanical evaluation of message conduits: contrasting point-to-point queues and publish-subscribe topics, deriving durability and quorum invariants, and isolating dead-letter triage paths.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-callout-note",
+      "_type": "callout",
+      "tone": "note",
+      "title": "EIP Part 2 \u2014 Upcoming Series Installment",
+      "items": [
+        {
+          "_key": "note-item-1",
+          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
+          "status": "upcoming"
+        }
+      ]
+    },
+    {
+      "_key": "b-01-h2-patterns",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-h2-patterns-s0",
+          "_type": "span",
+          "text": "2. Pattern Catalog & Formal Realizations",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-p-patterns-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-p-patterns-intro-s0",
+          "_type": "span",
+          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-pat-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-00-s0",
+          "_type": "span",
+          "text": "Message Channel: The foundational virtual conduit decoupling message senders from receivers.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-01-s0",
+          "_type": "span",
+          "text": "Point-to-Point Channel: Strict single-consumer delivery topology with competing consumer load balancing (e.g. AWS SQS, RabbitMQ Direct).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-02-s0",
+          "_type": "span",
+          "text": "Publish-Subscribe Channel: One-to-many broadcast fanout where independent consumer groups receive identical message streams (e.g. Kafka Topics, Google Cloud Pub/Sub).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-03-s0",
+          "_type": "span",
+          "text": "Datatype Channel: Schema-enforced message conduits preventing contract violations across producer-consumer boundaries.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-04-s0",
+          "_type": "span",
+          "text": "Invalid Message Channel: Quarantine conduit for malformed payloads that fail syntactic or schema validation.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-05",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-05-s0",
+          "_type": "span",
+          "text": "Dead Letter Channel: Automated containment queue for poison pills that exhaust processing retry limits, paired with redrive policies.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-06",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-06-s0",
+          "_type": "span",
+          "text": "Guaranteed Delivery: Persistent storage mechanics: write-ahead logs (WAL), disk sync fsync barriers, and broker replication ack quorums.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-07",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-07-s0",
+          "_type": "span",
+          "text": "Channel Adapter: Bidirectional bridging layer connecting external systems and databases to native messaging conduits (e.g. Kafka Connect).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-pat-08",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-pat-08-s0",
+          "_type": "span",
+          "text": "Messaging Bridge & Message Bus: Cross-cluster message replication (MirrorMaker 2) and enterprise event mesh backbones connecting disparate bus fabrics.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-h2-invariants",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-h2-invariants-s0",
+          "_type": "span",
+          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-p-invariants-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-p-invariants-intro-s0",
+          "_type": "span",
+          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-01-inv-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-inv-00-s0",
+          "_type": "span",
+          "text": "Durability vs Latency Trade-off: Memory-only buffering provides microsecond throughput but risks silent loss during node crashes; fsync barriers and distributed quorum acknowledgments enforce durability at the cost of higher base latency.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-inv-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-inv-01-s0",
+          "_type": "span",
+          "text": "Dead-Letter Triage Semantics: Dead-letter queues prevent consumer thread starvation from unprocessable messages, requiring automated retry limits and manual inspection backplanes.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-01-inv-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-01-inv-02-s0",
+          "_type": "span",
+          "text": "Channel Topology Coupling: Point-to-point queues guarantee single-worker processing but introduce competing consumer contention; pub-sub topics decouple consumption rates across distinct consumer groups.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    }
+  ]
+}

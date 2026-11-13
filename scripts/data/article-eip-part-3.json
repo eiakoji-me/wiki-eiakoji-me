@@ -1,0 +1,395 @@
+{
+  "_id": "article-eip-part-3-message-construction",
+  "_type": "article",
+  "title": "EIP Part III: Message Construction and Exchange Semantics",
+  "slug": {
+    "_type": "slug",
+    "current": "eip-part-3-message-construction"
+  },
+  "format": "article",
+  "difficulty": "advanced",
+  "featured": false,
+  "publishedAt": "2026-11-14T00:00:00Z",
+  "readingTime": "16 min read",
+  "summary": "An architectural exploration of message anatomy: classifying Command, Event, and Document intents, engineering non-blocking asynchronous request-reply, and enforcing correlation semantics.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-architectural-patterns"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "topic-distributed-systems",
+      "_key": "rel-topic-ds"
+    },
+    {
+      "_type": "reference",
+      "_ref": "domain-software-architecture",
+      "_key": "rel-topic-sa"
+    }
+  ],
+  "topics": [
+    "Enterprise Integration Patterns",
+    "Distributed Systems",
+    "Software Architecture",
+    "Asynchronous Messaging"
+  ],
+  "technologies": [
+    "Java 21",
+    "Distributed Systems",
+    "Message Queues",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "_type": "seo",
+    "title": "EIP Part III: Message Construction & Exchange Semantics",
+    "description": "Intent-driven messaging (Command vs Event vs Document), asynchronous request-reply, correlation identifiers, return addresses, and message expiration."
+  },
+  "body": [
+    {
+      "_key": "b-eip-series-nav",
+      "_type": "callout",
+      "tone": "series",
+      "title": "Enterprise Integration Patterns",
+      "items": [
+        {
+          "_key": "nav-eip-1",
+          "title": "Part I: Foundations of Enterprise Integration",
+          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-2",
+          "title": "Part II: Messaging Channels & Communication Models",
+          "href": "/articles/eip-part-2-messaging-channels/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-3",
+          "title": "Part III: Message Construction & Exchange Semantics",
+          "status": "current"
+        },
+        {
+          "_key": "nav-eip-4",
+          "title": "Part IV: Message Routing & Process Coordination",
+          "href": "/articles/eip-part-4-message-routing/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-5",
+          "title": "Part V: Message Transformation & Interoperability",
+          "href": "/articles/eip-part-5-message-transformation/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-6",
+          "title": "Part VI: Messaging Endpoints & Reliable Processing",
+          "href": "/articles/eip-part-6-messaging-endpoints/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-7",
+          "title": "Part VII: Operations, Observability & Governance",
+          "href": "/articles/eip-part-7-integration-operations/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-8",
+          "title": "Part VIII: Composing Enterprise Integration Patterns",
+          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "_key": "b-02-h2-scope",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-h2-scope-s0",
+          "_type": "span",
+          "text": "1. Architectural Scope and Problem Statement",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-p-scope",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-p-scope-s0",
+          "_type": "span",
+          "text": "An architectural exploration of message anatomy: classifying Command, Event, and Document intents, engineering non-blocking asynchronous request-reply, and enforcing correlation semantics.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-callout-note",
+      "_type": "callout",
+      "tone": "note",
+      "title": "EIP Part 3 \u2014 Upcoming Series Installment",
+      "items": [
+        {
+          "_key": "note-item-2",
+          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
+          "status": "upcoming"
+        }
+      ]
+    },
+    {
+      "_key": "b-02-h2-patterns",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-h2-patterns-s0",
+          "_type": "span",
+          "text": "2. Pattern Catalog & Formal Realizations",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-p-patterns-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-p-patterns-intro-s0",
+          "_type": "span",
+          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-pat-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-00-s0",
+          "_type": "span",
+          "text": "Command Message: Intent-driven message instructing a specific downstream recipient to perform a transactional action (e.g. CQRS command payload).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-01-s0",
+          "_type": "span",
+          "text": "Document Message: State-carrying message transferring an explicit snapshot of domain state without prescriptive execution orders.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-02-s0",
+          "_type": "span",
+          "text": "Event Message: Immutable notification that a discrete domain state transition has occurred (e.g. OrderPlaced, PaymentAuthorized).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-03-s0",
+          "_type": "span",
+          "text": "Request-Reply: Two-way conversational messaging over asynchronous channels, linking requests to replies without holding open TCP connections.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-04-s0",
+          "_type": "span",
+          "text": "Return Address: Header metadata specifying the reply destination channel to which response messages must be delivered.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-05",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-05-s0",
+          "_type": "span",
+          "text": "Correlation Identifier: Unique request token header (e.g. W3C traceparent or correlationId) enabling callers to match inbound responses with inflight requests.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-06",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-06-s0",
+          "_type": "span",
+          "text": "Message Sequence: Ordering metadata (sequence IDs, total chunk counts, partition offsets) enabling reassembly of fragmented streams.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-07",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-07-s0",
+          "_type": "span",
+          "text": "Message Expiration: Time-to-live (TTL) headers enabling brokers and consumers to discard stale messages that are no longer operationally valid.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-pat-08",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-pat-08-s0",
+          "_type": "span",
+          "text": "Format Indicator: Envelope metadata specifying the serialization format or schema registry version identifier (e.g. CloudEvents datacontenttype).",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-h2-invariants",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-h2-invariants-s0",
+          "_type": "span",
+          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-p-invariants-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-p-invariants-intro-s0",
+          "_type": "span",
+          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-02-inv-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-inv-00-s0",
+          "_type": "span",
+          "text": "Intent Classification: Blurring Command and Event semantics creates tight distributed coupling; Events announce facts to autonomous subscribers, while Commands enforce execution expectations on specific processors.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-inv-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-inv-01-s0",
+          "_type": "span",
+          "text": "Asynchronous Correlation Leaks: Temporary reply queues and in-memory correlation maps leak resources if upstream clients crash before responses return; robust systems enforce strict expiration windows.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-02-inv-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-02-inv-02-s0",
+          "_type": "span",
+          "text": "Clock Skew in Expiration: Message expiration based on absolute wall-clock timestamps fails under distributed clock drift; relative TTL offsets provide resilience against unsynchronized node clocks.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    }
+  ]
+}
