@@ -28,6 +28,7 @@ run('scripts/seed-article-aee.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-poeaa-part-1.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-1.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-2.mjs', '--dataset', 'production', '--write');
+run('scripts/seed-article-eip-part-3.mjs', '--dataset', 'production', '--write');
 
 // 3. EIP Series Roadmap
 run('scripts/seed-eip-series.mjs', '--dataset', 'production', '--write');
