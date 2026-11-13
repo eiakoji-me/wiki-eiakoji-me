@@ -1,4 +1,4 @@
-name: CI
+name: CI & Publish
 
 on:
   pull_request:
@@ -20,3 +20,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify
+
+  publish:
+    needs: [verify]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Seed published content to Sanity
+        env:
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: |
+          npm run seed:publish

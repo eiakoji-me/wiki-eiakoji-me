@@ -49,7 +49,7 @@
       "_type": "image",
       "asset": {
         "_type": "reference",
-        "_ref": "image-e2f4fb50c094cd83c84fa18053f5356d12d0b8ce-1608x900-png"
+        "_ref": "image-16b2b1b19a73c79e2a0a6d19bb24fa7f3b600d57-1592x900-png"
       }
     }
   },
@@ -240,7 +240,7 @@
       "_key": "img-p2p-vs-pubsub",
       "asset": {
         "_type": "reference",
-        "_ref": "image-4386ce773479accb11dcb9cb3c6fba6b426d0c56-1108x568-png"
+        "_ref": "image-3168fc6bc9574bb31c4cc7eab27b6a741849349a-1200x326-png"
       },
       "alt": "Channel Topology Comparison: Point-to-Point queue competing consumers vs Publish-Subscribe partitioned topic fanout.",
       "caption": "Figure 2: Channel Topology Comparison — contrasting single-receiver load-balancing work queues with broadcast multi-group partitioned event logs."
@@ -1149,7 +1149,7 @@
       "_key": "img-dead-letter-quarantine",
       "asset": {
         "_type": "reference",
-        "_ref": "image-f7ba5c258d1a396de85bdf716857e7104613a479-1108x448-png"
+        "_ref": "image-523a3b7ce520d470165e02544c1c36e547b3d985-1200x350-png"
       },
       "alt": "Anatomy of integration failure: syntactic schema quarantine vs semantic retry backoff and Dead Letter Channel triage.",
       "caption": "Figure 3: The Failure Containment Architecture — segregating unrecoverable syntactic schema errors from retryable transient semantic failures."
@@ -1872,7 +1872,7 @@
     "_type": "imageWithAlt",
     "asset": {
       "_type": "reference",
-      "_ref": "image-e2f4fb50c094cd83c84fa18053f5356d12d0b8ce-1608x900-png"
+      "_ref": "image-16b2b1b19a73c79e2a0a6d19bb24fa7f3b600d57-1592x900-png"
     },
     "alt": "Enterprise messaging channels and communication models: contrasting point-to-point queues, publish-subscribe logs, guaranteed delivery persistence, and dead-letter quarantine.",
     "caption": "Figure 1: Enterprise messaging channels and communication models — comparing point-to-point queues, publish-subscribe logs, guaranteed delivery persistence, and dead-letter quarantine."

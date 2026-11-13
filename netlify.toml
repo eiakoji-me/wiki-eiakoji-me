@@ -1,6 +1,9 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # On main branch git pushes, skip Netlify's premature build.
+  # Netlify will build automatically via the Sanity Webhook / Build Hook immediately after GitHub Actions seeds Sanity.
+  ignore = "bash -c 'if [ \"$BRANCH\" = \"main\" ] && [ -z \"$INCOMING_HOOK_TITLE\" ]; then exit 0; else exit 1; fi'"
 
 [build.environment]
   NODE_VERSION = "24"
