@@ -41,8 +41,8 @@
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
-    "title": "EIP Part I: Foundations of Enterprise Integration — wiki.eiakoji.me",
-    "description": "An architectural deconstruction of distributed coupling physics: evaluating File Transfer, Shared Database, RPC, and Messaging, demonstrating how synchronous call graphs trigger cascading failure, and deriving the Pipes-and-Filters topology.",
+    "title": "EIP Part I: Foundations of Enterprise Integration",
+    "description": "Deconstructing distributed coupling physics: evaluating RPC vs messaging, synchronous failure cascades under Little's Law, and the Pipes-and-Filters topology.",
     "image": {
       "_type": "image",
       "asset": {
