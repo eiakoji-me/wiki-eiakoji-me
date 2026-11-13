@@ -8,9 +8,9 @@
   },
   "format": "article",
   "difficulty": "advanced",
-  "featured": false,
-  "publishedAt": "2026-11-19T00:00:00Z",
-  "readingTime": "25 min read",
+  "featured": true,
+  "publishedAt": "2026-11-13T09:00:00.000Z",
+  "readingTime": "24 min read",
   "summary": "An end-to-end enterprise architecture case study: composing the entire EIP catalog into a resilient omnichannel commerce and fulfillment engine under catastrophic failure simulation.",
   "primaryTopic": {
     "_type": "reference",
@@ -36,15 +36,16 @@
   ],
   "technologies": [
     "Java 21",
-    "Distributed Systems",
-    "Message Queues",
+    "Kafka",
+    "Distributed Sagas",
+    "Event-Driven Architecture",
     "Architecture"
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
     "_type": "seo",
     "title": "EIP Part VIII: Composing Enterprise Integration Patterns",
-    "description": "Macro-architecture case study: composing EIP into an end-to-end commerce topology, simulating cascading backpressure, split-brain, and partial failures."
+    "description": "End-to-end integration topology synthesis: composing Transactional Outbox, Scatter-Gather, Claim Check, Saga compensation, and cascading failure defense."
   },
   "body": [
     {
@@ -103,208 +104,151 @@
       ]
     },
     {
-      "_key": "b-07-h2-scope",
+      "_key": "h2-001",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-h2-scope-s0",
+          "_key": "s-001",
           "_type": "span",
-          "text": "1. Architectural Scope and Problem Statement",
+          "text": "1. Architectural Scope and the Synthesis Problem",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-p-scope",
+      "_key": "p-001",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-p-scope-s0",
+          "_key": "s-002",
           "_type": "span",
-          "text": "An end-to-end enterprise architecture case study: composing the entire EIP catalog into a resilient omnichannel commerce and fulfillment engine under catastrophic failure simulation.",
+          "text": "Throughout this eight-part series, we have dissected the foundational taxonomy established by Gregor Hohpe and Bobby Woolf: channel topologies, message envelopes, routing engines, transformation translators, transactional endpoints, and operational telemetry control buses. However, in enterprise engineering, integration patterns never operate in isolation. Real-world systems are composite topologies where patterns interact, amplify, and constrain one another.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-callout-note",
-      "_type": "callout",
-      "tone": "note",
-      "title": "EIP Part 8 \u2014 Upcoming Series Installment",
-      "items": [
+      "_key": "p-002",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
         {
-          "_key": "note-item-7",
-          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
-          "status": "upcoming"
+          "_key": "s-003",
+          "_type": "span",
+          "text": "This final synthesis installment constructs a macro-architectural case study: a globally distributed Omnichannel Commerce and Fulfillment Engine. We compose the entire pattern catalog into a single coherent fabric, analyzing how the Transactional Outbox interfaces with Scatter-Gather supplier quoting, how Claim Check offloading protects message bus throughput, how Distributed Sagas coordinate multi-party compensating rollbacks, and how Circuit Breakers and Bounded Buffers defend against catastrophic cascading failures.",
+          "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-h2-patterns",
+      "_key": "img-hero-composition",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Macro Omnichannel Commerce Topology: End-to-end composition of Transactional Outbox, Claim Check, Scatter-Gather, Distributed Saga, and Cascading Failure Defense.",
+      "caption": "Figure 1: Macro Architecture Synthesis — Composing the complete Enterprise Integration Pattern catalog into a unified, resilient event-driven omnichannel engine."
+    },
+    {
+      "_key": "h2-002",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-h2-patterns-s0",
+          "_key": "s-004",
           "_type": "span",
-          "text": "2. Pattern Catalog & Formal Realizations",
+          "text": "2. Ingress & Contract Durability: Outbox, CDC & Claim Check",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-p-patterns-intro",
+      "_key": "p-003",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-p-patterns-intro-s0",
+          "_key": "s-005",
           "_type": "span",
-          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "text": "The ingress boundary is the most vulnerable frontier of any event-driven architecture. A consumer placing an order triggers an ACID transaction in an operational relational store. Attempting to write to the database and dispatch an event to Kafka synchronously in the same HTTP handler introduces the fatal dual-write anti-pattern: if the broker publish fails after the DB commits, events are lost; if the DB rolls back after the broker publish succeeds, phantom events pollute downstream consumers.",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-pat-00",
+      "_key": "p-004",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-pat-00-s0",
+          "_key": "s-006",
           "_type": "span",
-          "text": "End-to-End Enterprise Architecture: Composing all 65 EIP patterns into a production topology: Ingress Gateway, Fraud Scoring, Payment Processing, Inventory Allocation, and Logistics.",
+          "text": "The composite architecture eliminates this vulnerability at the ingress tier by combining the Transactional Outbox pattern with Change Data Capture (CDC via Debezium). The business entity mutation and an outbox event record commit within a single local ACID transaction. The CDC engine tails the database Write-Ahead Log (WAL) asynchronously, publishing events to the Ingress Topic with zero application-level dual writes.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-07-pat-01",
+      "_key": "p-005",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-pat-01-s0",
+          "_key": "s-007",
           "_type": "span",
-          "text": "Macro-Topology Composition: Orchestrating high-throughput pipelines connecting transactional relational stores, distributed event logs, object storage, and legacy backbones.",
+          "text": "To prevent high-volume payloads (such as high-resolution product catalogs, signed legal contracts, or dense line-item manifests exceeding 1 MB) from degrading message broker buffer memory and partition throughput, the Claim Check pattern offloads large binary blobs to durable cloud object storage (e.g. AWS S3 or Google Cloud Storage). The message bus transmits only a lightweight JSON metadata envelope containing the cryptographic hash and URI pointer to the payload, keeping broker serialization latency under 2 milliseconds.",
           "marks": []
         }
-      ],
-      "listItem": "bullet",
-      "level": 1
+      ]
     },
     {
-      "_key": "b-07-pat-02",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-07-pat-02-s0",
-          "_type": "span",
-          "text": "Hybrid Orchestration & Choreography: Combining centralized Process Managers for long-running transactional sagas with decentralized pub-sub choreography for downstream analytics.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-07-pat-03",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-07-pat-03-s0",
-          "_type": "span",
-          "text": "Cascading Backpressure Simulation: Simulating downstream database latency spikes and observing queue buffering, Little's Law dynamics, and consumer saturation.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-07-pat-04",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-07-pat-04-s0",
-          "_type": "span",
-          "text": "Split-Brain Routing & Deadlock Resolution: Resolving conflicting concurrent updates and distributed state bifurcation across multi-region broker meshes.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-07-pat-05",
-      "_type": "block",
-      "style": "normal",
-      "markDefs": [],
-      "children": [
-        {
-          "_key": "b-07-pat-05-s0",
-          "_type": "span",
-          "text": "Partial Failure Compensation: Executing backward compensation transactions across heterogeneous services when unrecoverable validation failures occur mid-workflow.",
-          "marks": []
-        }
-      ],
-      "listItem": "bullet",
-      "level": 1
-    },
-    {
-      "_key": "b-07-h2-invariants",
+      "_key": "h2-003",
       "_type": "block",
       "style": "h2",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-h2-invariants-s0",
+          "_key": "s-008",
           "_type": "span",
-          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "text": "3. Distributed Orchestration: Scatter-Gather & Saga Compensation",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-p-invariants-intro",
+      "_key": "p-006",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-p-invariants-intro-s0",
+          "_key": "s-009",
           "_type": "span",
-          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "text": "Once an order event enters the integration mesh, fulfillment requires coordinating multiple external partners and internal microservices. The composite orchestrator employs two distinct process coordination patterns:",
           "marks": []
         }
       ]
     },
     {
-      "_key": "b-07-inv-00",
+      "_key": "b-comp-sg",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-inv-00-s0",
+          "_key": "s-010",
           "_type": "span",
-          "text": "System Synthesis Invariants: Individual pattern correctness does not guarantee macro-system stability; emergence in complex topologies introduces feedback loops, message amplification, and cascading backpressure.",
+          "text": "Scatter-Gather Supplier Quoting: The order splitter decomposes the shopping cart into regional line items. A Recipient List broadcasts RFQ (Request for Quote) queries concurrently to N supplier partners. Using Java 21's StructuredTaskScope and virtual threads, the aggregator collects quotes within a strict 300ms deadline barrier, selecting optimal price and transit time while discarding stragglers.",
           "marks": []
         }
       ],
@@ -312,15 +256,15 @@
       "level": 1
     },
     {
-      "_key": "b-07-inv-01",
+      "_key": "b-comp-saga",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-inv-01-s0",
+          "_key": "s-011",
           "_type": "span",
-          "text": "Backpressure Propagation: Unbounded queues merely shift out-of-memory crashes from consumers to brokers; robust architectures enforce bounded queue capacities with explicit rate limiting at edge ingress.",
+          "text": "Distributed Saga State Machine: Across services with distinct databases (Billing, Inventory, Shipping), distributed transactions cannot use blocking Two-Phase Commit (2PC / XA) due to latency penalties and availability bottlenecks (the CAP theorem). The Saga pattern executes a chain of local ACID transactions interspersed with asynchronous message passing.",
           "marks": []
         }
       ],
@@ -328,15 +272,474 @@
       "level": 1
     },
     {
-      "_key": "b-07-inv-02",
+      "_key": "img-saga-matrix",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Distributed Saga State Machine and Compensation Matrix diagram showing forward execution steps T1-T4 and backward compensations C3-C1.",
+      "caption": "Figure 2: Distributed Saga State Machine — Forward transaction execution sequence (T1-T4) interrupted by failure, triggering the deterministic backward compensating sequence (C3-C1)."
+    },
+    {
+      "_key": "h3-001",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-012",
+          "_type": "span",
+          "text": "Availability Mathematics in Serial vs. Parallel Topologies",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-007",
       "_type": "block",
       "style": "normal",
       "markDefs": [],
       "children": [
         {
-          "_key": "b-07-inv-02-s0",
+          "_key": "s-013",
           "_type": "span",
-          "text": "Compensation Non-Atomicity: Distributed sagas rely on compensating transactions that may themselves fail; resilient systems require idempotent replay queues and automated reconciliation audits.",
+          "text": "In a distributed saga comprising M independent sequential service invocations, composite availability A_{\\text{composite}} decreases exponentially with the number of dependencies:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-comp-avail",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-014",
+          "_type": "span",
+          "text": "$$A_{\\text{composite}} = \\prod_{i=1}^{M} A_i$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-008",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-015",
+          "_type": "span",
+          "text": "If a saga relies on 5 sequential microservices each operating at 99.5% availability, composite success probability drops to 0.995^5 \\approx 97.52\\%, meaning nearly 1 in every 40 transactions fails and triggers compensation. Conversely, in parallel scatter-gather topologies with K redundant providers where any single success suffices, availability improves dramatically:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-parallel-avail",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-016",
+          "_type": "span",
+          "text": "$$A_{\\text{parallel}} = 1 - \\prod_{j=1}^{K} (1 - A_j)$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-009",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-017",
+          "_type": "span",
+          "text": "Combining parallel quoting with backward-compensating saga guarantees enables the macro architecture to sustain 99.99% overall business SLA despite imperfect third-party dependencies.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-004",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-018",
+          "_type": "span",
+          "text": "4. Cascading Failure Dynamics & Defense in Depth",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-010",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-019",
+          "_type": "span",
+          "text": "The greatest existential threat to an enterprise integration architecture is the Uncontrolled Cascading Outage. Because messaging decouples execution in time, developers often assume queues provide infinite resilience. In reality, unbounded queues merely transform transient downstream slowdowns into catastrophic out-of-memory crashes.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "img-cascading-failure",
+      "_type": "imageWithAlt",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-placeholder"
+      },
+      "alt": "Anatomy of an Integration Cascading Failure vs Architectural Defense in Depth diagram.",
+      "caption": "Figure 3: Cascading Failure Pathology & Isolation — Unconstrained queue buffer saturation vs. multi-tiered Defense in Depth (Bounded Buffers, Circuit Breakers, and DLQ Isolation)."
+    },
+    {
+      "_key": "h3-002",
+      "_type": "block",
+      "style": "h3",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-020",
+          "_type": "span",
+          "text": "Queue Residency Dynamics and the M/M/1 Saturation Pole",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-011",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-021",
+          "_type": "span",
+          "text": "According to Little's Law, the total transit delay W_{\\text{total}} across a pipeline of K messaging stages is governed by the accumulated queue residence:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-littles-law",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-022",
+          "_type": "span",
+          "text": "$$W_{\\text{total}} = \\sum_{k=1}^{K} \\frac{L_k}{\\lambda_k}$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-012",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-023",
+          "_type": "span",
+          "text": "When a downstream worker slows down such that arrival rate \\lambda approaches processing capacity \\mu (\\rho = \\lambda / \\mu \\to 1), steady-state queue length L_q diverges asymptotically:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "eq-mm1-pole",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-024",
+          "_type": "span",
+          "text": "$$L_q = \\frac{\\rho^2}{1 - \\rho} \\implies \\lim_{\\rho \\to 1} L_q = \\infty$$",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-013",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-025",
+          "_type": "span",
+          "text": "To prevent this pole from crashing upstream services, Defense in Depth requires three non-negotiable boundaries: (1) Bounded Buffers with drop-on-full or backpressure signaling, (2) Circuit Breakers that fail fast in sub-millisecond timeframes when failure rates exceed 50%, and (3) Dead-Letter Channels that quarantine unparseable poison pills without blocking the primary queue.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "h2-005",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-026",
+          "_type": "span",
+          "text": "5. Comprehensive Pattern Synthesis Matrix",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-014",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-027",
+          "_type": "span",
+          "text": "The following comparative matrix synthesizes how each architectural tier of the macro omnichannel engine combines patterns to balance consistency, throughput, and fault recovery:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "tbl-synthesis-matrix",
+      "_type": "table",
+      "rows": [
+        {
+          "_key": "r0",
+          "_type": "tableRow",
+          "cells": [
+            "Architectural Tier",
+            "Composed Patterns",
+            "Primary Responsibility",
+            "Consistency Model",
+            "Throughput vs Latency",
+            "Failure Recovery Strategy",
+            "Operational Risk",
+            "Production Cloud Realization"
+          ]
+        },
+        {
+          "_key": "r1",
+          "_type": "tableRow",
+          "cells": [
+            "Contract Ingress",
+            "Transactional Outbox, CDC",
+            "Eliminates dual-write anomalies",
+            "Strict Local ACID + At-Least-Once",
+            "High throughput; < 5ms WAL lag",
+            "Debezium reconnect / WAL replay",
+            "DB WAL disk bloat if CDC halts",
+            "PostgreSQL + Debezium + Kafka"
+          ]
+        },
+        {
+          "_key": "r2",
+          "_type": "tableRow",
+          "cells": [
+            "Routing & Payload",
+            "Content Router, Claim Check",
+            "Routes events; offloads blobs",
+            "Eventual Consistency (Blob + Ref)",
+            "High throughput; < 2ms broker msg",
+            "Retry fetch from S3 / Blob store",
+            "Dangling blobs if metadata drops",
+            "AWS EventBridge + S3 / DynamoDB"
+          ]
+        },
+        {
+          "_key": "r3",
+          "_type": "tableRow",
+          "cells": [
+            "Partner Quoting",
+            "Scatter-Gather, Aggregator",
+            "Parallel supplier bidding",
+            "Best-effort quorum within deadline",
+            "Bounded latency (300ms SLA cap)",
+            "Fallback to default cached quote",
+            "Stragglers hold thread resources",
+            "Java 21 StructuredTaskScope"
+          ]
+        },
+        {
+          "_key": "r4",
+          "_type": "tableRow",
+          "cells": [
+            "Process Coordination",
+            "Distributed Saga, State Log",
+            "Multi-service order fulfillment",
+            "Eventual Consistency via Rollbacks",
+            "Moderate; multi-hop state changes",
+            "Backward compensating actions",
+            "Compensating transaction failures",
+            "Temporal.io, AWS Step Functions"
+          ]
+        },
+        {
+          "_key": "r5",
+          "_type": "tableRow",
+          "cells": [
+            "Observability Fabric",
+            "Wire Tap, OpenTelemetry W3C",
+            "Non-intrusive audit & tracing",
+            "At-Most-Once on tap branch",
+            "Zero impact on main pipeline SLA",
+            "Drop audit records on buffer full",
+            "Telemetry storage cost explosion",
+            "Disruptor RingBuffer + OTel Agent"
+          ]
+        },
+        {
+          "_key": "r6",
+          "_type": "tableRow",
+          "cells": [
+            "Control & Resilience",
+            "Control Bus, Circuit Breaker",
+            "Dynamic detour & cascading defense",
+            "Isolated admin command execution",
+            "Fails fast in < 1ms on breaker trip",
+            "Quarantine to DLQ; Rate-limit replay",
+            "Split-brain if admin commands lag",
+            "Resilience4j + Kafka Admin Topic"
+          ]
+        }
+      ]
+    },
+    {
+      "_key": "h2-006",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-028",
+          "_type": "span",
+          "text": "6. Production-Grade Java 21 LTS Reference Implementation",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-015",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-029",
+          "_type": "span",
+          "text": "The following complete Java 21 LTS reference implementation demonstrates the end-to-end synthesis of the Omnichannel Commerce Topology: composing an Outbox event publisher, a Scatter-Gather supplier quotation aggregator using virtual threads, and a durable Saga coordinator with forward execution and backward compensating rollbacks.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "code-synthesis-java",
+      "_type": "code",
+      "language": "java",
+      "filename": "OmnichannelOrderSynthesisOrchestrator.java",
+      "code": "package me.eiakoji.integration.synthesis;\n\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.AtomicBoolean;\nimport java.util.concurrent.atomic.AtomicReference;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n\n/**\n * Enterprise Integration Patterns Part VIII: Synthesis Case Study.\n * Composes Transactional Outbox, Claim Check, Scatter-Gather, and Distributed Saga\n * with backward compensating actions and circuit breaker fault isolation.\n */\npublic final class OmnichannelOrderSynthesisOrchestrator {\n\n    private static final Logger log = Logger.getLogger(OmnichannelOrderSynthesisOrchestrator.class.getName());\n\n    // -------------------------------------------------------------------------\n    // 1. Domain Envelopes & Claim Check Abstraction\n    // -------------------------------------------------------------------------\n    public record OrderItem(String sku, int quantity, double unitPrice) {}\n    public record OrderEvent(\n        String orderId,\n        String customerId,\n        List<OrderItem> items,\n        double totalAmount,\n        String claimCheckUri,\n        Instant timestamp\n    ) {\n        public OrderEvent {\n            items = List.copyOf(items);\n        }\n    }\n\n    public record SupplierQuote(String supplierId, double priceQuote, int estimatedDays) {}\n\n    // -------------------------------------------------------------------------\n    // 2. Scatter-Gather Supplier Quotation Mesh (Structured Concurrency)\n    // -------------------------------------------------------------------------\n    public static final class ScatterGatherQuoteAggregator {\n        private final List<String> suppliers;\n        private final Duration deadline;\n\n        public ScatterGatherQuoteAggregator(List<String> suppliers, Duration deadline) {\n            this.suppliers = List.copyOf(suppliers);\n            this.deadline = deadline;\n        }\n\n        public Optional<SupplierQuote> fetchBestQuote(String sku) {\n            try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {\n                List<Future<SupplierQuote>> futures = suppliers.stream()\n                    .map(sup -> executor.submit(() -> querySupplier(sup, sku)))\n                    .toList();\n\n                List<SupplierQuote> quotes = new ArrayList<>();\n                for (Future<SupplierQuote> future : futures) {\n                    try {\n                        quotes.add(future.get(deadline.toMillis(), TimeUnit.MILLISECONDS));\n                    } catch (TimeoutException e) {\n                        log.warning(\"Supplier query timed out on deadline barrier\");\n                    } catch (Exception e) {\n                        log.log(Level.WARNING, \"Supplier query failed\", e);\n                    }\n                }\n\n                return quotes.stream().min(Comparator.comparingDouble(SupplierQuote::priceQuote));\n            }\n        }\n\n        private SupplierQuote querySupplier(String supplierId, String sku) throws InterruptedException {\n            // Simulate network latency\n            Thread.sleep(ThreadLocalRandom.current().nextInt(50, 250));\n            double quote = 100.0 + ThreadLocalRandom.current().nextDouble(0.0, 50.0);\n            return new SupplierQuote(supplierId, quote, 2);\n        }\n    }\n\n    // -------------------------------------------------------------------------\n    // 3. Distributed Saga State Machine & Compensating Orchestrator\n    // -------------------------------------------------------------------------\n    public static final class DistributedOrderSagaCoordinator {\n        public enum SagaState { STARTED, CREDIT_RESERVED, INVENTORY_ALLOCATED, PAYMENT_CAPTURED, COMPLETED, COMPENSATING, CANCELLED }\n\n        public record SagaContext(\n            String sagaId,\n            OrderEvent order,\n            AtomicReference<SagaState> state,\n            Deque<Runnable> compensations\n        ) {\n            public SagaContext(String sagaId, OrderEvent order) {\n                this(sagaId, order, new AtomicReference<>(SagaState.STARTED), new ConcurrentLinkedDeque<>());\n            }\n        }\n\n        // Dependencies (Simulated)\n        private final AtomicBoolean paymentServiceHealthy = new AtomicBoolean(true);\n\n        public boolean executeSaga(OrderEvent order) {\n            String sagaId = \"saga-\" + UUID.randomUUID();\n            SagaContext ctx = new SagaContext(sagaId, order);\n            log.info(\"Starting distributed saga: \" + sagaId + \" for order: \" + order.orderId());\n\n            try {\n                // Step 1: Reserve Customer Credit (T1)\n                reserveCredit(ctx);\n                ctx.compensations().push(() -> releaseCredit(ctx)); // Register C1\n                ctx.state().set(SagaState.CREDIT_RESERVED);\n\n                // Step 2: Allocate Warehouse Inventory (T2)\n                allocateInventory(ctx);\n                ctx.compensations().push(() -> restockInventory(ctx)); // Register C2\n                ctx.state().set(SagaState.INVENTORY_ALLOCATED);\n\n                // Step 3: Authorize & Capture Payment (T3)\n                capturePayment(ctx);\n                ctx.compensations().push(() -> voidPayment(ctx)); // Register C3\n                ctx.state().set(SagaState.PAYMENT_CAPTURED);\n\n                ctx.state().set(SagaState.COMPLETED);\n                log.info(\"Saga completed successfully: \" + sagaId);\n                return true;\n\n            } catch (Exception failure) {\n                log.log(Level.SEVERE, \"Saga step failed. Initiating backward compensating rollback: \" + sagaId, failure);\n                rollbackSaga(ctx);\n                return false;\n            }\n        }\n\n        private void reserveCredit(SagaContext ctx) {\n            log.info(\"[T1] Reserved credit for customer: \" + ctx.order().customerId());\n        }\n\n        private void releaseCredit(SagaContext ctx) {\n            log.info(\"[C1] Compensating action: Released customer credit hold: \" + ctx.order().customerId());\n        }\n\n        private void allocateInventory(SagaContext ctx) {\n            log.info(\"[T2] Allocated warehouse inventory for items: \" + ctx.order().items().size());\n        }\n\n        private void restockInventory(SagaContext ctx) {\n            log.info(\"[C2] Compensating action: Restocked warehouse inventory for items\");\n        }\n\n        private void capturePayment(SagaContext ctx) {\n            if (!paymentServiceHealthy.get()) {\n                throw new IllegalStateException(\"Payment Gateway 502 Bad Gateway Outage\");\n            }\n            log.info(\"[T3] Payment captured for amount: $\" + ctx.order().totalAmount());\n        }\n\n        private void voidPayment(SagaContext ctx) {\n            log.info(\"[C3] Compensating action: Voided payment authorization\");\n        }\n\n        private void rollbackSaga(SagaContext ctx) {\n            ctx.state().set(SagaState.COMPENSATING);\n            while (!ctx.compensations().isEmpty()) {\n                Runnable compensation = ctx.compensations().pop();\n                try {\n                    compensation.run();\n                } catch (Exception e) {\n                    log.log(Level.SEVERE, \"CRITICAL: Compensation failed. Quarantining to DLQ: \" + ctx.sagaId(), e);\n                }\n            }\n            ctx.state().set(SagaState.CANCELLED);\n            log.info(\"Saga rollback finished. Order marked CANCELLED: \" + ctx.order().orderId());\n        }\n\n        public void setPaymentServiceHealthy(boolean healthy) {\n            this.paymentServiceHealthy.set(healthy);\n        }\n    }\n}\n"
+    },
+    {
+      "_key": "h2-007",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-030",
+          "_type": "span",
+          "text": "7. Architectural Summary and Series Epilogue",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "p-016",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-031",
+          "_type": "span",
+          "text": "Enterprise Integration Patterns are not academic curiosities; they are the governing laws of asynchronous distributed systems. As we conclude this eight-part journey across the EIP landscape, four enduring architectural principles emerge:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-epilogue-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-032",
+          "_type": "span",
+          "text": "Atomicity Begins at Ingress: Distributed two-phase commits do not scale across cloud boundaries. Reliability requires locking state locally at ingress via Transactional Outbox + CDC before streaming events outward.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-epilogue-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-033",
+          "_type": "span",
+          "text": "Bound Every Buffer: Unconstrained queue memory is an illusion. Every channel, thread pool, and pipe must enforce finite bounds with explicit drop-on-full or backpressure signaling to avert cascading systemic collapse.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-epilogue-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-034",
+          "_type": "span",
+          "text": "Universal Idempotence is Mandatory: In any distributed fabric operating under at-least-once delivery, duplicates are inevitable. Network retries, consumer rebalances, and saga rollbacks guarantee repeated deliveries. Idempotent receivers with deduplication fencing are essential.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-epilogue-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "s-035",
+          "_type": "span",
+          "text": "Observability and Governance Must Be Decoupled: Distributed tracing (W3C traceparent) and operational governance (Control Bus) must operate on isolated channels, ensuring operators retain full diagnostic visibility and control even during severe production brownouts.",
           "marks": []
         }
       ],
