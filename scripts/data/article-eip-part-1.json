@@ -1048,7 +1048,7 @@
       "_key": "img-sync-failure-cascade",
       "asset": {
         "_type": "reference",
-        "_ref": "image-ef7fdfdad67c3de60d49968bc7b7154444dae596-1108x448-png"
+        "_ref": "image-f7ba5c258d1a396de85bdf716857e7104613a479-1108x448-png"
       },
       "alt": "Synchronous failure cascade: Little's Law thread starvation and saturation under downstream latency degradation.",
       "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation — contrast between healthy equilibrium and thread exhaustion under downstream degradation."

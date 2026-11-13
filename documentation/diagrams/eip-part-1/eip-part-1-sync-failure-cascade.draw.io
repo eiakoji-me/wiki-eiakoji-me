@@ -31,7 +31,7 @@
         <mxCell id="h-pool-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#0F172A;fontFamily=Comic Sans MS;" value="Worker Thread Pool Capacity: 200 Threads" vertex="1">
           <mxGeometry height="20" width="450" x="90" y="190" as="geometry" />
         </mxCell>
-        <mxCell id="h-pool-active" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#334155;strokeColor=#0F172A;strokeWidth=1.5;fontColor=#0D0D0D;fontSize=11;fontStyle=1;fontFamily=Comic Sans MS;" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(31, 31, 31));&quot;&gt;Active: 50 Threads (25%)&lt;/span&gt;" vertex="1">
+        <mxCell id="h-pool-active" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#334155;strokeColor=#0F172A;strokeWidth=1.5;fontColor=light-dark(#080808,#000000);fontSize=11;fontStyle=1;fontFamily=Comic Sans MS;" value="&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Active: 50 Threads (25%)&lt;/span&gt;" vertex="1">
           <mxGeometry height="40" width="115" x="90" y="220" as="geometry" />
         </mxCell>
         <mxCell id="h-pool-free" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#FFFFFF;strokeColor=#94A3B8;strokeWidth=1.5;dashed=1;dashPattern=4 4;fontColor=#64748B;fontSize=11;fontFamily=Comic Sans MS;" value="Available Headroom: 150 Threads (75%)" vertex="1">
@@ -41,7 +41,7 @@
           <mxGeometry height="70" width="450" x="90" y="275" as="geometry" />
         </mxCell>
         <mxCell id="h-outcome" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#334155;fontFamily=Comic Sans MS;" value="&lt;b&gt;System Behavior:&lt;/b&gt;&lt;br&gt;The service smoothly absorbs fluctuations. Threads return instantly to the idle pool upon&amp;nbsp;&lt;div&gt;downstream response. Requests complete with sub-second turnaround.&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="480" x="70" y="380" as="geometry" />
+          <mxGeometry height="90" width="480" x="70" y="360" as="geometry" />
         </mxCell>
         <mxCell id="d-container" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#FAFAFA;strokeColor=#0F172A;strokeWidth=1.5;arcSize=6;" value="" vertex="1">
           <mxGeometry height="440" width="530" x="620" y="40" as="geometry" />
@@ -70,14 +70,14 @@
         <mxCell id="d-pool-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#0F172A;fontFamily=Comic Sans MS;" value="Worker Thread Pool Capacity: 200 Threads" vertex="1">
           <mxGeometry height="20" width="450" x="660" y="190" as="geometry" />
         </mxCell>
-        <mxCell id="d-pool-active" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=2;fontColor=#0D0D0D;fontSize=11;fontStyle=1;fontFamily=Comic Sans MS;" value="&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BLOCKED: 200 Threads (100% Saturated)&lt;/span&gt;" vertex="1">
-          <mxGeometry height="40" width="450" x="670" y="220" as="geometry" />
+        <mxCell id="d-pool-active" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#0F172A;strokeColor=#0F172A;strokeWidth=2;fontColor=light-dark(#080808,#000000);fontSize=11;fontStyle=1;fontFamily=Comic Sans MS;" value="&lt;span style=&quot;background-color: light-dark(rgb(255, 255, 255), rgb(240, 240, 240));&quot;&gt;BLOCKED: 200 Threads (100% Saturated)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="40" width="450" x="660" y="220" as="geometry" />
         </mxCell>
         <mxCell id="d-math-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;curveFitting=1;jiggle=1.2;fillColor=#FFFFFF;strokeColor=#0F172A;strokeWidth=1;fontColor=#0F172A;fontSize=11;fontFamily=Comic Sans MS;align=left;spacingLeft=10;" value="&lt;b&gt;Little&#39;s Law Demand vs Pool Ceiling:&lt;/b&gt;&lt;br&gt;Required L = λ × W = 1,000 req/sec × 0.500 sec = &lt;b&gt;500 threads needed&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#0F172A&quot;&gt;&lt;b&gt;Deficit:&lt;/b&gt; +300 threads beyond hard pool capacity (Saturates in &amp;lt; 300ms)&lt;/font&gt;" vertex="1">
           <mxGeometry height="70" width="450" x="660" y="275" as="geometry" />
         </mxCell>
         <mxCell id="d-outcome" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#334155;fontFamily=Comic Sans MS;" value="&lt;b&gt;Cascading Failure Mechanics:&lt;/b&gt;&lt;br&gt;1. Sockets queue on OS TCP backlog until net.core.somaxconn overflows.&lt;br&gt;2. Inbound requests are dropped or rejected with HTTP 504 Gateway Timeout.&lt;br&gt;3. Upstream API Gateway exhausts its own thread pool waiting on Order Service.&lt;br&gt;&lt;b&gt;The entire synchronous topology collapses from a single edge latency hiccup.&lt;/b&gt;" vertex="1">
-          <mxGeometry height="100" width="480" x="640" y="380" as="geometry" />
+          <mxGeometry height="100" width="480" x="640" y="370" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
