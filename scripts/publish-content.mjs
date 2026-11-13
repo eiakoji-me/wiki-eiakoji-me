@@ -32,6 +32,7 @@ run('scripts/seed-article-eip-part-3.mjs', '--dataset', 'production', '--write')
 run('scripts/seed-article-eip-part-4.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-5.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-6.mjs', '--dataset', 'production', '--write');
+run('scripts/seed-article-eip-part-7.mjs', '--dataset', 'production', '--write');
 
 // 3. EIP Series Roadmap
 run('scripts/seed-eip-series.mjs', '--dataset', 'production', '--write');
