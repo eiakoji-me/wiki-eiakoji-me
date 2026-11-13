@@ -1246,7 +1246,7 @@
       "_key": "img-pipes-and-filters",
       "asset": {
         "_type": "reference",
-        "_ref": "image-47f9b3ddb5102907900fdea86111c40912041b4d-1109x328-png"
+        "_ref": "image-3d0a1f01bb4843880f9fd7e5c1a686c6d2d76c5b-1110x268-png"
       },
       "alt": "Pipes and Filters Composition Pipeline: Inbound queue, schema validator filter, intermediate buffer queue, tax filter, and egress queue.",
       "caption": "Figure 4: Pipes and Filters Composition Pipeline — decoupling processing stages with message queue buffers."
