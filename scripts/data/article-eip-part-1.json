@@ -41,7 +41,7 @@
   ],
   "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
   "seo": {
-    "title": "EIP Part I: Foundations of Enterprise Integration \u2014 wiki.eiakoji.me",
+    "title": "EIP Part I: Foundations of Enterprise Integration — wiki.eiakoji.me",
     "description": "An architectural deconstruction of distributed coupling physics: evaluating File Transfer, Shared Database, RPC, and Messaging, demonstrating how synchronous call graphs trigger cascading failure, and deriving the Pipes-and-Filters topology.",
     "image": {
       "_type": "image",
@@ -215,7 +215,7 @@
         "_ref": "image-4386ce773479accb11dcb9cb3c6fba6b426d0c56-1108x568-png"
       },
       "alt": "The Four Integration Styles: File Transfer, Shared Database, Remote Procedure Invocation, and Asynchronous Messaging.",
-      "caption": "Figure 2: The Four Integration Styles \u2014 comparing coordination semantics, storage boundaries, and coupling profiles."
+      "caption": "Figure 2: The Four Integration Styles — comparing coordination semantics, storage boundaries, and coupling profiles."
     },
     {
       "_type": "block",
@@ -286,7 +286,7 @@
         {
           "_type": "span",
           "_key": "b-012-1c8f32fd9cbb-s1",
-          "text": ": Temporal decoupling is high\u2014the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
+          "text": ": Temporal decoupling is high—the consumer can process the file hours after the producer finishes. However, data freshness latency is poor. Furthermore, file locking and partial write contention create race conditions unless teams implement atomic directory renames or auxiliary manifest files.",
           "marks": []
         }
       ],
@@ -1048,10 +1048,10 @@
       "_key": "img-sync-failure-cascade",
       "asset": {
         "_type": "reference",
-        "_ref": "image-46a2f8ecf62be0d1839329c2bc59350bd9cf4829-1107x580-png"
+        "_ref": "image-ef7fdfdad67c3de60d49968bc7b7154444dae596-1108x448-png"
       },
       "alt": "Synchronous failure cascade: Little's Law thread starvation and saturation under downstream latency degradation.",
-      "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation \u2014 contrast between healthy equilibrium and thread exhaustion under downstream degradation."
+      "caption": "Figure 3: Synchronous Failure Cascades and Thread Starvation — contrast between healthy equilibrium and thread exhaustion under downstream degradation."
     },
     {
       "_type": "block",
@@ -1249,7 +1249,7 @@
         "_ref": "image-47f9b3ddb5102907900fdea86111c40912041b4d-1109x328-png"
       },
       "alt": "Pipes and Filters Composition Pipeline: Inbound queue, schema validator filter, intermediate buffer queue, tax filter, and egress queue.",
-      "caption": "Figure 4: Pipes and Filters Composition Pipeline \u2014 decoupling processing stages with message queue buffers."
+      "caption": "Figure 4: Pipes and Filters Composition Pipeline — decoupling processing stages with message queue buffers."
     },
     {
       "_type": "block",
@@ -1585,7 +1585,7 @@
         {
           "_type": "span",
           "_key": "b-085-8ca55586b0ab-s1",
-          "text": ": The topology of message distribution\u2014evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
+          "text": ": The topology of message distribution—evaluating Point-to-Point vs. Publish-Subscribe channels, Datatype Channels, Guaranteed Delivery (WAL and disk replication quorums), and Dead Letter Channels.",
           "marks": []
         }
       ],
@@ -1633,7 +1633,7 @@
         {
           "_type": "span",
           "_key": "b-087-d8625b126e97-s1",
-          "text": ": Navigating complex routing fabrics without sender coupling\u2014Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
+          "text": ": Navigating complex routing fabrics without sender coupling—Content-Based Routers, Splitters, Aggregators, Resequencers, Scatter-Gather, and Sagas (Process Managers vs. Routing Slips).",
           "marks": []
         }
       ],
@@ -1657,7 +1657,7 @@
         {
           "_type": "span",
           "_key": "b-088-6d82860f673f-s1",
-          "text": ": Overcoming data format impedance mismatch\u2014Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
+          "text": ": Overcoming data format impedance mismatch—Translators, Content Enrichers, large-payload offloading via the Claim Check pattern, and why monolithic Canonical Data Models fail.",
           "marks": []
         }
       ],
@@ -1681,7 +1681,7 @@
         {
           "_type": "span",
           "_key": "b-089-f392598420cd-s1",
-          "text": ": Consumer concurrency and the physical reality of at-least-once delivery\u2014Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
+          "text": ": Consumer concurrency and the physical reality of at-least-once delivery—Competing Consumers, eliminating dual-writes with the Transactional Outbox pattern, and idempotent deduplication fences.",
           "marks": []
         }
       ],
@@ -1705,7 +1705,7 @@
         {
           "_type": "span",
           "_key": "b-090-e216a9d9965f-s1",
-          "text": ": Making asynchronous meshes observable\u2014Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
+          "text": ": Making asynchronous meshes observable—Wire Taps, Message Stores, Control Buses, synthetic canaries, and OpenTelemetry W3C traceparent context propagation.",
           "marks": []
         }
       ],
