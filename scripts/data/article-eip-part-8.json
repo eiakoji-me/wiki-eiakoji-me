@@ -1,0 +1,347 @@
+{
+  "_id": "article-eip-part-8-composing-enterprise-integration-patterns",
+  "_type": "article",
+  "title": "EIP Part VIII: Composing Enterprise Integration Patterns",
+  "slug": {
+    "_type": "slug",
+    "current": "eip-part-8-composing-enterprise-integration-patterns"
+  },
+  "format": "article",
+  "difficulty": "advanced",
+  "featured": false,
+  "publishedAt": "2026-11-19T00:00:00Z",
+  "readingTime": "25 min read",
+  "summary": "An end-to-end enterprise architecture case study: composing the entire EIP catalog into a resilient omnichannel commerce and fulfillment engine under catastrophic failure simulation.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-architectural-patterns"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "topic-distributed-systems",
+      "_key": "rel-topic-ds"
+    },
+    {
+      "_type": "reference",
+      "_ref": "domain-software-architecture",
+      "_key": "rel-topic-sa"
+    }
+  ],
+  "topics": [
+    "Enterprise Integration Patterns",
+    "Distributed Systems",
+    "Software Architecture",
+    "Asynchronous Messaging"
+  ],
+  "technologies": [
+    "Java 21",
+    "Distributed Systems",
+    "Message Queues",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "_type": "seo",
+    "title": "EIP Part VIII: Composing Enterprise Integration Patterns",
+    "description": "Macro-architecture case study: composing EIP into an end-to-end commerce topology, simulating cascading backpressure, split-brain, and partial failures."
+  },
+  "body": [
+    {
+      "_key": "b-eip-series-nav",
+      "_type": "callout",
+      "tone": "series",
+      "title": "Enterprise Integration Patterns",
+      "items": [
+        {
+          "_key": "nav-eip-1",
+          "title": "Part I: Foundations of Enterprise Integration",
+          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-2",
+          "title": "Part II: Messaging Channels & Communication Models",
+          "href": "/articles/eip-part-2-messaging-channels/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-3",
+          "title": "Part III: Message Construction & Exchange Semantics",
+          "href": "/articles/eip-part-3-message-construction/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-4",
+          "title": "Part IV: Message Routing & Process Coordination",
+          "href": "/articles/eip-part-4-message-routing/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-5",
+          "title": "Part V: Message Transformation & Interoperability",
+          "href": "/articles/eip-part-5-message-transformation/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-6",
+          "title": "Part VI: Messaging Endpoints & Reliable Processing",
+          "href": "/articles/eip-part-6-messaging-endpoints/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-7",
+          "title": "Part VII: Operations, Observability & Governance",
+          "href": "/articles/eip-part-7-integration-operations/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-8",
+          "title": "Part VIII: Composing Enterprise Integration Patterns",
+          "status": "current"
+        }
+      ]
+    },
+    {
+      "_key": "b-07-h2-scope",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-h2-scope-s0",
+          "_type": "span",
+          "text": "1. Architectural Scope and Problem Statement",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-p-scope",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-p-scope-s0",
+          "_type": "span",
+          "text": "An end-to-end enterprise architecture case study: composing the entire EIP catalog into a resilient omnichannel commerce and fulfillment engine under catastrophic failure simulation.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-callout-note",
+      "_type": "callout",
+      "tone": "note",
+      "title": "EIP Part 8 \u2014 Upcoming Series Installment",
+      "items": [
+        {
+          "_key": "note-item-7",
+          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
+          "status": "upcoming"
+        }
+      ]
+    },
+    {
+      "_key": "b-07-h2-patterns",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-h2-patterns-s0",
+          "_type": "span",
+          "text": "2. Pattern Catalog & Formal Realizations",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-p-patterns-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-p-patterns-intro-s0",
+          "_type": "span",
+          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-pat-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-00-s0",
+          "_type": "span",
+          "text": "End-to-End Enterprise Architecture: Composing all 65 EIP patterns into a production topology: Ingress Gateway, Fraud Scoring, Payment Processing, Inventory Allocation, and Logistics.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-pat-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-01-s0",
+          "_type": "span",
+          "text": "Macro-Topology Composition: Orchestrating high-throughput pipelines connecting transactional relational stores, distributed event logs, object storage, and legacy backbones.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-pat-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-02-s0",
+          "_type": "span",
+          "text": "Hybrid Orchestration & Choreography: Combining centralized Process Managers for long-running transactional sagas with decentralized pub-sub choreography for downstream analytics.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-pat-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-03-s0",
+          "_type": "span",
+          "text": "Cascading Backpressure Simulation: Simulating downstream database latency spikes and observing queue buffering, Little's Law dynamics, and consumer saturation.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-pat-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-04-s0",
+          "_type": "span",
+          "text": "Split-Brain Routing & Deadlock Resolution: Resolving conflicting concurrent updates and distributed state bifurcation across multi-region broker meshes.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-pat-05",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-pat-05-s0",
+          "_type": "span",
+          "text": "Partial Failure Compensation: Executing backward compensation transactions across heterogeneous services when unrecoverable validation failures occur mid-workflow.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-h2-invariants",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-h2-invariants-s0",
+          "_type": "span",
+          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-p-invariants-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-p-invariants-intro-s0",
+          "_type": "span",
+          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-07-inv-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-inv-00-s0",
+          "_type": "span",
+          "text": "System Synthesis Invariants: Individual pattern correctness does not guarantee macro-system stability; emergence in complex topologies introduces feedback loops, message amplification, and cascading backpressure.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-inv-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-inv-01-s0",
+          "_type": "span",
+          "text": "Backpressure Propagation: Unbounded queues merely shift out-of-memory crashes from consumers to brokers; robust architectures enforce bounded queue capacities with explicit rate limiting at edge ingress.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-07-inv-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-07-inv-02-s0",
+          "_type": "span",
+          "text": "Compensation Non-Atomicity: Distributed sagas rely on compensating transactions that may themselves fail; resilient systems require idempotent replay queues and automated reconciliation audits.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    }
+  ]
+}

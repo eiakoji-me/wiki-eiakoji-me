@@ -1,0 +1,395 @@
+{
+  "_id": "article-eip-part-4-message-routing",
+  "_type": "article",
+  "title": "EIP Part IV: Message Routing and Process Coordination",
+  "slug": {
+    "_type": "slug",
+    "current": "eip-part-4-message-routing"
+  },
+  "format": "article",
+  "difficulty": "advanced",
+  "featured": false,
+  "publishedAt": "2026-11-15T00:00:00Z",
+  "readingTime": "20 min read",
+  "summary": "An architectural breakdown of asynchronous mediation: evaluating Content-Based Routers, Splitter-Aggregator pipelines, Scatter-Gather, and Saga process coordination.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-architectural-patterns"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "topic-distributed-systems",
+      "_key": "rel-topic-ds"
+    },
+    {
+      "_type": "reference",
+      "_ref": "domain-software-architecture",
+      "_key": "rel-topic-sa"
+    }
+  ],
+  "topics": [
+    "Enterprise Integration Patterns",
+    "Distributed Systems",
+    "Software Architecture",
+    "Asynchronous Messaging"
+  ],
+  "technologies": [
+    "Java 21",
+    "Distributed Systems",
+    "Message Queues",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "_type": "seo",
+    "title": "EIP Part IV: Message Routing & Process Coordination",
+    "description": "Stateless dispatch, stream reassembly, Scatter-Gather, and choreography vs orchestration (Routing Slip vs Process Manager / Saga coordination)."
+  },
+  "body": [
+    {
+      "_key": "b-eip-series-nav",
+      "_type": "callout",
+      "tone": "series",
+      "title": "Enterprise Integration Patterns",
+      "items": [
+        {
+          "_key": "nav-eip-1",
+          "title": "Part I: Foundations of Enterprise Integration",
+          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-2",
+          "title": "Part II: Messaging Channels & Communication Models",
+          "href": "/articles/eip-part-2-messaging-channels/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-3",
+          "title": "Part III: Message Construction & Exchange Semantics",
+          "href": "/articles/eip-part-3-message-construction/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-4",
+          "title": "Part IV: Message Routing & Process Coordination",
+          "status": "current"
+        },
+        {
+          "_key": "nav-eip-5",
+          "title": "Part V: Message Transformation & Interoperability",
+          "href": "/articles/eip-part-5-message-transformation/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-6",
+          "title": "Part VI: Messaging Endpoints & Reliable Processing",
+          "href": "/articles/eip-part-6-messaging-endpoints/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-7",
+          "title": "Part VII: Operations, Observability & Governance",
+          "href": "/articles/eip-part-7-integration-operations/",
+          "status": "completed"
+        },
+        {
+          "_key": "nav-eip-8",
+          "title": "Part VIII: Composing Enterprise Integration Patterns",
+          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "_key": "b-03-h2-scope",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-h2-scope-s0",
+          "_type": "span",
+          "text": "1. Architectural Scope and Problem Statement",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-p-scope",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-p-scope-s0",
+          "_type": "span",
+          "text": "An architectural breakdown of asynchronous mediation: evaluating Content-Based Routers, Splitter-Aggregator pipelines, Scatter-Gather, and Saga process coordination.",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-callout-note",
+      "_type": "callout",
+      "tone": "note",
+      "title": "EIP Part 4 \u2014 Upcoming Series Installment",
+      "items": [
+        {
+          "_key": "note-item-3",
+          "title": "This architectural deep dive is currently in active development as part of the 8-part Enterprise Integration Patterns series on wiki.eiakoji.me. The formal theoretical derivations, Excalidraw-style schematics, Little's Law/queueing equations, and production Java 21 reference implementations will land directly in this publication entry.",
+          "status": "upcoming"
+        }
+      ]
+    },
+    {
+      "_key": "b-03-h2-patterns",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-h2-patterns-s0",
+          "_type": "span",
+          "text": "2. Pattern Catalog & Formal Realizations",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-p-patterns-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-p-patterns-intro-s0",
+          "_type": "span",
+          "text": "In this installment, we formalize the following core integration patterns established by Gregor Hohpe and Bobby Woolf, mapping each to its modern cloud-native realization:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-pat-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-00-s0",
+          "_type": "span",
+          "text": "Content-Based Router: Stateless dispatch engine inspecting message payload properties to route messages to appropriate destination channels.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-01-s0",
+          "_type": "span",
+          "text": "Message Filter: Boundary gatekeeper evaluating criteria to discard uninteresting messages without consumer processing overhead.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-02-s0",
+          "_type": "span",
+          "text": "Dynamic Router & Recipient List: Rule-driven routing where recipient channels are determined dynamically at runtime based on configuration or registry lookup.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-03",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-03-s0",
+          "_type": "span",
+          "text": "Splitter: Decomposes a composite message containing multiple items into distinct independent messages for parallel processing.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-04",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-04-s0",
+          "_type": "span",
+          "text": "Aggregator: Stateful mediation component that correlates and merges multiple related messages into a unified composite message.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-05",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-05-s0",
+          "_type": "span",
+          "text": "Resequencer: Buffers and reorders out-of-sequence messages according to sequence metadata before downstream delivery.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-06",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-06-s0",
+          "_type": "span",
+          "text": "Scatter-Gather: Broadcasts a request to multiple parallel providers and aggregates their responses within a bounded timeout deadline.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-07",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-07-s0",
+          "_type": "span",
+          "text": "Routing Slip: Choreographed routing pattern where the message header carries an explicit sequence of processing steps to traverse.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-pat-08",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-pat-08-s0",
+          "_type": "span",
+          "text": "Process Manager (Saga Coordinator): Centralized stateful orchestrator directing multi-step distributed workflows, coordinating compensating actions during failure.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-h2-invariants",
+      "_type": "block",
+      "style": "h2",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-h2-invariants-s0",
+          "_type": "span",
+          "text": "3. Invariants, Failure Modes & Physical Constraints",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-p-invariants-intro",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-p-invariants-intro-s0",
+          "_type": "span",
+          "text": "Engineering resilient enterprise integration topologies requires analyzing the exact failure boundaries and physical constraints governing these patterns:",
+          "marks": []
+        }
+      ]
+    },
+    {
+      "_key": "b-03-inv-00",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-inv-00-s0",
+          "_type": "span",
+          "text": "Aggregator Memory Saturation: Aggregators must retain partial state until completion conditions are met; missing fragments or lost messages risk memory exhaustion without bounded completion timeouts.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-inv-01",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-inv-01-s0",
+          "_type": "span",
+          "text": "Choreography vs Orchestration: Routing Slips maximize component autonomy but obscure overall system state; Process Managers provide centralized observability and deterministic saga compensation at the expense of an orchestration bottleneck.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    },
+    {
+      "_key": "b-03-inv-02",
+      "_type": "block",
+      "style": "normal",
+      "markDefs": [],
+      "children": [
+        {
+          "_key": "b-03-inv-02-s0",
+          "_type": "span",
+          "text": "Resequencer Buffer Windowing: Sliding-window resequencing requires strict boundary sizing to prevent buffer starvation when messages are permanently dropped upstream.",
+          "marks": []
+        }
+      ],
+      "listItem": "bullet",
+      "level": 1
+    }
+  ]
+}
