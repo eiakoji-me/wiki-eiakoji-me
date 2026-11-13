@@ -58,50 +58,49 @@
         {
           "_key": "nav-eip-1",
           "title": "Part I: Foundations of Enterprise Integration",
-          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-1-foundations-of-enterprise-integration/"
         },
         {
           "_key": "nav-eip-2",
           "title": "Part II: Messaging Channels & Communication Models",
-          "href": "/articles/eip-part-2-messaging-channels/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-2-messaging-channels/"
         },
         {
           "_key": "nav-eip-3",
           "title": "Part III: Message Construction & Exchange Semantics",
-          "href": "/articles/eip-part-3-message-construction/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-3-message-construction/"
         },
         {
           "_key": "nav-eip-4",
           "title": "Part IV: Message Routing & Process Coordination",
-          "href": "/articles/eip-part-4-message-routing/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-4-message-routing/"
         },
         {
           "_key": "nav-eip-5",
           "title": "Part V: Message Transformation & Interoperability",
-          "href": "/articles/eip-part-5-message-transformation/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-5-message-transformation/"
         },
         {
           "_key": "nav-eip-6",
           "title": "Part VI: Messaging Endpoints & Reliable Processing",
-          "href": "/articles/eip-part-6-messaging-endpoints/",
           "status": "current"
         },
         {
           "_key": "nav-eip-7",
           "title": "Part VII: Operations, Observability & Governance",
-          "href": "/articles/eip-part-7-integration-operations/",
-          "status": "upcoming"
+          "status": "completed",
+          "href": "/articles/eip-part-7-integration-operations/"
         },
         {
           "_key": "nav-eip-8",
           "title": "Part VIII: Composing Enterprise Integration Patterns",
-          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/",
-          "status": "completed"
+          "status": "completed",
+          "href": "/articles/eip-part-8-composing-enterprise-integration-patterns/"
         }
       ]
     },

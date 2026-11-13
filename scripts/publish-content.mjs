@@ -35,7 +35,7 @@ run('scripts/seed-article-eip-part-6.mjs', '--dataset', 'production', '--write')
 run('scripts/seed-article-eip-part-7.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-8.mjs', '--dataset', 'production', '--write');
 
-// 3. EIP Series Roadmap
-run('scripts/seed-eip-series.mjs', '--dataset', 'production', '--write');
+// 3. EIP Series Navigation Callouts
+run('scripts/patch-eip-callouts.mjs', '--dataset', 'production', '--write');
 
 console.log('\nAll production content successfully synchronized to Sanity.');
