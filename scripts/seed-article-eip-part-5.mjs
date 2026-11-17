@@ -6,6 +6,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { createReadStream, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import os from 'node:os';
 import { parseArgs } from 'node:util';
 import { createClient } from '@sanity/client';
 
@@ -24,9 +25,24 @@ if (!values.dataset || values['dry-run'] === values.write) {
   process.exit(2);
 }
 
-const token = process.env.SANITY_WRITE_TOKEN;
+const resolveToken = async () => {
+  if (process.env.SANITY_WRITE_TOKEN) {
+    return process.env.SANITY_WRITE_TOKEN;
+  }
+  try {
+    const configPath = path.join(os.homedir(), '.config', 'sanity', 'config.json');
+    const raw = await readFile(configPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed.authToken) return parsed.authToken;
+  } catch {
+    // ignore
+  }
+  return null;
+};
+
+const token = await resolveToken();
 if (values.write && !token) {
-  console.error('--write requires SANITY_WRITE_TOKEN in the environment.');
+  console.error('--write requires SANITY_WRITE_TOKEN in the environment or active Sanity CLI login.');
   process.exit(2);
 }
 
