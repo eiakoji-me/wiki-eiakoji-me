@@ -46,7 +46,14 @@
   "seo": {
     "_type": "seo",
     "title": "EIP Part V: Message Transformation & Interoperability",
-    "description": "Payload decoupling, the Claim Check pattern, serialization overhead, Anti-Corruption Layers (ACL), and the Canonical Data Model fallacy."
+    "description": "Payload decoupling, the Claim Check pattern, serialization overhead, Anti-Corruption Layers (ACL), and the Canonical Data Model fallacy.",
+    "image": {
+      "_type": "image",
+      "asset": {
+        "_type": "reference",
+        "_ref": "image-6f990bfa0a3b4d124a60ad5269987e0764758a08-2899x1650-png"
+      }
+    }
   },
   "body": [
     {
@@ -151,7 +158,7 @@
       "_type": "imageWithAlt",
       "asset": {
         "_type": "reference",
-        "_ref": "image-placeholder"
+        "_ref": "image-6f990bfa0a3b4d124a60ad5269987e0764758a08-2899x1650-png"
       },
       "alt": "Enterprise message transformation and data interoperability overview: normalizers, content enrichers, claim check storage, and bounded contexts.",
       "caption": "Figure 1: Enterprise Message Transformation Pipeline — from ingress normalization and schema adaptation to content hydration, privacy filtering, and blob offloading."
@@ -315,7 +322,7 @@
       "_type": "imageWithAlt",
       "asset": {
         "_type": "reference",
-        "_ref": "image-placeholder"
+        "_ref": "image-06a6a582ad360dca8e15bb37f02edeca8b4c166b-2655x1374-png"
       },
       "alt": "The Claim Check pattern: large payload offloading to object storage with pointer message dispatch.",
       "caption": "Figure 2: The Claim Check Pattern — Producer offloads 50MB payload to Object Store (S3/GCS), emits lightweight pointer token to broker, and consumer hydrates blob on demand."
@@ -381,7 +388,7 @@
       "_type": "imageWithAlt",
       "asset": {
         "_type": "reference",
-        "_ref": "image-placeholder"
+        "_ref": "image-7021daf379162738908728c4702a983f1e650e0e-2655x1334-png"
       },
       "alt": "Comparison of the monolithic Canonical Data Model against Domain Bounded Contexts with Anti-Corruption Layers.",
       "caption": "Figure 3: Data Interoperability Archetypes — The monolithic Canonical Data Model fallacy compared with autonomous Domain Bounded Contexts and Anti-Corruption Layers."
@@ -767,5 +774,14 @@
         }
       ]
     }
-  ]
+  ],
+  "featuredImage": {
+    "_type": "imageWithAlt",
+    "asset": {
+      "_type": "reference",
+      "_ref": "image-6f990bfa0a3b4d124a60ad5269987e0764758a08-2899x1650-png"
+    },
+    "alt": "Enterprise message transformation and data interoperability overview: normalizers, content enrichers, claim check storage, and bounded contexts.",
+    "caption": "Figure 1: Enterprise Message Transformation Pipeline — from ingress normalization and schema adaptation to content hydration, privacy filtering, and blob offloading."
+  }
 }
