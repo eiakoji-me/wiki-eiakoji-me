@@ -26,6 +26,7 @@
     "seed:article:eip-part-7": "node scripts/seed-article-eip-part-7.mjs",
     "seed:article:eip-part-8": "node scripts/seed-article-eip-part-8.mjs",
     "seed:eip-series": "node scripts/seed-eip-series.mjs",
+    "seed:article:sd-series-1": "node scripts/seed-article-sd-series-1.mjs",
     "patch:eip-callouts": "node scripts/patch-eip-callouts.mjs",
     "seed:taxonomy": "node scripts/seed-taxonomy.mjs",
     "seed:publish": "node scripts/publish-content.mjs",

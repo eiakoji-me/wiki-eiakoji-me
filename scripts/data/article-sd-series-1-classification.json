@@ -1,0 +1,592 @@
+{
+  "_id": "article-system-design-series-1-classification",
+  "_type": "article",
+  "title": "System Design Series I: Classification of Computational Problems",
+  "slug": {
+    "_type": "slug",
+    "current": "system-design-series-1-classification"
+  },
+  "format": "article",
+  "difficulty": "Advanced",
+  "featured": true,
+  "publishedAt": "2026-11-25T00:00:00.000Z",
+  "readingTime": "22 min read",
+  "summary": "A first-principles framework for system design: decomposing computational problems into physical constraints and correctness invariants, establishing the seven root problem domains, and mapping them to architectural archetypes.",
+  "primaryTopic": {
+    "_type": "reference",
+    "_ref": "topic-distributed-systems"
+  },
+  "relatedTopics": [
+    {
+      "_type": "reference",
+      "_ref": "domain-system-design",
+      "_key": "rel-domain-sd"
+    },
+    {
+      "_type": "reference",
+      "_ref": "topic-architectural-patterns",
+      "_key": "rel-topic-ap"
+    }
+  ],
+  "topics": [
+    "System Design",
+    "Distributed Systems",
+    "Problem Classification",
+    "Architectural Archetypes",
+    "Software Architecture"
+  ],
+  "technologies": [
+    "Distributed Systems",
+    "LSM-Trees",
+    "Raft",
+    "Kafka",
+    "S2 Geometry",
+    "Vector Search",
+    "Architecture"
+  ],
+  "repositoryUrl": "https://github.com/eiakoji-me/wiki-eiakoji-me",
+  "seo": {
+    "_type": "seo",
+    "title": "System Design: Classification of Computational Problems",
+    "description": "Decomposing distributed systems into physical constraints, invariants, the seven root problem domains, and architectural archetypes from first principles."
+  },
+  "body": [
+    {
+      "_key": "callout-series-1",
+      "_type": "callout",
+      "tone": "series",
+      "title": "System Design Learning Series",
+      "items": [
+        {
+          "_key": "nav-sd-1",
+          "title": "Series I: Classification of Computational Problems",
+          "status": "current"
+        },
+        {
+          "_key": "nav-sd-2",
+          "title": "Series II: Architectural Archetypes Catalog & Derivation",
+          "status": "upcoming"
+        },
+        {
+          "_key": "nav-sd-3",
+          "title": "Series III: Applied System Design Playbook & Exercises",
+          "status": "upcoming"
+        }
+      ]
+    },
+    {
+      "_key": "1e364b2b38fb",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "48655fa4765b",
+          "_type": "span",
+          "marks": [],
+          "text": "A pervasive failure mode in system design education and engineering practice is the reliance on product-specific reference architectures. When asked to design a high-throughput video platform, engineers reach for \"the YouTube architecture\"; when tasked with real-time location tracking, they describe \"the Uber architecture\"."
+        }
+      ]
+    },
+    {
+      "_key": "eadb5919ac06",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "6132284a3d15",
+          "_type": "span",
+          "marks": [],
+          "text": "This heuristic approach fails under real-world conditions because superficial feature equivalence masks irreconcilable physical constraints. A private corporate compliance archive requires strict immutability, synchronous audit trails, and deterministic legal retention, whereas a consumer video streaming platform optimizes for global edge cache hit ratios, progressive degradation, and eventual consistency of view counters. Mimicking the consumer platform produces an irrecoverable compliance failure."
+        }
+      ]
+    },
+    {
+      "_key": "d71e8043f417",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "2b55d2a14880",
+          "_type": "span",
+          "marks": [],
+          "text": "To develop transferable engineering judgment, system design must be approached not as the cataloging of known systems, but as the systematic decomposition of computational problems from first principles: Problem \u2192 Principles \u2192 Constraints \u2192 Invariants \u2192 Mechanisms \u2192 Archetypes \u2192 Composition \u2192 Validation."
+        }
+      ]
+    },
+    {
+      "_key": "d4809d88966a",
+      "_type": "block",
+      "style": "h2",
+      "children": [
+        {
+          "_key": "7f2ab067b66f",
+          "_type": "span",
+          "marks": [],
+          "text": "1. The Six-Tier Architectural Abstraction Hierarchy"
+        }
+      ]
+    },
+    {
+      "_key": "f32382fb8438",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "cb550e0a751d",
+          "_type": "span",
+          "marks": [],
+          "text": "To avoid conflating high-level problem statements with concrete technology choices, we establish a formal six-tier abstraction hierarchy:"
+        }
+      ]
+    },
+    {
+      "_key": "dc28ddb22ab6",
+      "_type": "codeBlock",
+      "code": "\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502  Tier 1: Computational Problem Domains (The 7 Roots)   \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 2: Problem Signatures & Workload Characteristics \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 3: Physical Constraints & Correctness Invariants \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 4: Architectural Mechanisms & Data Structures    \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 5: Architectural Archetypes (The 14 Structures)  \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 6: Composite Industrial Systems                  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518",
+      "language": "text",
+      "filename": "Abstraction Hierarchy"
+    },
+    {
+      "_key": "8c6e30da4964",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "e5f6b9b3a24d",
+          "_type": "span",
+          "marks": [],
+          "text": "Every tier serves an explicit role: Problem Domains isolate fundamental physical and algorithmic tensions; Problem Signatures quantify read/write skew, statefulness, and access locality; Constraints and Invariants define non-negotiable correctness properties (durability, linearizability, mutual exclusion); Mechanisms provide the concrete algorithms (LSM, WAL, MVCC, Raft, S2); Archetypes package mechanisms into recurring structural patterns; and Composite Systems assemble multiple archetypes into cohesive products."
+        }
+      ]
+    },
+    {
+      "_key": "4089c066a717",
+      "_type": "block",
+      "style": "h2",
+      "children": [
+        {
+          "_key": "c19484406308",
+          "_type": "span",
+          "marks": [],
+          "text": "2. The Seven Root Problem Domains"
+        }
+      ]
+    },
+    {
+      "_key": "913b4a7fae5f",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "507f47b64125",
+          "_type": "span",
+          "marks": [],
+          "text": "Every large-scale software system can be deconstructed into seven orthogonal root computational problem domains:"
+        }
+      ]
+    },
+    {
+      "_key": "c56c264ec346",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "44bdbe18e299",
+          "_type": "span",
+          "marks": [],
+          "text": "I. Data Storage & Organization"
+        }
+      ]
+    },
+    {
+      "_key": "3dab84c0b6aa",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "22ab00968272",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs the preservation, physical structuring, and deterministic retrieval of persistent state across memory and storage tiers. The governing constraint is that storage media physics dictates access patterns: sequential I/O outperforms random I/O by orders of magnitude across NVMe SSDs, HDDs, and cloud object stores."
+        }
+      ]
+    },
+    {
+      "_key": "42cb6a2a1f99",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "7d72bc36e3c9",
+          "_type": "span",
+          "marks": [],
+          "text": "Physical layout architectures dictate capability: B+ Trees optimize for low read amplification in transactional OLTP; Log-Structured Merge-Trees (LSM) absorb high write throughput via sequential append-only logs and immutable SSTables; and Columnar layouts compress attribute vectors to maximize analytical scan bandwidth using CPU SIMD instructions."
+        }
+      ]
+    },
+    {
+      "_key": "a25a82ae85af",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "00ee111068b5",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetypes: Archetype I (Large Object Storage & Distribution) and Archetype XIV (Hierarchical Namespace & Metadata)."
+        }
+      ]
+    },
+    {
+      "_key": "e1afe1a4b364",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "7178f2c2af67",
+          "_type": "span",
+          "marks": [],
+          "text": "II. Data Movement & Transformation"
+        }
+      ]
+    },
+    {
+      "_key": "6fe18de965a4",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "7397439c8f5d",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs the decoupling, transport, buffering, and continuous processing of information in transit between independent systems. According to Little's Law (L = \u03bb \u00b7 W), coupling producers directly to downstream consumers causes systemic cascading failure when consumers experience transient latency spikes."
+        }
+      ]
+    },
+    {
+      "_key": "28c22e3e5ab2",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "54d8f0638a0e",
+          "_type": "span",
+          "marks": [],
+          "text": "Streaming delivery semantics enforce strict trade-offs: true physical exactly-once delivery is impossible under network partitions, so systems achieve effectively-once processing via at-least-once delivery paired with idempotent consumer execution. Change Data Capture (CDC) and the Transactional Outbox pattern eliminate dual-write divergence."
+        }
+      ]
+    },
+    {
+      "_key": "63659928d3ac",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "43ecd163277f",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetypes: Archetype II (High-Write Ingestion & Logs), Archetype III (Aggregation & Derived Views), and Archetype V (Fan-Out & Information Distribution)."
+        }
+      ]
+    },
+    {
+      "_key": "ffbcbc91cdcd",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "839b94190cd2",
+          "_type": "span",
+          "marks": [],
+          "text": "III. State, Consistency & Coordination"
+        }
+      ]
+    },
+    {
+      "_key": "c1e65491d95f",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "60118d4f55f0",
+          "_type": "span",
+          "marks": [],
+          "text": "Addresses the governing tension of managing shared mutable state across independent machines without shared memory or synchronized physical clocks. Physical crystal oscillators drift unpredictably; therefore, distributed systems must never rely on physical wall-clock timestamps to establish causality or mutual exclusion."
+        }
+      ]
+    },
+    {
+      "_key": "def9a5c1e84a",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "b6142e8007fc",
+          "_type": "span",
+          "marks": [],
+          "text": "To guarantee mutual exclusion under arbitrary thread pauses (e.g., GC pauses or VM steals), systems must reject bare TTL locks and enforce the Fencing Token Invariant: the destination storage engine must monotonically reject any write bearing a token older than the highest token observed."
+        }
+      ]
+    },
+    {
+      "_key": "3e1083a5bda9",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "d6eb4ef72cc1",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetypes: Archetype IV (Contended Resource Allocation) and Archetype VI (Partitioned & Replicated State)."
+        }
+      ]
+    },
+    {
+      "_key": "09ec9a8a69b6",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "2603bfc4fa4b",
+          "_type": "span",
+          "marks": [],
+          "text": "IV. Execution & Resource Management"
+        }
+      ]
+    },
+    {
+      "_key": "a0d875e9abfc",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "c9845b186e4b",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs the scheduling, placement, lifecycle orchestration, and durable execution of computational workloads across finite infrastructure. Cluster scheduling architectures have evolved from monolithic coordinators (kube-scheduler) to two-level schedulers (Mesos) and shared-state optimistic schedulers (Borg / Omega)."
+        }
+      ]
+    },
+    {
+      "_key": "70826964e49b",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "03cad3e6ace3",
+          "_type": "span",
+          "marks": [],
+          "text": "For multi-step distributed operations, two-phase commit is impractical due to blocking lock overhead. Systems apply the Saga Invariant: either all distributed steps succeed, or for every executed step, its compensating action executes to completion."
+        }
+      ]
+    },
+    {
+      "_key": "b099b15c50b0",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "7608bcf98e77",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetypes: Archetype VII (Durable Workflow & Asynchronous Orchestration) and Archetype XII (Scheduling & Resource Placement)."
+        }
+      ]
+    },
+    {
+      "_key": "b687b8b50b19",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "f67f2c8f12a9",
+          "_type": "span",
+          "marks": [],
+          "text": "V. Communication & Interaction"
+        }
+      ]
+    },
+    {
+      "_key": "51e504919ea0",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "d07342d21148",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs protocol mechanics, framing boundaries, connection lifecycles, and bidirectional synchronization. Protocol evolution has systematically tackled Head-of-Line (HoL) blocking: HTTP/1.1 suffered application-layer HoL; HTTP/2 introduced binary multiplexed streams but remained vulnerable to TCP transport-layer HoL; and HTTP/3 (QUIC over UDP) bypasses TCP entirely."
+        }
+      ]
+    },
+    {
+      "_key": "4e2feea70852",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "fe3f143f5183",
+          "_type": "span",
+          "marks": [],
+          "text": "For collaborative real-time editing, systems choose between Operational Transformation (OT)\u2014requiring an authoritative central ordering server\u2014and Conflict-Free Replicated Data Types (CRDTs), which use mathematically commutative operations to guarantee convergence over decentralized mesh networks."
+        }
+      ]
+    },
+    {
+      "_key": "1ce4e42e3008",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "4b836dd13b4a",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetype: Archetype VIII (Real-Time Synchronization & Collaboration)."
+        }
+      ]
+    },
+    {
+      "_key": "4ca2b2d75259",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "4a6986584aad",
+          "_type": "span",
+          "marks": [],
+          "text": "VI. Information Retrieval & Discovery"
+        }
+      ]
+    },
+    {
+      "_key": "ac77ef2b2dbe",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "63c81daa52de",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs filtering, ranking, and candidate extraction from massive datasets where brute-force full table scans are computationally prohibitive. Unlike key-value lookups, retrieval operates when target identities are unknown at query time."
+        }
+      ]
+    },
+    {
+      "_key": "81357c9e58b7",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "1606f790dd62",
+          "_type": "span",
+          "marks": [],
+          "text": "Retrieval leverages multi-dimensional indexing structures: inverted posting lists with skip pointers and Roaring Bitmaps for text; space-filling curves (S2 Hilbert curves, H3 hexagons) and Contraction Hierarchies for geospatial routing; Compressed Sparse Row (CSR) arrays for graph traversal; and Hierarchical Navigable Small World (HNSW) graphs for high-dimensional vector search."
+        }
+      ]
+    },
+    {
+      "_key": "5e8d915c23fa",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "d4ecd2922eda",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetypes: Archetype IX (Geospatial Indexing & Routing), Archetype X (Search & Information Retrieval), and Archetype XI (Graph Relationships & Traversal)."
+        }
+      ]
+    },
+    {
+      "_key": "eb95ef710103",
+      "_type": "block",
+      "style": "h3",
+      "children": [
+        {
+          "_key": "ff958c5446e1",
+          "_type": "span",
+          "marks": [],
+          "text": "VII. Computation & Optimization"
+        }
+      ]
+    },
+    {
+      "_key": "1cace2f69670",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "2c19b0b31c50",
+          "_type": "span",
+          "marks": [],
+          "text": "Governs the parallelization, partitioning, and distributed execution of data-intensive and compute-intensive algorithmic transformations. Computation has evolved from disk-bound MapReduce to memory-pipelined Directed Acyclic Graph (DAG) engines (Apache Spark)."
+        }
+      ]
+    },
+    {
+      "_key": "ac61ca8e2c0e",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "104c80eccb6d",
+          "_type": "span",
+          "marks": [],
+          "text": "The critical performance bottleneck in distributed compute is the all-to-all network shuffle. Mitigating data skew requires techniques like key salting. Fault tolerance is maintained through deterministic lineage recomputation rather than full-state replication, and output idempotency is guaranteed via two-phase staging directory commits."
+        }
+      ]
+    },
+    {
+      "_key": "51b1bb6bed70",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "9924f4aa556b",
+          "_type": "span",
+          "marks": [],
+          "text": "Anchored Archetype: Archetype XIII (Distributed Computation & Analytics)."
+        }
+      ]
+    },
+    {
+      "_key": "76293ae9b08f",
+      "_type": "block",
+      "style": "h2",
+      "children": [
+        {
+          "_key": "3c3c900a8e0f",
+          "_type": "span",
+          "marks": [],
+          "text": "3. Domain Boundaries and Composition"
+        }
+      ]
+    },
+    {
+      "_key": "f844d7195831",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "778d8ea43ae1",
+          "_type": "span",
+          "marks": [],
+          "text": "A classification is only as useful as its boundary criteria. Four essential boundaries prevent fatal architectural conflation: Storage owns authoritative ground truth, while Retrieval owns rebuildable candidate indexes; Movement handles stream buffering, while Execution manages worker placement and workflow lifecycles; Coordination enforces mathematical agreement, while Communication handles transport; and Movement handles streaming latency (<1s), while Computation manages heavy batch shuffles (>10min)."
+        }
+      ]
+    },
+    {
+      "_key": "1e17f7c459bf",
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        {
+          "_key": "ff6a5d672a99",
+          "_type": "span",
+          "marks": [],
+          "text": "Industrial systems are compositions across multiple domains. A ride-hailing platform composes Domain V (WebSocket stream), Domain II (location ingestion log), Domain VI (S2 geospatial driver discovery), Domain III (contended driver allocation with fencing), and Domain IV (durable trip saga workflow). Each subsystem preserves its own invariants while collaborating across well-defined boundaries."
+        }
+      ]
+    }
+  ]
+}
