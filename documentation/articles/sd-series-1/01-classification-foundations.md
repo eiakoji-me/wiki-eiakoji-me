@@ -20,21 +20,14 @@ $$\text{Problem} \longrightarrow \text{Principles} \longrightarrow \text{Constra
 
 To avoid conflating high-level problem statements with concrete technology choices, we establish a formal six-tier abstraction hierarchy:
 
-```
-┌────────────────────────────────────────────────────────┐
-│  Tier 1: Computational Problem Domains (The 7 Roots)   │
-├────────────────────────────────────────────────────────┤
-│  Tier 2: Problem Signatures & Workload Characteristics │
-├────────────────────────────────────────────────────────┤
-│  Tier 3: Physical Constraints & Correctness Invariants │
-├────────────────────────────────────────────────────────┤
-│  Tier 4: Architectural Mechanisms & Data Structures    │
-├────────────────────────────────────────────────────────┤
-│  Tier 5: Architectural Archetypes (The 14 Structures)  │
-├────────────────────────────────────────────────────────┤
-│  Tier 6: Composite Industrial Systems                  │
-└────────────────────────────────────────────────────────┘
-```
+| Tier | Abstraction Level | Primary Architectural Concern | Canonical Primitives & Examples |
+| :--- | :--- | :--- | :--- |
+| **Tier 1** | **Computational Problem Domains (The 7 Roots)** | Fundamental physical, algorithmic, and operational tensions in computer systems. | Storage & Organization, Movement & Transformation, State & Coordination, Execution & Resources, Communication, Retrieval & Discovery, Computation. |
+| **Tier 2** | **Problem Signatures & Workloads** | Quantitative traffic profile, read/write asymmetry, and access locality. | Read-heavy (>95% reads), write-heavy append logs, high concurrency, strict latency budgets (<10ms), batch windowing. |
+| **Tier 3** | **Physical Constraints & Invariants** | Non-negotiable correctness guarantees and governing physical bounds. | Durability (WAL fsync barrier), Linearizability, Mutual Exclusion (Fencing), Acyclicity, Little's Law, CAP / PACELC. |
+| **Tier 4** | **Architectural Mechanisms & Data Structures** | Algorithmic building blocks that mathematically preserve invariants. | LSM-Trees, B+ Trees, SSTables, Raft Consensus, Leases with Fencing Tokens, S2/H3 Cells, Inverted Indexes, CSR Arrays. |
+| **Tier 5** | **Architectural Archetypes (The 14 Structures)** | Recurring subsystem structures packaging mechanisms to guarantee invariants under load. | Large Object Storage, High-Write Ingestion, Contended Allocation, Geospatial Routing, Durable Workflows, Search & Retrieval. |
+| **Tier 6** | **Composite Industrial Systems** | Production multi-archetype architectures composing across domains. | Ride-Hailing Platform (Uber), Video Publishing & Streaming (YouTube), Real-Time Collaborative Workspace (Google Docs). |
 
 ### Tier 1: Computational Problem Domains (The Seven Roots)
 The root domains represent the fundamental physical and mathematical tensions in computing:

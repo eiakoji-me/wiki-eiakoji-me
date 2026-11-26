@@ -140,11 +140,75 @@
       ]
     },
     {
-      "_key": "dc28ddb22ab6",
-      "_type": "codeBlock",
-      "code": "\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502  Tier 1: Computational Problem Domains (The 7 Roots)   \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 2: Problem Signatures & Workload Characteristics \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 3: Physical Constraints & Correctness Invariants \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 4: Architectural Mechanisms & Data Structures    \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 5: Architectural Archetypes (The 14 Structures)  \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  Tier 6: Composite Industrial Systems                  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518",
-      "language": "text",
-      "filename": "Abstraction Hierarchy"
+      "_type": "table",
+      "_key": "tbl-abstraction-hierarchy",
+      "caption": "Table 1: The Six-Tier Architectural Abstraction Hierarchy",
+      "hasHeaderRow": true,
+      "rows": [
+        {
+          "_key": "r-hdr",
+          "cells": [
+            "Tier",
+            "Abstraction Level",
+            "Primary Architectural Concern",
+            "Canonical Primitives & Industrial Examples"
+          ]
+        },
+        {
+          "_key": "r-tier-1",
+          "cells": [
+            "Tier 1",
+            "Computational Problem Domains (The 7 Roots)",
+            "Orthogonal physical, algorithmic, and operational tensions in computer systems",
+            "Storage & Organization, Movement & Transformation, State & Coordination, Execution & Resources, Communication, Retrieval & Discovery, Computation"
+          ]
+        },
+        {
+          "_key": "r-tier-2",
+          "cells": [
+            "Tier 2",
+            "Problem Signatures & Workloads",
+            "Quantitative traffic profile, read/write asymmetry, and access locality",
+            "Read-heavy (>95% reads), write-heavy append log, high concurrency, strict latency budgets (<10ms), batch windowing"
+          ]
+        },
+        {
+          "_key": "r-tier-3",
+          "cells": [
+            "Tier 3",
+            "Physical Constraints & Invariants",
+            "Non-negotiable correctness guarantees and governing physical bounds",
+            "Durability (WAL fsync barrier), Linearizability, Mutual Exclusion (Fencing), Acyclicity, Little's Law, CAP / PACELC"
+          ]
+        },
+        {
+          "_key": "r-tier-4",
+          "cells": [
+            "Tier 4",
+            "Architectural Mechanisms & Data Structures",
+            "Algorithmic building blocks that mathematically preserve invariants",
+            "LSM-Trees, B+ Trees, SSTables, Raft Consensus, Leases with Fencing Tokens, S2/H3 Cells, Inverted Indexes, CSR Arrays"
+          ]
+        },
+        {
+          "_key": "r-tier-5",
+          "cells": [
+            "Tier 5",
+            "Architectural Archetypes (The 14 Catalog Structures)",
+            "Recurring subsystem structures packaging mechanisms to guarantee invariants under load",
+            "Large Object Storage, High-Write Ingestion, Contended Allocation, Geospatial Routing, Durable Workflows, Search & Retrieval"
+          ]
+        },
+        {
+          "_key": "r-tier-6",
+          "cells": [
+            "Tier 6",
+            "Composite Industrial Systems",
+            "Production multi-archetype architectures composing across domains",
+            "Ride-Hailing Platform (Uber), Video Publishing & Streaming (YouTube), Real-Time Collaborative Workspace (Google Docs)"
+          ]
+        }
+      ]
     },
     {
       "_key": "8c6e30da4964",

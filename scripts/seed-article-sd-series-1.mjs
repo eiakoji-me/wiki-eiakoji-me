@@ -81,6 +81,7 @@ if (values.write) {
   };
 
   const heroAssetId = await uploadDiagram('F02_extended_archetype_framework_clean.png');
+  const frameworkAssetId = await uploadDiagram('D01_architectural_reasoning_framework.png');
 
   articleDoc.featuredImage = {
     _type: 'imageWithAlt',
@@ -100,6 +101,32 @@ if (values.write) {
         _ref: heroAssetId,
       },
     };
+  }
+
+  // Insert or update the inline diagram block for Figure 2
+  const inlineDiagramBlock = {
+    _key: 'img-reasoning-framework',
+    _type: 'imageWithAlt',
+    asset: {
+      _type: 'reference',
+      _ref: frameworkAssetId,
+    },
+    alt: 'Architectural reasoning framework: deriving systems from problem invariants to mechanisms and trade-offs.',
+    caption: 'Figure 2: The Architectural Reasoning Framework: moving from problem invariants to archetype composition and trade-off validation.',
+  };
+
+  // Find index right before heading "1. The Six-Tier Architectural Abstraction Hierarchy"
+  const headingIndex = articleDoc.body.findIndex(
+    (b) => b.style === 'h2' && b.children?.[0]?.text?.includes('Six-Tier')
+  );
+
+  const existingDiagramIdx = articleDoc.body.findIndex((b) => b._key === 'img-reasoning-framework');
+  if (existingDiagramIdx !== -1) {
+    articleDoc.body[existingDiagramIdx] = inlineDiagramBlock;
+  } else if (headingIndex !== -1) {
+    articleDoc.body.splice(headingIndex, 0, inlineDiagramBlock);
+  } else {
+    articleDoc.body.push(inlineDiagramBlock);
   }
 
   const result = await client.createOrReplace(articleDoc);
