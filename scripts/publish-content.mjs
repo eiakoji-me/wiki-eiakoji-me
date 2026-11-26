@@ -34,6 +34,7 @@ run('scripts/seed-article-eip-part-5.mjs', '--dataset', 'production', '--write')
 run('scripts/seed-article-eip-part-6.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-7.mjs', '--dataset', 'production', '--write');
 run('scripts/seed-article-eip-part-8.mjs', '--dataset', 'production', '--write');
+run('scripts/seed-article-sd-series-1.mjs', '--dataset', 'production', '--write');
 
 // 3. EIP Series Navigation Callouts
 run('scripts/patch-eip-callouts.mjs', '--dataset', 'production', '--write');
