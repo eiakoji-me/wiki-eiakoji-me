@@ -1,0 +1,400 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2800" height="1740" viewBox="0 0 2800 1740" font-family="Arial, Helvetica, sans-serif"><title>14 Architectural Archetypes</title><defs><marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#34D5EB" stroke-width="1.2"/></marker></defs>
+<rect x="0" y="0" width="2800" height="1740" rx="0" fill="#071525" stroke="#071525" stroke-width="2"/>
+<rect x="60" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M82 70 H402" stroke="#34D5EB" stroke-width="4"/>
+<text x="84" y="120" font-size="32" fill="#34D5EB" font-weight="700">I</text>
+<text x="298" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="84" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Blob Storage &amp;</text>
+<text x="84" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Distribution</text>
+<g transform="translate(95,326)">
+<rect x="0" y="42" width="70" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="65" font-size="16" fill="#F0F6FA" font-weight="400">chunks</text>
+<rect x="108" y="42" width="70" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="116" y="65" font-size="16" fill="#F0F6FA" font-weight="400">object</text>
+<path d="M72,59 L104,59" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="228" y="0" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="236" y="23" font-size="16" fill="#F0F6FA" font-weight="400">edge</text>
+<path d="M180,59 L223,17" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="228" y="48" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="236" y="71" font-size="16" fill="#F0F6FA" font-weight="400">edge</text>
+<path d="M180,59 L223,65" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="228" y="96" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="236" y="119" font-size="16" fill="#F0F6FA" font-weight="400">edge</text>
+<path d="M180,59 L223,113" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+</g>
+<text x="84" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Store and deliver large</text>
+<text x="84" y="562" font-size="23" fill="#A8B9C9" font-weight="400">objects</text>
+<rect x="446" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M468 70 H788" stroke="#34D5EB" stroke-width="4"/>
+<text x="470" y="120" font-size="32" fill="#34D5EB" font-weight="700">II</text>
+<text x="684" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="470" y="169" font-size="27" fill="#F0F6FA" font-weight="700">High-Write Ingestion</text>
+<text x="470" y="202" font-size="27" fill="#F0F6FA" font-weight="700">&amp; Logs</text>
+<g transform="translate(481,326)">
+<circle cx="12" cy="18" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M26,18 L84,18" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="94" y="5" width="194" height="28" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<circle cx="12" cy="64" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M26,64 L84,64" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="94" y="51" width="194" height="28" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<circle cx="12" cy="110" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M26,110 L84,110" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="94" y="97" width="194" height="28" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="101" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="131" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="161" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="191" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="221" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="251" y="5" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="101" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="131" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="161" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="191" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="221" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="251" y="51" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="101" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="131" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="161" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="191" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="221" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+<rect x="251" y="97" width="22" height="12" rx="1" fill="#169FB2" stroke="#169FB2" stroke-width="2"/>
+</g>
+<text x="470" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Absorb high-volume event</text>
+<text x="470" y="562" font-size="23" fill="#A8B9C9" font-weight="400">streams</text>
+<rect x="832" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M854 70 H1174" stroke="#34D5EB" stroke-width="4"/>
+<text x="856" y="120" font-size="32" fill="#34D5EB" font-weight="700">III</text>
+<text x="1070" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="856" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Aggregation &amp;</text>
+<text x="856" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Derived Views</text>
+<g transform="translate(867,326)">
+<rect x="0" y="4" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="27" font-size="16" fill="#F0F6FA" font-weight="400">stream</text>
+<path d="M68,21 L124,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="0" y="51" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="74" font-size="16" fill="#F0F6FA" font-weight="400">stream</text>
+<path d="M68,68 L124,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="0" y="98" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="121" font-size="16" fill="#F0F6FA" font-weight="400">stream</text>
+<path d="M68,115 L124,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="132" y="46" width="64" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="140" y="69" font-size="16" fill="#F0F6FA" font-weight="400">derive</text>
+<rect x="227" y="13" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="235" y="36" font-size="16" fill="#F0F6FA" font-weight="400">view</text>
+<path d="M199,63 L222,30" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="227" y="83" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="235" y="106" font-size="16" fill="#F0F6FA" font-weight="400">view</text>
+<path d="M199,63 L222,100" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+</g>
+<text x="856" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Build read-optimized</text>
+<text x="856" y="562" font-size="23" fill="#A8B9C9" font-weight="400">representations</text>
+<rect x="1218" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M1240 70 H1560" stroke="#34D5EB" stroke-width="4"/>
+<text x="1242" y="120" font-size="32" fill="#34D5EB" font-weight="700">IV</text>
+<text x="1456" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="1242" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Contended Resource</text>
+<text x="1242" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Allocation</text>
+<g transform="translate(1253,326)">
+<circle cx="12" cy="12" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M25,12 L107,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<circle cx="12" cy="61" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M25,61 L107,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<circle cx="12" cy="110" r="9" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M25,110 L107,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="118" y="46" width="62" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="126" y="69" font-size="16" fill="#F0F6FA" font-weight="400">claim</text>
+<path d="M183,63 L221,63" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="231" y="46" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="239" y="69" font-size="16" fill="#F0F6FA" font-weight="400">owner</text>
+<text x="121" y="113" font-size="16" fill="#A8B9C9" font-weight="400">atomic gate</text>
+</g>
+<text x="1242" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Coordinate exclusive</text>
+<text x="1242" y="562" font-size="23" fill="#A8B9C9" font-weight="400">resource claims</text>
+<rect x="1604" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M1626 70 H1946" stroke="#34D5EB" stroke-width="4"/>
+<text x="1628" y="120" font-size="32" fill="#34D5EB" font-weight="700">V</text>
+<text x="1842" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="1628" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Fan-Out &amp;</text>
+<text x="1628" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Information</text>
+<text x="1628" y="235" font-size="27" fill="#F0F6FA" font-weight="700">Distribution</text>
+<g transform="translate(1639,326)">
+<rect x="2" y="48" width="66" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="10" y="71" font-size="16" fill="#F0F6FA" font-weight="400">source</text>
+<path d="M72,65 L207,17" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="215" y="0" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="223" y="23" font-size="16" fill="#F0F6FA" font-weight="400">sub</text>
+<path d="M72,65 L207,65" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="215" y="48" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="223" y="71" font-size="16" fill="#F0F6FA" font-weight="400">sub</text>
+<path d="M72,65 L207,113" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="215" y="96" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="223" y="119" font-size="16" fill="#F0F6FA" font-weight="400">sub</text>
+</g>
+<text x="1628" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Distribute updates to many</text>
+<text x="1628" y="562" font-size="23" fill="#A8B9C9" font-weight="400">recipients</text>
+<rect x="1990" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M2012 70 H2332" stroke="#34D5EB" stroke-width="4"/>
+<text x="2014" y="120" font-size="32" fill="#34D5EB" font-weight="700">VI</text>
+<text x="2228" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="2014" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Partitioned &amp;</text>
+<text x="2014" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Replicated State</text>
+<g transform="translate(2025,326)">
+<rect x="0" y="0" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="23" font-size="16" fill="#F0F6FA" font-weight="400">shard</text>
+<path d="M69,17 L121,17" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="130" y="0" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="138" y="23" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+<path d="M191,17 L223,17" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<rect x="231" y="0" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="239" y="23" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+<rect x="0" y="48" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="71" font-size="16" fill="#F0F6FA" font-weight="400">shard</text>
+<path d="M69,65 L121,65" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="130" y="48" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="138" y="71" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+<path d="M191,65 L223,65" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<rect x="231" y="48" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="239" y="71" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+<rect x="0" y="96" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="119" font-size="16" fill="#F0F6FA" font-weight="400">shard</text>
+<path d="M69,113 L121,113" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="130" y="96" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="138" y="119" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+<path d="M191,113 L223,113" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<rect x="231" y="96" width="58" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="239" y="119" font-size="16" fill="#F0F6FA" font-weight="400">copy</text>
+</g>
+<text x="2014" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Scale and preserve</text>
+<text x="2014" y="562" font-size="23" fill="#A8B9C9" font-weight="400">distributed state</text>
+<rect x="2376" y="70" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M2398 70 H2718" stroke="#34D5EB" stroke-width="4"/>
+<text x="2400" y="120" font-size="32" fill="#34D5EB" font-weight="700">VII</text>
+<text x="2614" y="116" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="2400" y="169" font-size="27" fill="#F0F6FA" font-weight="700">Durable Workflow &amp;</text>
+<text x="2400" y="202" font-size="27" fill="#F0F6FA" font-weight="700">Asynchronous</text>
+<text x="2400" y="235" font-size="27" fill="#F0F6FA" font-weight="700">Orchestration</text>
+<g transform="translate(2411,326)">
+<rect x="0" y="12" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="35" font-size="16" fill="#F0F6FA" font-weight="400">step 1</text>
+<rect x="111" y="12" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="119" y="35" font-size="16" fill="#F0F6FA" font-weight="400">step 2</text>
+<rect x="224" y="12" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="232" y="35" font-size="16" fill="#F0F6FA" font-weight="400">step 3</text>
+<path d="M68,29 L105,29" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<path d="M180,29 L218,29" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="91" y="86" width="111" height="35" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="101" y="110" font-size="16" fill="#F0F6FA" font-weight="400">saved state</text>
+<path d="M144,48 L144,82" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<path d="M255 51 V71 H144 V49" fill="none" stroke="#34D5EB" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="215" y="105" font-size="16" fill="#A8B9C9" font-weight="400">retry</text>
+</g>
+<text x="2400" y="533" font-size="23" fill="#A8B9C9" font-weight="400">Coordinate recoverable</text>
+<text x="2400" y="562" font-size="23" fill="#A8B9C9" font-weight="400">multi-step operations</text>
+<rect x="60" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M82 610 H402" stroke="#34D5EB" stroke-width="4"/>
+<text x="84" y="660" font-size="32" fill="#34D5EB" font-weight="700">VIII</text>
+<text x="298" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART I</text>
+<text x="84" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Real-Time Shared</text>
+<text x="84" y="742" font-size="27" fill="#F0F6FA" font-weight="700">State</text>
+<g transform="translate(95,866)">
+<rect x="110" y="46" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="118" y="69" font-size="16" fill="#F0F6FA" font-weight="400">state</text>
+<rect x="0" y="0" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="23" font-size="16" fill="#F0F6FA" font-weight="400">client</text>
+<path d="M32,17 L110,53" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="224" y="0" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="232" y="23" font-size="16" fill="#F0F6FA" font-weight="400">client</text>
+<path d="M256,17 L175,53" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="0" y="96" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="119" font-size="16" fill="#F0F6FA" font-weight="400">client</text>
+<path d="M32,113 L110,73" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="224" y="96" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="232" y="119" font-size="16" fill="#F0F6FA" font-weight="400">client</text>
+<path d="M256,113 L175,73" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+</g>
+<text x="84" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Synchronize concurrent</text>
+<text x="84" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">participant updates</text>
+<rect x="446" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M468 610 H788" stroke="#169FB2" stroke-width="4"/>
+<text x="470" y="660" font-size="32" fill="#34D5EB" font-weight="700">IX</text>
+<text x="684" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="470" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Geospatial Indexing</text>
+<text x="470" y="742" font-size="27" fill="#F0F6FA" font-weight="700">&amp; Routing</text>
+<g transform="translate(481,866)">
+<rect x="0" y="0" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="36" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="72" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="108" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="144" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="36" y="0" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="36" y="36" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="36" y="72" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="36" y="108" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="36" y="144" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="72" y="0" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="72" y="36" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="72" y="72" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="72" y="108" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="72" y="144" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="108" y="0" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="108" y="36" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="108" y="72" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="108" y="108" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="108" y="144" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="144" y="0" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="144" y="36" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="144" y="72" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="144" y="108" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="144" y="144" width="36" height="36" rx="0" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M18 126 L54 90 L90 90 L126 18 L209 52 L268 108" fill="none" stroke="#34D5EB" stroke-width="4"/>
+<circle cx="18" cy="126" r="7" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="126" cy="18" r="7" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="268" cy="108" r="7" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+</g>
+<text x="470" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Locate and navigate spatial</text>
+<text x="470" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">entities</text>
+<rect x="832" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M854 610 H1174" stroke="#169FB2" stroke-width="4"/>
+<text x="856" y="660" font-size="32" fill="#34D5EB" font-weight="700">X</text>
+<text x="1070" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="856" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Search &amp; Information</text>
+<text x="856" y="742" font-size="27" fill="#F0F6FA" font-weight="700">Retrieval</text>
+<g transform="translate(867,866)">
+<rect x="0" y="4" width="75" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="27" font-size="16" fill="#F0F6FA" font-weight="400">term A</text>
+<rect x="0" y="91" width="75" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="114" font-size="16" fill="#F0F6FA" font-weight="400">term B</text>
+<rect x="221" y="0" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="23" font-size="16" fill="#F0F6FA" font-weight="400">doc 1</text>
+<rect x="221" y="49" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="72" font-size="16" fill="#F0F6FA" font-weight="400">doc 2</text>
+<rect x="221" y="98" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="121" font-size="16" fill="#F0F6FA" font-weight="400">doc 3</text>
+<path d="M80,21 L215,17" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<path d="M80,21 L215,66" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<path d="M80,108 L215,66" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<path d="M80,108 L215,115" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+</g>
+<text x="856" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Retrieve relevant information</text>
+<text x="856" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">efficiently</text>
+<rect x="1218" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M1240 610 H1560" stroke="#169FB2" stroke-width="4"/>
+<text x="1242" y="660" font-size="32" fill="#34D5EB" font-weight="700">XI</text>
+<text x="1456" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="1242" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Graph Relationships</text>
+<text x="1242" y="742" font-size="27" fill="#F0F6FA" font-weight="700">&amp; Traversal</text>
+<g transform="translate(1253,866)">
+<path d="M17,65 L86,12" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M17,65 L92,117" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<path d="M86,12 L174,56" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M92,117 L174,56" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<path d="M174,56 L268,13" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<path d="M174,56 L274,117" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M268,13 L274,117" fill="none" stroke="#34D5EB" stroke-width="2.5" stroke-dasharray="5 5"/>
+<circle cx="17" cy="65" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="86" cy="12" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="92" cy="117" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="174" cy="56" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="268" cy="13" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+<circle cx="274" cy="117" r="10" fill="#10243A" stroke="#34D5EB" stroke-width="2.5"/>
+</g>
+<text x="1242" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Explore connected entities</text>
+<text x="1242" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">and relationships</text>
+<rect x="1604" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M1626 610 H1946" stroke="#169FB2" stroke-width="4"/>
+<text x="1628" y="660" font-size="32" fill="#34D5EB" font-weight="700">XII</text>
+<text x="1842" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="1628" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Scheduling &amp;</text>
+<text x="1628" y="742" font-size="27" fill="#F0F6FA" font-weight="700">Resource Placement</text>
+<g transform="translate(1639,866)">
+<rect x="0" y="8" width="18" height="23" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="25" y="8" width="18" height="23" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="50" y="8" width="18" height="23" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="65" width="69" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="8" y="88" font-size="16" fill="#F0F6FA" font-weight="400">queue</text>
+<rect x="105" y="65" width="64" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="113" y="88" font-size="16" fill="#F0F6FA" font-weight="400">place</text>
+<path d="M72,82 L99,82" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="221" y="0" width="68" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="23" font-size="16" fill="#F0F6FA" font-weight="400">2 CPU</text>
+<path d="M173,82 L215,17" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="221" y="51" width="68" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="74" font-size="16" fill="#F0F6FA" font-weight="400">GPU</text>
+<path d="M173,82 L215,68" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="221" y="102" width="68" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="229" y="125" font-size="16" fill="#F0F6FA" font-weight="400">8 CPU</text>
+<path d="M173,82 L215,119" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+</g>
+<text x="1628" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Assign workloads to</text>
+<text x="1628" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">constrained resources</text>
+<rect x="1990" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M2012 610 H2332" stroke="#169FB2" stroke-width="4"/>
+<text x="2014" y="660" font-size="32" fill="#34D5EB" font-weight="700">XIII</text>
+<text x="2228" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="2014" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Distributed</text>
+<text x="2014" y="742" font-size="27" fill="#F0F6FA" font-weight="700">Computation &amp;</text>
+<text x="2014" y="775" font-size="27" fill="#F0F6FA" font-weight="700">Analytics</text>
+<g transform="translate(2025,866)">
+<text x="0" y="0" font-size="17" fill="#A8B9C9" font-weight="400">Map</text>
+<text x="105" y="0" font-size="17" fill="#A8B9C9" font-weight="400">Shuffle</text>
+<text x="222" y="0" font-size="17" fill="#A8B9C9" font-weight="400">Reduce</text>
+<rect x="0" y="17" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="123" y="17" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="239" y="17" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="65" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="123" y="65" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="239" y="65" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="0" y="113" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="123" y="113" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<rect x="239" y="113" width="45" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M49,29 L117,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,29 L233,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,29 L117,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,29 L233,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,29 L117,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,29 L233,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,77 L117,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,77 L233,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,77 L117,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,77 L233,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,77 L117,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,77 L233,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,125 L117,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,125 L233,29" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,125 L117,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,125 L233,77" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M49,125 L117,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+<path d="M172,125 L233,125" fill="none" stroke="#34D5EB" stroke-width="2.5"/>
+</g>
+<text x="2014" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Parallelize large</text>
+<text x="2014" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">computational workloads</text>
+<rect x="2376" y="610" width="364" height="514" rx="12" fill="#10243A" stroke="#234259" stroke-width="2"/>
+<path d="M2398 610 H2718" stroke="#169FB2" stroke-width="4"/>
+<text x="2400" y="660" font-size="32" fill="#34D5EB" font-weight="700">XIV</text>
+<text x="2614" y="656" font-size="17" fill="#A8B9C9" font-weight="700">PART II</text>
+<text x="2400" y="709" font-size="27" fill="#F0F6FA" font-weight="700">Hierarchical</text>
+<text x="2400" y="742" font-size="27" fill="#F0F6FA" font-weight="700">Namespace &amp;</text>
+<text x="2400" y="775" font-size="27" fill="#F0F6FA" font-weight="700">Metadata</text>
+<g transform="translate(2411,866)">
+<rect x="110" y="0" width="65" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="118" y="23" font-size="16" fill="#F0F6FA" font-weight="400">root</text>
+<rect x="25" y="57" width="60" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="33" y="80" font-size="16" fill="#F0F6FA" font-weight="400">dir</text>
+<path d="M142,37 L55,52" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="203" y="57" width="60" height="34" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<text x="211" y="80" font-size="16" fill="#F0F6FA" font-weight="400">dir</text>
+<path d="M142,37 L233,52" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="0" y="115" width="26" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M55,96 L13,110" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="76" y="115" width="26" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M55,96 L89,110" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="183" y="115" width="26" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M233,96 L196,110" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<rect x="259" y="115" width="26" height="25" rx="5" fill="none" stroke="#169FB2" stroke-width="2"/>
+<path d="M233,96 L272,110" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/>
+<text x="105" y="163" font-size="16" fill="#A8B9C9" font-weight="400">metadata registry</text>
+</g>
+<text x="2400" y="1073" font-size="23" fill="#A8B9C9" font-weight="400">Maintain consistent object</text>
+<text x="2400" y="1102" font-size="23" fill="#A8B9C9" font-weight="400">hierarchies</text>
+<path d="M60,1175 L2740,1175" stroke="#234259" stroke-width="2"/>
+<text x="60" y="1232" font-size="36" fill="#F0F6FA" font-weight="700">FROM REQUIREMENTS TO ARCHITECTURE</text><text x="60" y="1275" font-size="27" fill="#A8B9C9" font-weight="400">A reasoning framework for composing archetypes</text><rect x="60" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#31546A" stroke-width="2"/><text x="86" y="1364" font-size="29" fill="#34D5EB" font-weight="700">01</text><text x="86" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">REQUIREMENTS</text><text x="86" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Understand capabilities</text><text x="86" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">and workload</text><path d="M482,1432 L505,1432" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/><rect x="513" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#31546A" stroke-width="2"/><text x="539" y="1364" font-size="29" fill="#34D5EB" font-weight="700">02</text><text x="539" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">CONSTRAINTS</text><text x="539" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Identify scale, latency,</text><text x="539" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">cost, and limits</text><path d="M935,1432 L958,1432" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/><rect x="966" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#34D5EB" stroke-width="3"/><text x="992" y="1364" font-size="29" fill="#34D5EB" font-weight="700">03</text><text x="992" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">INVARIANTS</text><text x="992" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Define what must</text><text x="992" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">remain true</text><path d="M1388,1432 L1411,1432" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/><rect x="1419" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#31546A" stroke-width="2"/><text x="1445" y="1364" font-size="29" fill="#34D5EB" font-weight="700">04</text><text x="1445" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">MECHANISMS</text><text x="1445" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Select methods that</text><text x="1445" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">preserve the invariants</text><path d="M1841,1432 L1864,1432" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/><rect x="1872" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#31546A" stroke-width="2"/><text x="1898" y="1364" font-size="29" fill="#34D5EB" font-weight="700">05</text><text x="1898" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">TRADE-OFFS</text><text x="1898" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Evaluate complexity,</text><text x="1898" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">cost, and recovery</text><path d="M2294,1432 L2317,1432" fill="none" stroke="#34D5EB" stroke-width="2.5" marker-end="url(#a)"/><rect x="2325" y="1316" width="415" height="232" rx="12" fill="#10243A" stroke="#31546A" stroke-width="2"/><text x="2351" y="1364" font-size="29" fill="#34D5EB" font-weight="700">06</text><text x="2351" y="1415" font-size="28" fill="#F0F6FA" font-weight="700">COMPOSITION</text><text x="2351" y="1472" font-size="26" fill="#A8B9C9" font-weight="400">Combine archetypes</text><text x="2351" y="1506" font-size="26" fill="#A8B9C9" font-weight="400">and their contracts</text><text x="60" y="1612" font-size="29" fill="#34D5EB" font-weight="400">Recognize the problem. Preserve its invariants. Compose the architecture.</text><text x="60" y="1672" font-size="30" fill="#F0F6FA" font-weight="400">What must remain true when load increases, dependencies fail, or operations overlap?</text></svg>

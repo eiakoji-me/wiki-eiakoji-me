@@ -136,13 +136,15 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
     <!-- Archetypes Spotlight Module -->
     <div class="archetypes-banner">
       <div class="archetypes-header">
-        <h3>Architectural Archetypes &amp; Problem Classification</h3>
+        <h3>
+          <a class="archetypes-title-link" href="/articles/system-design-series-1-classification/">Architectural Archetypes &amp; Problem Classification</a>
+        </h3>
         <p class="archetypes-copy">
           A framework for classifying system-design problems, identifying correctness invariants, and composing architectural mechanisms to satisfy system requirements.
         </p>
       </div>
       <div class="archetypes-footer">
-        <a class="button primary" href="/topics/system-design/">Explore the Framework →</a>
+        <a class="button primary" href="/articles/system-design-series-1-classification/">Explore the Framework →</a>
       </div>
     </div>
 
@@ -366,6 +368,14 @@ const systemDesignCombined = (archetypesArticles.length > 0 ? [...archetypesArti
   .archetypes-banner h3 {
     margin: 0 0 6px;
     font-size: var(--text-xl);
+  }
+  .archetypes-title-link {
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+  .archetypes-title-link:hover {
+    color: var(--link);
+    text-decoration: underline;
   }
   .archetypes-copy {
     margin: 0;
